@@ -28,7 +28,7 @@
                         </x-nav-link>
                     </div>
                 @endrole
-                @role('penulis|admin')
+                @role('penulis|owner')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.index')">
                             {{ __('Manage Article') }}
