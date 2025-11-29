@@ -27,6 +27,11 @@
                             {{ __('Manage Categories') }}
                         </x-nav-link>
                     </div>
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('stocks.index')" :active="request()->routeIs('stocks.index')">
+                            {{ __('Manage Logistics') }}
+                        </x-nav-link>
+                    </div>
                 @endrole
                 @role('penulis|owner')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">

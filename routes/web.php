@@ -49,6 +49,13 @@ Route::middleware('auth')->group(function () {
         Route::resource('categories', CategoryController::class)->middleware('role:owner|admin');
         Route::resource('articles', ArticleController::class)->middleware('role:owner|admin|penulis');
     });
+
+    Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
+        Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
+        Route::get('/{product}', [App\Http\Controllers\StockController::class, 'show'])->name('show');
+        Route::post('/{product}/update', [App\Http\Controllers\StockController::class, 'update'])->name('update');
+        Route::get('/{product}/history', [App\Http\Controllers\StockController::class, 'history'])->name('history');
+    });
 });
 
 require __DIR__ . '/auth.php';
