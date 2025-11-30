@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 
 class StockController extends Controller
 {
+
     public function index()
     {
         $products = Product::all();
-        return view('stocks.index', compact('products'));
+        return view('admin.stocks.index', compact('products'));
     }
 
     public function show(Product $product)
