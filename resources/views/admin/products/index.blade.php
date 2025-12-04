@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-toast />
     <x-slot name="header">
         <div class="flex flex-row w-full justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">

@@ -6,15 +6,21 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\TransactionDetail;
 use App\Models\ProductTransaction;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 
 class ProductTransactionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+    use HasFactory, Notifiable, HasRoles;
     public function index()
     {
         //
@@ -35,10 +41,6 @@ class ProductTransactionController extends Controller
     {
         //
     }
-
-    /**
-     * Show the form for creating a detail.
-     */
     public function detail()
     {
         //
