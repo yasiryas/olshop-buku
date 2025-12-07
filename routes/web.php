@@ -24,8 +24,6 @@ Route::get('/search-products', [FrontController::class, 'searchProduct'])->name(
 Route::get('/search-articles', [FrontController::class, 'searchArticle'])
     ->name('front.search.article.ajax');
 
-
-
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

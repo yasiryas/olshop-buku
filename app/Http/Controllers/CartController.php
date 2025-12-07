@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use Illuminate\Validation\ValidationException;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
@@ -34,7 +35,12 @@ class CartController extends Controller
      */
     public function store($product_id)
     {
-        // dd("Route sukses, product_id = ", $product_id);
+
+        //cek stok
+        $product = Product::find($product_id);
+        if ($product->stock < 1) {
+            return redirect()->back()->with('error', 'Ups, Produk sudah habis!');
+        }
 
         $user = Auth::user();
         $existing_cart = Cart::where('user_id', $user->id)
@@ -84,8 +90,21 @@ class CartController extends Controller
      */
     public function update(Request $request, Cart $cart)
     {
-        //
+        $request->validate([
+            'quantity' => 'required|numeric|min:1|max:' . $cart->product->stock,
+        ]);
+
+        $cart->update([
+            'quantity' => $request->quantity
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'quantity' => $cart->quantity
+        ]);
     }
+
+
 
     /**
      * Remove the specified resource from storage.
