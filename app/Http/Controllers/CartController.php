@@ -34,30 +34,34 @@ class CartController extends Controller
      */
     public function store($product_id)
     {
-        //
+        // dd("Route sukses, product_id = ", $product_id);
+
         $user = Auth::user();
-        $existing_cart = Cart::where('user_id', $user->id)->where('product_id', $product_id)->first();
+        $existing_cart = Cart::where('user_id', $user->id)
+            ->where('product_id', $product_id)
+            ->first();
+
         if ($existing_cart) {
             return redirect()->route('carts.index');
         }
 
         DB::beginTransaction();
         try {
-            $cart = Cart::updateOrCreate([
+            Cart::updateOrCreate([
                 'user_id' => $user->id,
                 'product_id' => $product_id,
             ]);
-            $cart->save();
+
             DB::commit();
             return redirect()->route('carts.index');
         } catch (\Exception $e) {
             DB::rollback();
-            $error = ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'system_error' => ['System error', $e->getMessage()],
             ]);
-            throw $error;
         }
     }
+
 
     /**
      * Display the specified resource.

@@ -53,13 +53,13 @@
                             <h3 class="text-xl font-semibold mb-2">{{ $product->name }}</h3>
                             <span class="text-red-600 font-bold mb-2"> Rp {{ number_format($product->price) }}
                             </span>
+                            <p class="text-gray-600 mb-4">Tersedia: {{ $product->stock }}</p>
                         </a>
-                        <form action="{{ route('carts.store', $product->id) }}" method="POST">
+                        <form action="{{ route('carts.add', $product->id) }}" method="POST">
                             @csrf
-                            <button type="submit" name="product_id" value="{{ $product->id }}"
+                            <button type="submit"
                                 class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded transition mt-4"><i
-                                    class="fas fa-shopping-cart mr-2"
-                                    onclick="{{ route('carts.store', $product->id) }}"></i>Add
+                                    class="fas fa-shopping-cart mr-2"></i>Add
                                 To Cart</button>
                         </form>
                     </div>
