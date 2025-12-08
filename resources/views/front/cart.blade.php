@@ -242,12 +242,9 @@
          */
         function calculatePrice() {
             let subTotal = 0;
-            console.log("== Kalkulasi ulang ==");
             document.querySelectorAll('.product-price').forEach(item => {
-                // fallback kalau attribute ticonsdak ada
                 const price = asFloat(item.dataset.price ?? item.getAttribute('data-price'));
                 const qty = asInt(item.dataset.qty ?? item.getAttribute('data-qty'));
-                console.log("PRICE =", price, " QTY =", qty);
                 subTotal += price * qty;
             });
 

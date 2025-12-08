@@ -35,37 +35,53 @@ class CartController extends Controller
      */
     public function store($product_id)
     {
-
-        //cek stok
         $product = Product::find($product_id);
+
         if ($product->stock < 1) {
             return redirect()->back()->with('error', 'Ups, Produk sudah habis!');
         }
 
         $user = Auth::user();
-        $existing_cart = Cart::where('user_id', $user->id)
-            ->where('product_id', $product_id)
-            ->first();
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $user->id, 'product_id' => $product_id],
+            ['quantity' => 1]
+        );
+        // jika sudah ada, tambah qty tetapi tidak melebihi stok
+        if (!$cart->wasRecentlyCreated) {
+            $newQty = $cart->quantity + 1;
 
-        if ($existing_cart) {
-            return redirect()->route('carts.index');
+            if ($newQty > $product->stock) {
+                return back()->with('error', 'Stok tidak mencukupi!');
+            }
+
+            $cart->update(['quantity' => $newQty]);
         }
 
-        DB::beginTransaction();
-        try {
-            Cart::updateOrCreate([
-                'user_id' => $user->id,
-                'product_id' => $product_id,
-            ]);
+        return redirect()->route('carts.index');
 
-            DB::commit();
-            return redirect()->route('carts.index');
-        } catch (\Exception $e) {
-            DB::rollback();
-            throw ValidationException::withMessages([
-                'system_error' => ['System error', $e->getMessage()],
-            ]);
-        }
+        // $existing_cart = Cart::where('user_id', $user->id)
+        //     ->where('product_id', $product_id)
+        //     ->first();
+
+        // if ($existing_cart) {
+        //     return redirect()->route('carts.index');
+        // }
+
+        // DB::beginTransaction();
+        // try {
+        //     Cart::updateOrCreate([
+        //         'user_id' => $user->id,
+        //         'product_id' => $product_id,
+        //     ]);
+
+        //     DB::commit();
+        //     return redirect()->route('carts.index');
+        // } catch (\Exception $e) {
+        //     DB::rollback();
+        //     throw ValidationException::withMessages([
+        //         'system_error' => ['System error', $e->getMessage()],
+        //     ]);
+        // }
     }
 
 
