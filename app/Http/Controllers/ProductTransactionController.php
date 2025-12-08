@@ -83,7 +83,7 @@ class ProductTransactionController extends Controller
 
             $cartItems = $user->carts;
             foreach ($cartItems as $item) {
-                $subTotalCent += $item->product->price * 100;
+                $subTotalCent += ($item->product->price * $item->quantity) * 100;
             }
 
             $taxCent = (11 / 100) * $subTotalCent;
@@ -108,7 +108,7 @@ class ProductTransactionController extends Controller
                     'product_transaction_id' => $newTransaction->id,
                     'product_id' => $item->product_id,
                     'price' => $item->product->price,
-                    'qty' => 1,
+                    'qty' => $item->quantity,
                 ]);
                 $item->delete();
             }

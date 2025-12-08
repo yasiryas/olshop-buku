@@ -13,6 +13,7 @@
 
     <script src="//unpkg.com/alpinejs" defer></script>
     <script src="{{ asset('assets/js/script.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
 </head>
 

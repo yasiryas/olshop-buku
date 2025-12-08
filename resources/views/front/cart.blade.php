@@ -13,18 +13,6 @@
         </div>
     @enderror
 
-    @if ($errors->any())
-        <div
-            class="max-w-6xl mx-auto bg-red-100 border border-red-400 text-red-700 px-6 py-4 my-4 rounded-lg shadow mb-6">
-            <div class="font-bold text-lg mb-2">Oops! Ada beberapa masalah:</div>
-            <ul class="list-disc list-inside space-y-1">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     {{-- MAIN WRAPPER --}}
     <div class="container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 lg:px-10 mb-10">
 
@@ -183,25 +171,42 @@
                     <div>
                         <label class="font-semibold">Address</label>
                         <input type="text" name="address" value="{{ old('address') }}"
-                            class="w-full border rounded-lg px-4 py-2">
+                            class="w-full border rounded-lg px-4 py-2 @error('address') border-red-500 @enderror">
+
+                        @error('address')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="font-semibold">City</label>
                         <input type="text" name="city" value="{{ old('city') }}"
-                            class="w-full border rounded-lg px-4 py-2">
+                            class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+
+                        @error('city')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+
                     </div>
 
                     <div>
                         <label class="font-semibold">Post Code</label>
                         <input type="number" name="post_code" value="{{ old('post_code') }}"
-                            class="w-full border rounded-lg px-4 py-2">
+                            class="w-full border rounded-lg px-4 py-2 @error('post_code') border-red-500 @enderror">
+
+                        @error('post_code')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="font-semibold">Phone Number</label>
                         <input type="number" name="phone_number" value="{{ old('phone_number') }}"
-                            class="w-full border rounded-lg px-4 py-2">
+                            class="w-full border rounded-lg px-4 py-2 @error('phone_number') border-red-500 @enderror">
+
+                        @error('phone_number')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
@@ -211,7 +216,12 @@
 
                     <div>
                         <label class="font-semibold">Proof of Payment</label>
-                        <input type="file" name="proof" class="w-full border rounded-lg px-4 py-2">
+                        <input type="file" name="proof"
+                            class="w-full border rounded-lg px-4 py-2 @error('proof') border-red-500 @enderror">
+
+                        @error('proof')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <button class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-800">
@@ -223,6 +233,22 @@
 
         </div>
     </div>
+
+    {{-- error message --}}
+    @if ($errors->any())
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                let firstErrorField = document.querySelector('.border-red-500');
+                if (firstErrorField) {
+                    firstErrorField.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                    firstErrorField.focus();
+                }
+            });
+        </script>
+    @endif
 
     <!-- SCRIPTS PERBAIKAN (REPLACE ALL EXISTING SCRIPT) -->
     <script>
