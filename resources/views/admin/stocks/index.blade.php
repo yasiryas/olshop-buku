@@ -5,9 +5,8 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Manage Stocks') }}
             </h2>
-            <a href="{{ route('admin.products.index') }}"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
-                Back to Products
+            <a href="{{ route('stocks.allHistory') }}" class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
+                History Stock
             </a>
         </div>
     </x-slot>
@@ -76,7 +75,7 @@
             <form method="POST" :action="actionUrl">
                 @csrf
                 <label class="block mb-2 text-sm font-semibold text-gray-700">Jumlah</label>
-                <input type="number" name="quantity" class="w-full border-gray-300 rounded-lg"
+                <input type="number" name="quantity" class="w-full text-gray-400 border-gray-300 rounded-lg"
                     placeholder="Masukkan jumlah" required>
                 <input type="hidden" name="type" :value="mode">
 

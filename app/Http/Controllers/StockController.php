@@ -45,6 +45,12 @@ class StockController extends Controller
     public function history(Product $product)
     {
         $mutations = $product->stockMutations()->orderBy('created_at', 'desc')->get();
-        return view('stocks.history', compact('product', 'mutations'));
+        return view('admin.stocks.history', compact('product', 'mutations'));
+    }
+
+    public function allHistory()
+    {
+        $mutations = \App\Models\StockMutation::with('product')->orderBy('created_at', 'desc')->get();
+        return view('admin.stocks.all_history', compact('mutations'));
     }
 }
