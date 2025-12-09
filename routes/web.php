@@ -24,8 +24,6 @@ Route::get('/search-products', [FrontController::class, 'searchProduct'])->name(
 Route::get('/search-articles', [FrontController::class, 'searchArticle'])
     ->name('front.search.article.ajax');
 
-
-
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -38,9 +36,9 @@ Route::middleware('auth')->group(function () {
     // Route::resource('carts', CartController::class)->middleware('role:buyer');
     // Route::post('/cart/add/{product_id}', [CartController::class, 'store'])->middleware('role:buyer')->name('carts.store');
     Route::resource('carts', CartController::class)->middleware('role:buyer|penulis');
-    Route::post('/cart/add/{product_id}', [CartController::class, 'store'])->middleware('role:buyer')->name('carts.store');
+    Route::post('/cart/add/{product_id}', [CartController::class, 'store'])->middleware('role:buyer')->name('carts.add');
 
-    Route::resource('product_transactions', ProductTransactionController::class)->middleware('role:owner|buyer|admin');
+    Route::resource('product_transactions', ProductTransactionController::class);
 
     // Route::resource('articles', ArticleController::class)->middleware('role:owner|admin|penulis');
 
@@ -48,6 +46,13 @@ Route::middleware('auth')->group(function () {
         Route::resource('products', ProductController::class)->middleware('role:owner|admin');
         Route::resource('categories', CategoryController::class)->middleware('role:owner|admin');
         Route::resource('articles', ArticleController::class)->middleware('role:owner|admin|penulis');
+    });
+
+    Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
+        Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
+        Route::get('/{product}', [App\Http\Controllers\StockController::class, 'show'])->name('show');
+        Route::post('/{product}/update', [App\Http\Controllers\StockController::class, 'update'])->name('update');
+        Route::get('/{product}/history', [App\Http\Controllers\StockController::class, 'history'])->name('history');
     });
 });
 

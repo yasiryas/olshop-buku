@@ -23,4 +23,16 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function stockMutations()
+    {
+        return $this->hasMany(StockMutation::class);
+    }
+
+    public function getStockAttribute()
+    {
+        $stockIn = $this->stockMutations()->where('type', 'in')->sum('quantity');
+        $stockOut = $this->stockMutations()->where('type', 'out')->sum('quantity');
+        return $stockIn - $stockOut;
+    }
 }

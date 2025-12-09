@@ -27,6 +27,11 @@
                             {{ __('Manage Categories') }}
                         </x-nav-link>
                     </div>
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('stocks.index')" :active="request()->routeIs('stocks.index')">
+                            {{ __('Manage Logistics') }}
+                        </x-nav-link>
+                    </div>
                 @endrole
                 @role('penulis|owner')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -37,8 +42,8 @@
                 @endrole
                 @role('owner|admin|buyer')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.index')">
-                            {{ Auth::user()->hasRole('owner') ? __('Orders') : __('Orders') }}
+                        <x-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.*')">
+                            {{ Auth::user()->hasRole('owner|admin') ? __('Orders') : __('Orders') }}
                         </x-nav-link>
                     </div>
                 @endrole

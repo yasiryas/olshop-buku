@@ -6,15 +6,21 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\TransactionDetail;
 use App\Models\ProductTransaction;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Traits\HasRoles;
 
 class ProductTransactionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+    use HasFactory, Notifiable, HasRoles;
     public function index()
     {
         //
@@ -35,10 +41,6 @@ class ProductTransactionController extends Controller
     {
         //
     }
-
-    /**
-     * Show the form for creating a detail.
-     */
     public function detail()
     {
         //
@@ -81,7 +83,7 @@ class ProductTransactionController extends Controller
 
             $cartItems = $user->carts;
             foreach ($cartItems as $item) {
-                $subTotalCent += $item->product->price * 100;
+                $subTotalCent += ($item->product->price * $item->quantity) * 100;
             }
 
             $taxCent = (11 / 100) * $subTotalCent;
@@ -106,7 +108,7 @@ class ProductTransactionController extends Controller
                     'product_transaction_id' => $newTransaction->id,
                     'product_id' => $item->product_id,
                     'price' => $item->product->price,
-                    'qty' => 1,
+                    'qty' => $item->quantity,
                 ]);
                 $item->delete();
             }
@@ -145,17 +147,54 @@ class ProductTransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ProductTransaction $product_transaction)
+    public function update(Request $request, $id)
     {
-        //
-        // echo "Gagal";
-        // dd($productTransaction);
-        $product_transaction->update([
-            'is_paid' => true,
-        ]);
+        $transaction = ProductTransaction::with('transactionDetails.product')->findOrFail($id);
 
-        return redirect()->back()->with('success', 'Product Transaction Updated!');
+        DB::beginTransaction();
+
+        try {
+
+            // 1. Cek stok cukup untuk semua item
+            foreach ($transaction->transactionDetails as $detail) {
+                $product = $detail->product;
+
+                $totalIn  = $product->stockMutations()->where('type', 'in')->sum('quantity');
+                $totalOut = $product->stockMutations()->where('type', 'out')->sum('quantity');
+
+                $currentStock = $totalIn - $totalOut;
+
+                if ($currentStock < $detail->qty) {
+                    throw new \Exception("Stok produk {$product->name} tidak mencukupi!");
+                }
+            }
+
+            // 2. Kurangi stok → tambah record di stock_mutations
+            foreach ($transaction->transactionDetails as $detail) {
+
+                $detail->product->stockMutations()->create([
+                    'type'        => 'out',
+                    'quantity'    => $detail->qty,
+                    'description' => 'Stock keluar untuk order #' . $transaction->id,
+                ]);
+            }
+
+            // 3. Set transaksi menjadi paid
+            $transaction->update(['is_paid' => true]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('product_transactions.show', $transaction->id)
+                ->with('success', 'Order berhasil di-approve & stok berhasil dikurangi!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
+
+
+
 
     /**
      * Remove the specified resource from storage.

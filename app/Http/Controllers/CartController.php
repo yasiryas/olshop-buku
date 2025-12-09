@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use Illuminate\Validation\ValidationException;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
@@ -34,30 +35,55 @@ class CartController extends Controller
      */
     public function store($product_id)
     {
-        //
-        $user = Auth::user();
-        $existing_cart = Cart::where('user_id', $user->id)->where('product_id', $product_id)->first();
-        if ($existing_cart) {
-            return redirect()->route('carts.index');
+        $product = Product::find($product_id);
+
+        if ($product->stock < 1) {
+            return redirect()->back()->with('error', 'Ups, Produk sudah habis!');
         }
 
-        DB::beginTransaction();
-        try {
-            $cart = Cart::updateOrCreate([
-                'user_id' => $user->id,
-                'product_id' => $product_id,
-            ]);
-            $cart->save();
-            DB::commit();
-            return redirect()->route('carts.index');
-        } catch (\Exception $e) {
-            DB::rollback();
-            $error = ValidationException::withMessages([
-                'system_error' => ['System error', $e->getMessage()],
-            ]);
-            throw $error;
+        $user = Auth::user();
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $user->id, 'product_id' => $product_id],
+            ['quantity' => 1]
+        );
+        // jika sudah ada, tambah qty tetapi tidak melebihi stok
+        if (!$cart->wasRecentlyCreated) {
+            $newQty = $cart->quantity + 1;
+
+            if ($newQty > $product->stock) {
+                return back()->with('error', 'Stok tidak mencukupi!');
+            }
+
+            $cart->update(['quantity' => $newQty]);
         }
+
+        return redirect()->route('carts.index');
+
+        // $existing_cart = Cart::where('user_id', $user->id)
+        //     ->where('product_id', $product_id)
+        //     ->first();
+
+        // if ($existing_cart) {
+        //     return redirect()->route('carts.index');
+        // }
+
+        // DB::beginTransaction();
+        // try {
+        //     Cart::updateOrCreate([
+        //         'user_id' => $user->id,
+        //         'product_id' => $product_id,
+        //     ]);
+
+        //     DB::commit();
+        //     return redirect()->route('carts.index');
+        // } catch (\Exception $e) {
+        //     DB::rollback();
+        //     throw ValidationException::withMessages([
+        //         'system_error' => ['System error', $e->getMessage()],
+        //     ]);
+        // }
     }
+
 
     /**
      * Display the specified resource.
@@ -80,8 +106,21 @@ class CartController extends Controller
      */
     public function update(Request $request, Cart $cart)
     {
-        //
+        $request->validate([
+            'quantity' => 'required|numeric|min:1|max:' . $cart->product->stock,
+        ]);
+
+        $cart->update([
+            'quantity' => $request->quantity
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'quantity' => $cart->quantity
+        ]);
     }
+
+
 
     /**
      * Remove the specified resource from storage.

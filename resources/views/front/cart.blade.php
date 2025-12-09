@@ -1,4 +1,5 @@
 <x-layout-front title="Carts - Wigati Buku">
+
     {{-- Hero Section --}}
     <section class="py-16 px-10 container mx-auto text-center">
         <h4 class="text-4xl font-bold mb-4 text-gray-700">Carts</h4>
@@ -11,61 +12,93 @@
             {{ $message }}
         </div>
     @enderror
-    @if ($errors->any())
-        <div
-            class="max-w-6xl mx-auto bg-red-100 border border-red-400 text-red-700 px-6 py-4 my-4 rounded-lg shadow mb-6">
-            <div class="font-bold text-lg mb-2">Oops! Ada beberapa masalah:</div>
-            <ul class="list-disc list-inside space-y-1">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
 
-
-
-
-    {{-- Main Wrapper: Desktop 2 Kolom --}}
+    {{-- MAIN WRAPPER --}}
     <div class="container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 lg:px-10 mb-10">
-        {{-- Kiri: Cart Items --}}
+
+        {{-- LEFT: CART ITEMS --}}
         <div class="lg:col-span-2 bg-gray-50 rounded-2xl p-6 shadow">
             <h2 class="text-xl font-bold mb-4">Items</h2>
+
             <div class="space-y-4">
+
                 @forelse ($my_carts as $cart)
-                    <!-- Product Item -->
-                    <div class="flex gap-4 bg-white rounded-xl p-4 items-center shadow-sm">
-                        <img src="{{ Storage::url($cart->product->photo) }}"
-                            class="w-[90px] h-[90px] object-contain rounded-lg border" alt="">
-                        <div class="flex justify-between w-full">
-                            <div>
-                                <a href="{{ route('front.product.details', $cart->product->slug) }}"
-                                    class="text-base font-semibold block w-[200px] truncate hover:text-blue-500">
-                                    {{ $cart->product->name }}
-                                </a>
-                                <p class="text-sm text-gray-500 product-price" data-price="{{ $cart->product->price }}">
-                                    Rp {{ number_format($cart->product->price) }}
-                                </p>
+                    <div class="flex gap-4 bg-white rounded-xl p-4 shadow-sm" data-cart-item>
+
+                        {{-- LEFT: IMAGE --}}
+                        <div>
+                            <img src="{{ Storage::url($cart->product->photo) }}"
+                                class="w-[90px] h-[90px] object-contain rounded-lg border">
+                        </div>
+
+                        {{-- CENTER: PRODUCT INFO + QTY --}}
+                        <div class="flex-1 flex flex-col justify-between">
+
+                            {{-- Product Name --}}
+                            <a href="{{ route('front.product.details', $cart->product->slug) }}"
+                                class="text-base font-semibold block truncate hover:text-blue-500 w-[200px]">
+                                {{ $cart->product->name }}
+                            </a>
+
+                            {{-- Price --}}
+                            <p class="text-sm text-gray-500 product-price" data-price="{{ $cart->product->price }}"
+                                data-qty="{{ $cart->quantity }}">
+                                Rp {{ number_format($cart->product->price) }}
+                            </p>
+
+                            {{-- QTY ALPINE --}}
+                            <div x-data="cartQty({
+                                id: '{{ $cart->id }}',
+                                quantity: {{ $cart->quantity ?? 1 }},
+                                max: {{ $cart->product->stock ?? 0 }},
+                                updateUrl: '{{ route('carts.update', $cart) }}',
+                                token: '{{ csrf_token() }}'
+                            })" class="flex items-center gap-2 mt-2">
+
+                                {{-- MINUS --}}
+                                <button type="button" @click="decrease"
+                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300">
+                                    −
+                                </button>
+
+                                {{-- GANTI INPUT DENGAN DISPLAY --}}
+                                <div class="w-16 text-center border rounded-lg py-1 bg-gray-50">
+                                    <span x-text="quantity"></span>
+                                </div>
+
+                                {{-- PLUS --}}
+                                <button type="button" @click="increase"
+                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300">
+                                    +
+                                </button>
+
                             </div>
+
+                        </div>
+
+                        {{-- RIGHT: DELETE --}}
+                        <div class="flex items-start">
                             <form action="{{ route('carts.destroy', $cart) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="hover:bg-red-100 p-2 rounded-full">
-                                    <img src="{{ asset('/assets/svgs/ic-trash-can-filled.svg') }}" class="w-6 h-6"
-                                        alt="Delete">
+                                    <img src="{{ asset('/assets/svgs/ic-trash-can-filled.svg') }}" class="w-6 h-6">
                                 </button>
                             </form>
                         </div>
+
                     </div>
                 @empty
                     <p class="text-gray-500 text-center">Ups, belum ada produk yang ditambahkan!</p>
                 @endforelse
+
             </div>
         </div>
 
-        {{-- Kanan: Detail Payment & Delivery --}}
+        {{-- RIGHT: PAYMENT + DELIVERY --}}
         <div class="space-y-6">
-            {{-- Detail Payment --}}
+
+            {{-- DETAIL PAYMENT --}}
             <div class="bg-white rounded-2xl p-6 shadow">
                 <h3 class="text-lg font-bold mb-4">Details Payment</h3>
                 <ul class="space-y-3">
@@ -92,122 +125,291 @@
                 </ul>
             </div>
 
-            {{-- Payment Method --}}
+            {{-- PAYMENT METHOD --}}
             <div class="bg-white rounded-2xl p-6 shadow">
                 <h3 class="text-lg font-bold mb-4">Payment Method</h3>
+
                 <div class="grid grid-cols-2 gap-4">
-                    {{-- <label
-                        class="relative rounded-xl bg-gray-50 flex gap-2 p-3 items-center has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
-                        <input type="radio" name="payment_method" id="manualMethod" class="absolute opacity-0">
-                        <img src="{{ asset('/assets/svgs/ic-receipt-text-filled.svg') }}" alt="">
-                        <p class="text-base font-semibold">Manual</p>
-                    </label> --}}
+
+                    {{-- Manual --}}
                     <div x-data="{ payment: '' }" class="space-y-4">
                         <label
-                            class="relative rounded-xl bg-gray-50 flex gap-2 p-3 items-center has-[:checked]:ring-2 has-[:checked]:ring-blue-500 cursor-pointer">
-                            <input type="radio" name="payment_method" value="manual" id="manualMethod"
-                                class="absolute opacity-0" x-model="payment">
-                            <img src="{{ asset('/assets/svgs/ic-receipt-text-filled.svg') }}" alt="">
-                            <p class="text-base font-semibold">Manual</p>
+                            class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                            <input type="radio" name="payment_method" value="manual" class="absolute opacity-0"
+                                x-model="payment">
+                            <img src="{{ asset('/assets/svgs/ic-receipt-text-filled.svg') }}">
+                            <p class="font-semibold">Manual</p>
                         </label>
 
                         <div x-show="payment === 'manual'" x-transition
-                            class="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
-                            <p class="text-lg font-semibold">Nomor Rekening:</p>
-                            <p class="text-xl font-bold text-gray-800">12345678</p>
+                            class="bg-gray-100 rounded-lg p-4 border border-gray-300">
+                            <p class="font-semibold text-lg">Nomor Rekening:</p>
+                            <p class="font-bold text-xl">12345678</p>
                             <p class="text-gray-600">a.n Wigati Buku</p>
                         </div>
                     </div>
 
+                    {{-- Credit (disabled) --}}
                     <label
-                        class="relative rounded-xl bg-gray-50 flex gap-2 p-3 items-center has-[:checked]:ring-2 has-[:checked]:ring-blue-500 disabled">
-                        <input type="radio" name="payment_method" id="creditMethod" class="absolute opacity-0"
-                            disabled>
-                        <img src="{{ asset('/assets/svgs/ic-card-filled.svg') }}" alt="">
-                        <p class="text-base font-semibold">Credits</p>
+                        class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center opacity-50 cursor-not-allowed">
+                        <input type="radio" disabled>
+                        <img src="{{ asset('/assets/svgs/ic-card-filled.svg') }}">
+                        <p class="font-semibold">Credits</p>
                     </label>
+
                 </div>
             </div>
 
-            {{-- Delivery Form --}}
+            {{-- DELIVERY --}}
             <div class="bg-white rounded-2xl p-6 shadow">
                 <h3 class="text-lg font-bold mb-4">Delivery to</h3>
-                <form action="{{ route('product_transactions.store') }}" enctype="multipart/form-data" method="POST"
+
+                <form action="{{ route('product_transactions.store') }}" method="POST" enctype="multipart/form-data"
                     class="space-y-4">
                     @csrf
-                    @method('POST')
 
                     <div>
-                        <label class="block mb-1 font-semibold">Address</label>
+                        <label class="font-semibold">Address</label>
                         <input type="text" name="address" value="{{ old('address') }}"
-                            class="w-full border rounded-lg px-4 py-2" placeholder="Your address">
+                            class="w-full border rounded-lg px-4 py-2 @error('address') border-red-500 @enderror">
+
+                        @error('address')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
-                        <label class="block mb-1 font-semibold">City</label>
+                        <label class="font-semibold">City</label>
                         <input type="text" name="city" value="{{ old('city') }}"
-                            class="w-full border rounded-lg px-4 py-2" placeholder="Your city">
+                            class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+
+                        @error('city')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+
                     </div>
 
                     <div>
-                        <label class="block mb-1 font-semibold">Post Code</label>
+                        <label class="font-semibold">Post Code</label>
                         <input type="number" name="post_code" value="{{ old('post_code') }}"
-                            class="w-full border rounded-lg px-4 py-2" placeholder="Post code">
+                            class="w-full border rounded-lg px-4 py-2 @error('post_code') border-red-500 @enderror">
+
+                        @error('post_code')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
-                        <label class="block mb-1 font-semibold">Phone Number</label>
+                        <label class="font-semibold">Phone Number</label>
                         <input type="number" name="phone_number" value="{{ old('phone_number') }}"
-                            class="w-full border rounded-lg px-4 py-2" placeholder="Your phone number">
+                            class="w-full border rounded-lg px-4 py-2 @error('phone_number') border-red-500 @enderror">
+
+                        @error('phone_number')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
-                        <label class="block mb-1 font-semibold">Add. Notes</label>
-                        <textarea name="notes" class="w-full border rounded-lg px-4 py-2" placeholder="Add your note"></textarea>
+                        <label class="font-semibold">Add. Notes</label>
+                        <textarea name="notes" class="w-full border rounded-lg px-4 py-2"></textarea>
                     </div>
 
                     <div>
-                        <label class="block mb-1 font-semibold">Proof of Payment</label>
-                        <input type="file" name="proof" class="w-full border rounded-lg px-4 py-2">
+                        <label class="font-semibold">Proof of Payment</label>
+                        <input type="file" name="proof"
+                            class="w-full border rounded-lg px-4 py-2 @error('proof') border-red-500 @enderror">
+
+                        @error('proof')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    <button type="submit"
-                        class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-800 transition">
+                    <button class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-800">
                         Confirm
                     </button>
+
                 </form>
             </div>
+
         </div>
     </div>
 
-    {{-- Scripts --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="{{ asset('/assets/scripts/global.js') }}"></script>
+    {{-- error message --}}
+    @if ($errors->any())
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                let firstErrorField = document.querySelector('.border-red-500');
+                if (firstErrorField) {
+                    firstErrorField.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                    firstErrorField.focus();
+                }
+            });
+        </script>
+    @endif
+
+    <!-- SCRIPTS PERBAIKAN (REPLACE ALL EXISTING SCRIPT) -->
     <script>
+        // Safe parse helpers
+        const asFloat = (v) => {
+            const n = parseFloat(v);
+            return Number.isFinite(n) ? n : 0;
+        };
+        const asInt = (v) => {
+            const n = parseInt(v);
+            return Number.isFinite(n) ? n : 0;
+        };
+
+        /**
+         * HITUNG ULANG SUMMARY PAYMENT
+         * berdasarkan price × qty -- sangat defensive (no NaN)
+         */
         function calculatePrice() {
             let subTotal = 0;
-            let tax = 0;
-            let insurance = 0;
-            let deliveryFee = 0;
-            let grandTotal = 0;
-
             document.querySelectorAll('.product-price').forEach(item => {
-                subTotal += parseFloat(item.getAttribute('data-price'));
+                const price = asFloat(item.dataset.price ?? item.getAttribute('data-price'));
+                const qty = asInt(item.dataset.qty ?? item.getAttribute('data-qty'));
+                subTotal += price * qty;
             });
 
-            document.getElementById('checkoutDeliveryFee').textContent = 'Rp ' + deliveryFee.toLocaleString('id');
-            document.getElementById('checkoutSubTotal').textContent = 'Rp ' + subTotal.toLocaleString('id');
+            // update DOM (pakai 0 kalau tidak ada)
+            const elSub = document.getElementById('checkoutSubTotal');
+            const elTax = document.getElementById('checkoutTax');
+            const elIns = document.getElementById('checkoutInsurance');
+            const elDel = document.getElementById('checkoutDeliveryFee');
+            const elGrand = document.getElementById('checkoutGrandTotal');
 
-            tax = (11 / 100) * subTotal;
-            document.getElementById('checkoutTax').textContent = 'Rp ' + tax.toLocaleString('id');
+            if (elSub) elSub.textContent = 'Rp ' + subTotal.toLocaleString('id');
+            if (elDel) elDel.textContent = 'Rp 0';
 
-            insurance = (23 / 100) * subTotal;
-            document.getElementById('checkoutInsurance').textContent = 'Rp ' + insurance.toLocaleString('id');
+            const tax = subTotal * 0.11;
+            const insurance = subTotal * 0.23;
 
-            grandTotal = subTotal + tax + insurance;
-            document.getElementById('checkoutGrandTotal').textContent = 'Rp ' + grandTotal.toLocaleString('id');
+            if (elTax) elTax.textContent = 'Rp ' + tax.toLocaleString('id');
+            if (elIns) elIns.textContent = 'Rp ' + insurance.toLocaleString('id');
+
+            const grand = subTotal + tax + insurance;
+            if (elGrand) elGrand.textContent = 'Rp ' + grand.toLocaleString('id');
         }
 
-        document.addEventListener('DOMContentLoaded', calculatePrice);
+        // run after full load (defensive: wait a tick to let Blade-rendered attrs settle)
+        document.addEventListener("alpine:initialized", () => {
+            setTimeout(() => {
+                calculatePrice();
+            }, 50);
+        });
+
+
+        /**
+         * Alpine component (cartQty)
+         * Defensive: check priceEl existence, update dataset safely, and recalc
+         */
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("cartQty", ({
+                id,
+                quantity,
+                max,
+                updateUrl,
+                token
+            }) => ({
+                // coerce to numbers
+                quantity: Number(quantity ?? 0),
+                max: Number(max ?? 0),
+                isUpdating: false,
+
+                init() {
+                    // --- FIX PENTING (qty awal selalu 0 tanpa ini)
+                    let wrapper = this.$root.closest('[data-cart-item]');
+                    const priceEl = wrapper ? wrapper.querySelector('.product-price') : null;
+
+                    if (priceEl) {
+                        priceEl.dataset.qty = this.quantity;
+                    }
+
+                    calculatePrice();
+                },
+
+                increase() {
+                    if (this.quantity < this.max) {
+                        this.quantity++;
+                        this.updateServer();
+                    }
+                },
+
+                decrease() {
+                    if (this.quantity > 1) {
+                        this.quantity--;
+                        this.updateServer();
+                    }
+                },
+
+                updateServer() {
+                    if (this.isUpdating) return;
+                    this.isUpdating = true;
+
+                    fetch(updateUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": token,
+                                "X-HTTP-Method-Override": "PUT",
+                                "Accept": "application/json",
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
+                            body: JSON.stringify({
+                                quantity: this.quantity
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(() => {
+                            // Temukan product-price element yang berada di dalam blok item cart yang sama
+                            // Kita naik ke ancestor yang jelas: .flex.gap-4.bg-white (wrapper item)
+                            let wrapper = this.$root.closest('[data-cart-item]');
+
+                            const priceEl = wrapper ? wrapper.querySelector('.product-price') :
+                                null;
+
+                            if (priceEl) {
+                                priceEl.dataset.qty = this.quantity;
+                            } else {
+                                // kalau tidak ditemukan, coba cari nearest .product-price di document (defensive)
+                                const anyPrice = document.querySelector('.product-price');
+                                if (anyPrice) anyPrice.dataset.qty = asInt(anyPrice.dataset.qty) ||
+                                    0;
+                            }
+
+                            // recalc
+                            calculatePrice();
+                        })
+                        .catch(err => {
+                            console.error("Error update cart qty:", err);
+                        })
+                        .finally(() => {
+                            this.isUpdating = false;
+                        });
+                }
+            }));
+        });
+
+        /**
+         * OPTIONAL: Watch for DOM changes (add/remove cart rows) and recalc automatically.
+         * Ini berguna kalau kamu menambahkan produk via JS/AJAX.
+         */
+        const cartContainer = document.querySelector('.lg\\:col-span-2 .space-y-4') || document.querySelector('.space-y-4');
+        if (cartContainer) {
+            const mo = new MutationObserver((mutations) => {
+                // recalc saat ada perubahan children
+                calculatePrice();
+            });
+            mo.observe(cartContainer, {
+                childList: true,
+                subtree: true
+            });
+        }
     </script>
+
+
+
 </x-layout-front>
