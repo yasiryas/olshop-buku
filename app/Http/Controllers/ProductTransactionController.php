@@ -147,17 +147,54 @@ class ProductTransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ProductTransaction $product_transaction)
+    public function update(Request $request, $id)
     {
-        //
-        // echo "Gagal";
-        // dd($productTransaction);
-        $product_transaction->update([
-            'is_paid' => true,
-        ]);
+        $transaction = ProductTransaction::with('transactionDetails.product')->findOrFail($id);
 
-        return redirect()->back()->with('success', 'Product Transaction Updated!');
+        DB::beginTransaction();
+
+        try {
+
+            // 1. Cek stok cukup untuk semua item
+            foreach ($transaction->transactionDetails as $detail) {
+                $product = $detail->product;
+
+                $totalIn  = $product->stockMutations()->where('type', 'in')->sum('quantity');
+                $totalOut = $product->stockMutations()->where('type', 'out')->sum('quantity');
+
+                $currentStock = $totalIn - $totalOut;
+
+                if ($currentStock < $detail->qty) {
+                    throw new \Exception("Stok produk {$product->name} tidak mencukupi!");
+                }
+            }
+
+            // 2. Kurangi stok → tambah record di stock_mutations
+            foreach ($transaction->transactionDetails as $detail) {
+
+                $detail->product->stockMutations()->create([
+                    'type'        => 'out',
+                    'quantity'    => $detail->qty,
+                    'description' => 'Stock keluar untuk order #' . $transaction->id,
+                ]);
+            }
+
+            // 3. Set transaksi menjadi paid
+            $transaction->update(['is_paid' => true]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('product_transactions.show', $transaction->id)
+                ->with('success', 'Order berhasil di-approve & stok berhasil dikurangi!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
+
+
+
 
     /**
      * Remove the specified resource from storage.

@@ -38,7 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('carts', CartController::class)->middleware('role:buyer|penulis');
     Route::post('/cart/add/{product_id}', [CartController::class, 'store'])->middleware('role:buyer')->name('carts.add');
 
-    Route::resource('product_transactions', ProductTransactionController::class)->middleware('role:owner|buyer|admin');
+    Route::resource('product_transactions', ProductTransactionController::class);
 
     // Route::resource('articles', ArticleController::class)->middleware('role:owner|admin|penulis');
 

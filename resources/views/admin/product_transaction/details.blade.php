@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-row w-full justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Details') }}
+                {{ Auth::user()->hasRole('owner|admin') ? __('Details') : __('Details') }}
             </h2>
 
         </div>
@@ -61,7 +61,7 @@
                                     </div>
                                 </div>
                                 <p class="text-base text-slate-500">
-                                    {{ $list_product->qty }}
+                                    {{ $list_product->qty }} Pcs
                                 </p>
                             </div>
                         @empty
@@ -129,9 +129,9 @@
                             WhatsApp Customer
                         </a>
                     @else
-                        <form method="POST" action="{{ route('product_transactions.update', $product_transaction) }}">
+                        <form method="POST" action="{{ route('product_transactions.update', $product_transaction->id) }}">
                             @csrf
-                            @method('PUT')
+                            @method('PATCH')
                             <button type="submit"
                                 class="font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
                                 Approve Order
@@ -146,4 +146,5 @@
                 @endrole
             </div>
         </div>
+    </div>
 </x-app-layout>

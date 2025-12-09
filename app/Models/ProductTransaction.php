@@ -9,7 +9,17 @@ class ProductTransaction extends Model
 {
     //
     use HasFactory;
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'user_id',
+        'total_amount',
+        'is_paid',
+        'address',
+        'city',
+        'post_code',
+        'phone_number',
+        'notes',
+        'proof',
+    ];
 
     public function user()
     {
@@ -23,6 +33,6 @@ class ProductTransaction extends Model
 
     public function transactionDetails()
     {
-        return $this->hasMany(TransactionDetail::class);
+        return $this->hasMany(TransactionDetail::class, 'product_transaction_id');
     }
 }
