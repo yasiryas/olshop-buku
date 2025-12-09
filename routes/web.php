@@ -40,8 +40,6 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('product_transactions', ProductTransactionController::class);
 
-    // Route::resource('articles', ArticleController::class)->middleware('role:owner|admin|penulis');
-
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('products', ProductController::class)->middleware('role:owner|admin');
         Route::resource('categories', CategoryController::class)->middleware('role:owner|admin');
@@ -50,6 +48,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
         Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
+        Route::get('/history', [App\Http\Controllers\StockController::class, 'allHistory'])->name('allHistory');
         Route::get('/{product}', [App\Http\Controllers\StockController::class, 'show'])->name('show');
         Route::post('/{product}/update', [App\Http\Controllers\StockController::class, 'update'])->name('update');
         Route::get('/{product}/history', [App\Http\Controllers\StockController::class, 'history'])->name('history');

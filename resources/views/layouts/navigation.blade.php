@@ -18,24 +18,24 @@
                 </div>
                 @role('owner|admin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.index')">
+                        <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
                             {{ __('Manage Products') }}
                         </x-nav-link>
                     </div>
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.index')">
+                        <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                             {{ __('Manage Categories') }}
                         </x-nav-link>
                     </div>
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('stocks.index')" :active="request()->routeIs('stocks.index')">
+                        <x-nav-link :href="route('stocks.index')" :active="request()->routeIs('stocks.*')">
                             {{ __('Manage Logistics') }}
                         </x-nav-link>
                     </div>
                 @endrole
                 @role('penulis|owner')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.index')">
+                        <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')">
                             {{ __('Manage Article') }}
                         </x-nav-link>
                     </div>

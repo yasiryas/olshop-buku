@@ -4,7 +4,10 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ Auth::user()->hasRole('owner|admin') ? __('Details') : __('Details') }}
             </h2>
-
+            <a href="{{ route('product_transactions.index') }}"
+                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
+                All Orders
+            </a>
         </div>
     </x-slot>
 
@@ -93,7 +96,8 @@
                                 <p class="text-base text-slate-500">
                                     Post Code
                                 </p>
-                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->post_code }}</h3>
+                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->post_code }}
+                                </h3>
                             </div>
                         </div>
                         <div class="item-card flex flex-row justify-between items-center">
