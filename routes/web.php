@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductTransactionController;
+use App\Http\Controllers\StockController;
 
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
 Route::get('/search', [FrontController::class, 'search'])->name('front.search');
@@ -47,11 +48,11 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
-        Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
-        Route::get('/history', [App\Http\Controllers\StockController::class, 'allHistory'])->name('allHistory');
-        Route::get('/{product}', [App\Http\Controllers\StockController::class, 'show'])->name('show');
-        Route::post('/{product}/update', [App\Http\Controllers\StockController::class, 'update'])->name('update');
-        Route::get('/{product}/history', [App\Http\Controllers\StockController::class, 'history'])->name('history');
+        Route::get('/', [StockController::class, 'index'])->name('index');
+        Route::get('/history', [StockController::class, 'allHistory'])->name('allHistory');
+        Route::get('/{product}', [StockController::class, 'show'])->name('show');
+        Route::post('/{product}/update', [StockController::class, 'update'])->name('update');
+        Route::get('/{product}/history', [StockController::class, 'history'])->name('history');
     });
 });
 
