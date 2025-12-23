@@ -27,8 +27,7 @@
                             <div>
                                 <h3 class="text-xl font-bold text-indigo-900">{{ $product->name }}</h3>
                                 <p class="text-base text-slate-500">
-                                    Rp. {{ $product->price }}
-                                </p>
+                                    Rp. {{ number_format($product->price) }} </p>
                             </div>
                         </div>
                         <p class="text-base text-slate-500">

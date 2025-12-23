@@ -21,17 +21,36 @@ class ProductTransactionController extends Controller
      */
 
     use HasFactory, Notifiable, HasRoles;
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $search = $request->input('search');
         $user = Auth::user();
+
+        // Base query
+        $query = ProductTransaction::query();
+
+        // Role-based filtering
         if ($user->hasRole('buyer')) {
-            $product_transactions = $user->productTransactions()->orderBy('created_at', 'desc')->get();
-            return view('front.product_transaction.index', ['product_transactions' => $product_transactions]);
-        } elseif ($user->hasRole('admin|owner')) {
-            $product_transactions = ProductTransaction::orderBy('created_at', 'desc')->get();
-            return view('admin.product_transaction.index', ['product_transactions' => $product_transactions]);
+            $query->where('user_id', $user->id);
+            $view = 'front.product_transaction.index';
+        } elseif ($user->hasAnyRole(['admin', 'owner'])) {
+            $view = 'admin.product_transaction.index';
+        } else {
+            abort(403);
         }
+
+        // Search
+        $query->when($search, function ($q) use ($search) {
+            $q->where('id', 'like', "%{$search}%");
+        });
+
+        // Pagination
+        $product_transactions = $query
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view($view, compact('product_transactions', 'search'));
     }
 
     /**

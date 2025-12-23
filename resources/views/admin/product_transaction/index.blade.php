@@ -4,7 +4,12 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ Auth::user()->hasRole('owner') ? __('Orders') : __('Orders') }}
             </h2>
-
+            <form action="{{ route('product_transactions.index') }}">
+                <input type="text" name="search" placeholder="Search orders..." value="{{ request('search') }}"
+                    class="border-2 text-slate-400 rounded-full px-3 py-2">
+                <button type="submit" class="px-4 py-2 bg-indigo-700 text-white rounded-full"><i
+                        class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
         </div>
     </x-slot>
 
@@ -34,7 +39,8 @@
                                 <p class="text-base text-slate-500">
                                     Total Transaksi
                                 </p>
-                                <h3 class="text-xl font-bold text-indigo-900">Rp. {{ $transaction->total_amount }}
+                                <h3 class="text-xl font-bold text-indigo-900">Rp.
+                                    {{ number_format($transaction->total_amount) }}
                                 </h3>
                             </div>
                         </div>
@@ -59,6 +65,9 @@
                 @empty
                     <p>Ups, transaksi terbaru belum tersedia!</p>
                 @endforelse
+            </div>
+            <div class="mt-5">
+                {{ $product_transactions->appends(request()->query())->links() }}
             </div>
         </div>
 </x-app-layout>
