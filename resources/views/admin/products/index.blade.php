@@ -7,7 +7,7 @@
             </h2>
             <form method="GET" action="{{ route('admin.products.index') }}" class="flex gap-x-3">
                 <input type="text" name="search" placeholder="Search products..." value="{{ request('search') }}"
-                    class="border text-slate-500 rounded-full px-3 py-2">
+                    class="border-2 text-slate-400 rounded-full px-3 py-2">
                 <button type="submit" class="px-4 py-2 bg-indigo-700 text-white rounded-full"><i
                         class="fa-solid fa-magnifying-glass"></i></button>
             </form>
@@ -51,7 +51,7 @@
                 @endforelse
             </div>
             <div class="mt-5">
-                {{ $products->appends(request()->query())->links('vendor.pagination.tailwind') }}
+                {{ $products->appends(request()->query())->links() }}
             </div>
         </div>
 </x-app-layout>

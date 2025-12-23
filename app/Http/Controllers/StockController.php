@@ -14,10 +14,18 @@ class StockController extends Controller
      * @return \Illuminate\Http\Response
      */
     /*******  084cfd07-3ae8-430c-bed2-84a17464733a  *******/
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
-        return view('admin.stocks.index', compact('products'));
+        $search = $request->input('search');
+
+        $products = Product::when($search, function ($query, $search) {
+            $query->where('name', 'like', '%' . $search . '%');
+        })
+            ->orderBy('id', 'DESC')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.stocks.index', ['products' => $products, 'search' => $search]);
     }
 
     public function show(Product $product)

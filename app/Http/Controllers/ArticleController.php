@@ -10,10 +10,18 @@ use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $articles = Article::with(['user', 'category'])->latest()->get();
-        return view('admin.articles.index', compact('articles'));
+        $search = $request->input('search');
+
+        $articles = Article::when($search, function ($query, $search) {
+            $query->where('title', 'like', '%' . $search . '%');
+        })
+            ->orderBy('id', 'DESC')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.articles.index', ['articles' => $articles, 'search' => $search]);
     }
 
     public function create()

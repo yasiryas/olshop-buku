@@ -26,7 +26,7 @@ class ProductController extends Controller
                 $query->where('name', 'like', '%' . $search . '%');
             })
             ->orderBy('id', 'DESC')
-            ->paginate(5)
+            ->paginate(10)
             ->withQueryString();
 
         return view('admin.products.index', ['products' => $products, 'search' => $search]);

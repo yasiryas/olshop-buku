@@ -5,7 +5,14 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Manage Stocks') }}
             </h2>
-            <a href="{{ route('stocks.allHistory') }}" class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
+            <form action="{{ route('stocks.index') }}">
+                <input type="text" name="search" placeholder="Search stocks..." value="{{ request('search') }}"
+                    class="border-2 text-slate-400 rounded-full px-3 py-2">
+                <button type="submit" class="px-4 py-2 bg-indigo-700 text-white rounded-full"><i
+                        class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
+            <a href="{{ route('stocks.allHistory') }}"
+                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
                 History Stock
             </a>
         </div>
@@ -56,6 +63,9 @@
                             Ups, belum ada produk. <b>Coba tambahkan produk terlebih dahulu!</b>
                         </p>
                     @endforelse
+                </div>
+                <div class="mt-5">
+                    {{ $products->appends(request()->query())->links() }}
                 </div>
             </div>
         </div>

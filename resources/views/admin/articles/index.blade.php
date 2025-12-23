@@ -4,6 +4,12 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Manage Articles') }}
             </h2>
+            <form method="GET" action="{{ route('admin.articles.index') }}">
+                <input type="text" name="search" placeholder="Search articles..." value="{{ request('search') }}"
+                    class="border-2 text-slate-400 rounded-full px-3 py-2">
+                <button type="submit" class="px-4 py-2 bg-indigo-700 text-white rounded-full"><i
+                        class="fa-solid fa-magnifying-glass"></i></button>
+            </form>
             <a href="{{ route('admin.articles.create') }}"
                 class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">Add article</a>
         </div>
@@ -43,6 +49,9 @@
                 @empty
                     <p>Ups, belum ada artikel nih!</p>
                 @endforelse
+            </div>
+            <div class="mt-5">
+                {{ $articles->appends(request()->query())->links() }}
             </div>
         </div>
     </div>
