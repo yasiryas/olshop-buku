@@ -35,7 +35,45 @@
         <main>
             {{ $slot }}
         </main>
+
+        <!-- Session Messages -->
+        @if (session('success'))
+            <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg"
+                id="success-message">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg"
+                id="error-message">
+                {{ session('error') }}
+            </div>
+        @endif
     </div>
+
+    <script>
+        // Auto-hide messages after 3 seconds
+        setTimeout(function() {
+            const successMsg = document.getElementById('success-message');
+            const errorMsg = document.getElementById('error-message');
+            if (successMsg) successMsg.style.display = 'none';
+            if (errorMsg) errorMsg.style.display = 'none';
+        }, 3000);
+
+        // Handle Approve Order form submission
+        const approveForm = document.getElementById('approveForm');
+        if (approveForm) {
+            approveForm.addEventListener('submit', function(e) {
+                const btn = document.getElementById('approveBtn');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                    btn.classList.add('opacity-50');
+                }
+            });
+        }
+    </script>
     {{ $script ?? '' }}
 </body>
 

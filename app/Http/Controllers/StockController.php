@@ -7,13 +7,11 @@ use Illuminate\Http\Request;
 
 class StockController extends Controller
 {
-    /*************  ✨ Windsurf Command ⭐  *************/
     /**
      * Show a list of all products.
      *
      * @return \Illuminate\Http\Response
      */
-    /*******  084cfd07-3ae8-430c-bed2-84a17464733a  *******/
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -56,9 +54,20 @@ class StockController extends Controller
         return view('admin.stocks.history', compact('product', 'mutations'));
     }
 
-    public function allHistory()
+    public function allHistory(Request $request)
     {
-        $mutations = \App\Models\StockMutation::with('product')->orderBy('created_at', 'desc')->get();
-        return view('admin.stocks.all_history', compact('mutations'));
+        $search = $request->input('search');
+
+        $mutations = \App\Models\StockMutation::with('product')
+            ->when($search, function ($query, $search) {
+                $query->whereHas('product', function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.stocks.all_history', compact('mutations', 'search'));
     }
 }

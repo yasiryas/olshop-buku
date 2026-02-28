@@ -33,7 +33,8 @@
                                     <p class="text-base text-slate-500">
                                         Total Transaksi
                                     </p>
-                                    <h3 class="text-xl font-bold text-indigo-900">Rp. {{ $transaction->total_amount }}
+                                    <h3 class="text-xl font-bold text-indigo-900">Rp.
+                                        {{ number_format($transaction->total_amount) }}
                                     </h3>
                                 </div>
                             </div>

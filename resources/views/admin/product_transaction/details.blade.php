@@ -33,11 +33,11 @@
                             {{ $product_transaction->created_at->format('d F Y') }}</h3>
                     </div>
                     @if ($product_transaction->is_paid)
-                        <span class="font-bold py-1 px-5 rounded-full w-fit text-white bg-green-500">
+                        <span class="font-bold py-1 px-5 rounded-full text-white bg-green-500">
                             <p class="text-white font-bold text-sm">Success</p>
                         </span>
                     @else
-                        <span class="font-bold py-1 px-5 rounded-full w-fit text-white bg-orange-500">
+                        <span class="font-bold py-1 px-5 rounded-full text-white bg-orange-500">
                             <p class="text-white font-bold text-sm">Pending</p>
                         </span>
                     @endif
@@ -133,10 +133,11 @@
                             WhatsApp Customer
                         </a>
                     @else
-                        <form method="POST" action="{{ route('product_transactions.update', $product_transaction->id) }}">
+                        <form method="POST" action="{{ route('product_transactions.update', $product_transaction->id) }}"
+                            id="approveForm">
                             @csrf
                             @method('PATCH')
-                            <button type="submit"
+                            <button type="submit" id="approveBtn"
                                 class="font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
                                 Approve Order
                             </button>

@@ -15,6 +15,12 @@
     <script src="{{ asset('assets/js/script.js') }}" defer></script>
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
 </head>
 
 <body class="bg-white">

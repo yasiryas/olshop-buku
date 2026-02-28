@@ -5,9 +5,18 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Manage Stocks') }}
             </h2>
-            <a href="{{ route('stocks.index') }}" class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
-                Stock Mutations
-            </a>
+            <div class="flex gap-x-3">
+                <form method="GET" action="{{ route('stocks.allHistory') }}" class="flex gap-x-3">
+                    <input type="text" name="search" placeholder="Search by product name..."
+                        value="{{ request('search') }}" class="border-2 text-slate-400 rounded-full px-3 py-2">
+                    <button type="submit" class="px-4 py-2 bg-indigo-700 text-white rounded-full">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+                <a href="{{ route('stocks.index') }}" class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
+                    Stock Mutations
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -20,9 +29,6 @@
                             <div class="flex flex-row items-center gap-x-3 w-64">
                                 <div>
                                     <h3 class="text-lg font-bold text-indigo-900">{{ $m->product->name }}</h3>
-                                    {{-- <p class="text-sm text-slate-500">
-                                        Rp {{ number_format($m->product->price) }}
-                                    </p> --}}
                                 </div>
                             </div>
                             <p class="w-40 text-base text-slate-500">
@@ -52,6 +58,9 @@
                             Ups, belum ada history stock.
                         </p>
                     @endforelse
+                </div>
+                <div class="mt-5">
+                    {{ $mutations->appends(request()->query())->links() }}
                 </div>
             </div>
         </div>

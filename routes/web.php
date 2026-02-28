@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductTransactionController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
 Route::get('/search', [FrontController::class, 'search'])->name('front.search');
@@ -25,9 +26,7 @@ Route::get('/search-products', [FrontController::class, 'searchProduct'])->name(
 Route::get('/search-articles', [FrontController::class, 'searchArticle'])
     ->name('front.search.article.ajax');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
