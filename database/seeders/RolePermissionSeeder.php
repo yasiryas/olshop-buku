@@ -8,43 +8,47 @@ use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
+    protected const DEFAULT_PASSWORD = '12345678';
+
+    protected function seedRole(string $name): Role
+    {
+        return Role::firstOrCreate(['name' => $name]);
+    }
+
+    protected function seedUser(array $data): User
+    {
+        $user = User::updateOrCreate(
+            ['email' => $data['email']],
+            [
+                'name' => $data['name'],
+                'password' => bcrypt($data['password'] ?? self::DEFAULT_PASSWORD),
+            ]
+        );
+        $user->syncRoles([$data['role']]);
+
+        return $user;
+    }
+
     public function run(): void
     {
-        // Buat roles (hindari duplicate)
-        $ownerRole   = Role::firstOrCreate(['name' => 'owner']);
-        $buyerRole   = Role::firstOrCreate(['name' => 'buyer']);
-        $adminRole   = Role::firstOrCreate(['name' => 'admin']);
-        $penulisRole = Role::firstOrCreate(['name' => 'penulis']);
+        $roles = ['owner', 'admin', 'penulis', 'buyer'];
+        $roleModels = [];
+        foreach ($roles as $role) {
+            $roleModels[$role] = $this->seedRole($role);
+        }
 
-        // Buat user default dan assign role
-        $owner = User::updateOrCreate(
-            ['email' => 'owner@mail.com'],
-            ['name' => 'Owner', 'password' => bcrypt('12345678')]
-        );
-        $owner->syncRoles([$ownerRole]); // pastikan hanya role ini
+        $users = [
+            ['name' => 'Owner Wigati', 'email' => 'owner@mail.com', 'role' => 'owner'],
+            ['name' => 'Admin Wigati', 'email' => 'admin@mail.com', 'role' => 'admin'],
+            ['name' => 'Penulis Wigati', 'email' => 'penulis@mail.com', 'role' => 'penulis'],
+            ['name' => 'Buyer Wigati', 'email' => 'buyer@mail.com', 'role' => 'buyer'],
+            ['name' => 'Danang', 'email' => 'danang@mail.com', 'role' => 'buyer'],
+            ['name' => 'Siti Rahma', 'email' => 'rahma@mail.com', 'role' => 'buyer'],
+            ['name' => 'Budi Santoso', 'email' => 'budi@mail.com', 'role' => 'buyer'],
+        ];
 
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@mail.com'],
-            ['name' => 'Admin', 'password' => bcrypt('12345678')]
-        );
-        $admin->syncRoles([$adminRole]); // pastikan role admin
-
-        $buyer = User::updateOrCreate(
-            ['email' => 'buyer@mail.com'],
-            ['name' => 'Buyer', 'password' => bcrypt('12345678')]
-        );
-        $buyer->syncRoles([$buyerRole]);
-
-        $penulis = User::updateOrCreate(
-            ['email' => 'penulis@mail.com'],
-            ['name' => 'Penulis', 'password' => bcrypt('12345678')]
-        );
-        $penulis->syncRoles([$penulisRole]);
-
-        $danang = User::updateOrCreate(
-            ['email' => 'danang@mail.com'],
-            ['name' => 'Danang', 'password' => bcrypt('12345678')]
-        );
-        $danang->syncRoles([$buyerRole]);
+        foreach ($users as $user) {
+            $this->seedUser($user);
+        }
     }
 }

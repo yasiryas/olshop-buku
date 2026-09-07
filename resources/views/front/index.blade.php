@@ -23,12 +23,11 @@
     {{-- Categories Section --}}
     <section class="py-10 bg-gray-200 px-4 md:px-10">
         <div class="container mx-auto">
-            <div id="categoriesSlider"
-                class="relative flex justify-start md:justify-center overflow-x-auto pb-4 md:pb-0">
+            <div id="categoriesSlider" class="flex flex-wrap justify-center gap-3 md:gap-4">
                 @forelse ($categories as $category)
                     <a href="{{ route('front.product.category', $category->id) }}"
-                        class="hover:rotate-6 transition flex-shrink-0">
-                        <div class="inline-flex gap-2.5 items-center py-3 px-3.5 bg-white rounded-xl mr-4">
+                        class="hover:rotate-6 transition">
+                        <div class="inline-flex gap-2.5 items-center py-3 px-3.5 bg-white rounded-xl">
                             <img src="{{ Storage::url($category->icon) }}" class="size-10" alt="">
                             <p class="text-gray-600 font-semibold whitespace-nowrap">
                                 {{ $category->name }}
