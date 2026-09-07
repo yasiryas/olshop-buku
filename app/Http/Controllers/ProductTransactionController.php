@@ -2,35 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\TransactionDetail;
 use App\Models\ProductTransaction;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Traits\HasRoles;
 
 class ProductTransactionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-
-    use HasFactory, Notifiable, HasRoles;
     public function index(Request $request)
     {
         $search = $request->input('search');
         $user = Auth::user();
 
-        // Base query
-        $query = ProductTransaction::query();
+        $query = ProductTransaction::query()->with('user');
 
-        // Role-based filtering
-        if ($user->hasRole('buyer')) {
+        if ($user->hasAnyRole(['buyer', 'penulis'])) {
             $query->where('user_id', $user->id);
             $view = 'front.product_transaction.index';
         } elseif ($user->hasAnyRole(['admin', 'owner'])) {
@@ -60,15 +51,6 @@ class ProductTransactionController extends Controller
     {
         //
     }
-    public function detail()
-    {
-        //
-        if (auth()->user()->hasRole('admin|owner')) {
-            return redirect()->route('admin.product_transaction.details');
-        } elseif (auth()->user()->hasRole('buyer')) {
-            return view('front.product_transaction.details');
-        }
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -76,11 +58,6 @@ class ProductTransactionController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-
-        $cartItems = $user->carts;
-        if ($cartItems->isEmpty()) {
-            return redirect()->back()->with('error', 'Ups, Balum ada produk yang anda masukan ke keranjang!');
-        }
 
         $validated = $request->validate([
             'address' => 'required|string|max:512',
@@ -92,24 +69,19 @@ class ProductTransactionController extends Controller
         ]);
         DB::beginTransaction();
         try {
-            $cartItems = $user->carts;
+            $cartItems = $user->carts()->with('product')->get();
             if ($cartItems->isEmpty()) {
                 throw new \Exception('Your cart is empty');
             }
 
-            $subTotalCent = 0;
-            $deliveryFeeCent = 0 * 100;
-
-            $cartItems = $user->carts;
+            $subTotal = 0;
             foreach ($cartItems as $item) {
-                $subTotalCent += ($item->product->price * $item->quantity) * 100;
+                $subTotal += $item->product->price * $item->quantity;
             }
 
-            $taxCent = (11 / 100) * $subTotalCent;
-            $insuranceCent = (23 / 100) * $subTotalCent;
-            $grandTotalCent = $subTotalCent + $deliveryFeeCent + $taxCent + $insuranceCent;
-
-            $grandTotal = $grandTotalCent / 100;
+            $tax = (11 / 100) * $subTotal;
+            $insurance = (23 / 100) * $subTotal;
+            $grandTotal = $subTotal + $tax + $insurance;
 
             $validated['user_id'] = $user->id;
             $validated['total_amount'] = $grandTotal;
@@ -147,12 +119,15 @@ class ProductTransactionController extends Controller
      */
     public function show(ProductTransaction $productTransaction)
     {
-        $productTransaction = ProductTransaction::with('transactionDetails.product')->find($productTransaction->id);
-        if (auth()->user()->hasRole('admin|owner')) {
+        $productTransaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->find($productTransaction->id);
+
+        if (auth()->user()->hasAnyRole(['admin', 'owner'])) {
             return view('admin.product_transaction.details', ['product_transaction' => $productTransaction]);
-        } elseif (auth()->user()->hasRole('buyer')) {
+        } elseif (auth()->user()->hasAnyRole(['buyer', 'penulis'])) {
             return view('front.product_transaction.details', ['product_transaction' => $productTransaction]);
         }
+
+        abort(403);
     }
 
     /**
@@ -168,29 +143,24 @@ class ProductTransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $transaction = ProductTransaction::with('transactionDetails.product')->findOrFail($id);
+        abort_unless(auth()->user()->hasAnyRole(['admin', 'owner']), 403);
+
+        $transaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->findOrFail($id);
+
+        if ($transaction->is_paid) {
+            return redirect()->back()->with('error', 'Order sudah di-approve, stok tidak boleh dikurangi dua kali!');
+        }
 
         DB::beginTransaction();
 
         try {
-
-            // 1. Cek stok cukup untuk semua item
             foreach ($transaction->transactionDetails as $detail) {
-                $product = $detail->product;
-
-                $totalIn  = $product->stockMutations()->where('type', 'in')->sum('quantity');
-                $totalOut = $product->stockMutations()->where('type', 'out')->sum('quantity');
-
-                $currentStock = $totalIn - $totalOut;
-
-                if ($currentStock < $detail->qty) {
-                    throw new \Exception("Stok produk {$product->name} tidak mencukupi!");
+                if ($detail->product->stock < $detail->qty) {
+                    throw new \Exception("Stok produk {$detail->product->name} tidak mencukupi!");
                 }
             }
 
-            // 2. Kurangi stok → tambah record di stock_mutations
             foreach ($transaction->transactionDetails as $detail) {
-
                 $detail->product->stockMutations()->create([
                     'type'        => 'out',
                     'quantity'    => $detail->qty,
@@ -198,7 +168,6 @@ class ProductTransactionController extends Controller
                 ]);
             }
 
-            // 3. Set transaksi menjadi paid
             $transaction->update(['is_paid' => true]);
 
             DB::commit();

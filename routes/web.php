@@ -19,12 +19,10 @@ Route::get('/product/{product:slug}', [FrontController::class, 'productDetails']
 Route::get('/product', [FrontController::class, 'product'])->name('front.product');
 Route::get('/blog', [FrontController::class, 'blog'])->name('front.blog');
 Route::get('/article/{article:slug}', [FrontController::class, 'article'])->name('front.article.details');
-Route::get('/search/article', [FrontController::class, 'searchArticle'])->name('front.search.article');
-Route::get('/abut', [FrontController::class, 'about'])->name('front.about');
+Route::get('/about', [FrontController::class, 'about'])->name('front.about');
 Route::get('/contact', [FrontController::class, 'contact'])->name('front.contact');
 Route::get('/search-products', [FrontController::class, 'searchProduct'])->name('front.search.ajax');
-Route::get('/search-articles', [FrontController::class, 'searchArticle'])
-    ->name('front.search.article.ajax');
+Route::get('/search/articles', [FrontController::class, 'searchArticle'])->name('front.search.article.ajax');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -34,9 +32,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Route::resource('carts', CartController::class)->middleware('role:buyer');
-    // Route::post('/cart/add/{product_id}', [CartController::class, 'store'])->middleware('role:buyer')->name('carts.store');
-    Route::resource('carts', CartController::class)->middleware('role:buyer|penulis');
-    Route::post('/cart/add/{product_id}', [CartController::class, 'store'])->middleware('role:buyer')->name('carts.add');
+    Route::resource('carts', CartController::class)->middleware('role:buyer|penulis')->except(['store', 'create', 'edit']);
+    Route::post('/cart/add/{product_id}', [CartController::class, 'store'])
+        ->middleware('role:buyer|penulis')
+        ->name('carts.add');
 
     Route::resource('product_transactions', ProductTransactionController::class);
 
@@ -49,7 +48,6 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
         Route::get('/', [StockController::class, 'index'])->name('index');
         Route::get('/history', [StockController::class, 'allHistory'])->name('allHistory');
-        Route::get('/{product}', [StockController::class, 'show'])->name('show');
         Route::post('/{product}/update', [StockController::class, 'update'])->name('update');
         Route::get('/{product}/history', [StockController::class, 'history'])->name('history');
     });

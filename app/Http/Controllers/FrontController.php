@@ -14,7 +14,7 @@ class FrontController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $products = Product::with('category')->orderBy('id', 'DESC')->take(8)->get();
+        $products = Product::with('category')->withStock()->orderBy('id', 'DESC')->take(8)->get();
         $categories = Category::all();
         $articles = Article::with(['user', 'category'])->latest()->take(4)->get();
         return view('front.index', [
@@ -28,14 +28,12 @@ class FrontController extends Controller
     public function product()
     {
         $user = Auth::user();
-        $products = Product::with('category')->orderBy('id', 'DESC')->get();
+        $products = Product::with('category')->withStock()->orderBy('id', 'DESC')->get();
         $categories = Category::all();
-        $articles = Article::with(['user', 'category'])->latest()->get();
         return view('front.product', [
             'products' => $products,
             'categories' => $categories,
             'user' => $user,
-            'articles' => $articles,
         ]);
     }
 
@@ -68,14 +66,6 @@ class FrontController extends Controller
     }
 
 
-
-    public function details(Product $product)
-    {
-        $product->load('category');
-        return view('front.details', [
-            'product' => $product,
-        ]);
-    }
 
     public function search(Request $request)
     {
@@ -110,32 +100,13 @@ class FrontController extends Controller
 
     public function article(Article $article)
     {
-        $article->load('category');
+        $article->load(['category', 'user']);
         $articles = Article::with(['user', 'category'])->latest()->take(4)->get();
         return view('front.article', [
             'article' => $article,
             'articles' => $articles
         ]);
     }
-
-    public function articleDetails(Article $slug)
-    {
-        // Cari artikel berdasarkan slug
-        $article = Article::with('user')->where('slug', $slug)->firstOrFail();
-
-        // Ambil artikel terbaru selain artikel yang sedang dibaca
-        $articles = Article::where('id', '!=', $article->id)
-            ->latest()
-            ->take(8) // ambil 8 artikel terbaru
-            ->get();
-
-        // return view('front.article', compact('article', 'articles'));
-        return view('front.article', [
-            'articles' => $article
-        ]);
-    }
-
-
 
     public function searchArticle(Request $request)
     {

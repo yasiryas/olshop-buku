@@ -71,7 +71,7 @@ class ProductController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.products.index')->with('success', 'Category created successfully.');
+            return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
@@ -143,7 +143,7 @@ class ProductController extends Controller
         //
         try {
             $product->delete();
-            return redirect()->route('admin.products.index')->with('success', 'Category deleted successfully.');
+            return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([

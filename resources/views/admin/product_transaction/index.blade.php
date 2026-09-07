@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-row w-full justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ Auth::user()->hasRole('owner') ? __('Orders') : __('Orders') }}
+                {{ __('Orders') }}
             </h2>
             <form action="{{ route('product_transactions.index') }}">
                 <input type="text" name="search" placeholder="Search orders..." value="{{ request('search') }}"

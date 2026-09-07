@@ -16,19 +16,16 @@ class StockController extends Controller
     {
         $search = $request->input('search');
 
-        $products = Product::when($search, function ($query, $search) {
-            $query->where('name', 'like', '%' . $search . '%');
-        })
+        $products = Product::with('category')
+            ->withStock()
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
             ->orderBy('id', 'DESC')
             ->paginate(10)
             ->withQueryString();
 
         return view('admin.stocks.index', ['products' => $products, 'search' => $search]);
-    }
-
-    public function show(Product $product)
-    {
-        return view('stocks.show', compact('product'));
     }
 
     public function update(Request $request, Product $product)

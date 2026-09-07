@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\ProductTransaction;
 use App\Models\Article;
 
@@ -39,7 +38,7 @@ class DashboardController extends Controller
             return view('dashboard', compact('myOrders', 'totalSpent'));
         } else {
             // Writer/Author: Get their articles
-            $articles = Article::where('user_id', $user->id)->latest()->take(10)->get();
+            $articles = Article::with('category')->where('user_id', $user->id)->latest()->take(10)->get();
             $totalArticles = Article::where('user_id', $user->id)->count();
 
             return view('dashboard', compact('articles', 'totalArticles'));

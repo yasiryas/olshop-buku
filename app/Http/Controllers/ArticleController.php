@@ -16,9 +16,10 @@ class ArticleController extends Controller
     {
         $search = $request->input('search');
 
-        $articles = Article::when($search, function ($query, $search) {
-            $query->where('title', 'like', '%' . $search . '%');
-        })
+        $articles = Article::with(['user', 'category'])
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', '%' . $search . '%');
+            })
             ->orderBy('id', 'DESC')
             ->paginate(10)
             ->withQueryString();

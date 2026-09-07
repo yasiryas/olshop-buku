@@ -109,7 +109,7 @@ class CategoryController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
+            return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([

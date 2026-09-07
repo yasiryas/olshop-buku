@@ -22,7 +22,7 @@
 
             <div class="space-y-4">
 
-                @forelse ($my_carts as $cart)
+                @forelse ($carts as $cart)
                     <div class="flex gap-4 bg-white rounded-xl p-4 shadow-sm" data-cart-item>
 
                         {{-- LEFT: IMAGE --}}
