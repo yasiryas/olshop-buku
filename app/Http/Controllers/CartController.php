@@ -78,6 +78,10 @@ class CartController extends Controller
      */
     public function update(Request $request, Cart $cart)
     {
+        abort_unless($cart->user_id === Auth::id(), 403);
+
+        $cart->load('product');
+
         $request->validate([
             'quantity' => 'required|numeric|min:1|max:' . $cart->product->stock,
         ]);
@@ -99,6 +103,8 @@ class CartController extends Controller
      */
     public function destroy(Cart $cart)
     {
+        abort_unless($cart->user_id === Auth::id(), 403);
+
         $cart->delete();
 
         return redirect()->route('carts.index');

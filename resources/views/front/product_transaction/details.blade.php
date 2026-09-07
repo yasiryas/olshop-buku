@@ -120,27 +120,8 @@
                             class="w-[300px] bg-white-500 h-[400px] ">
                     </div>
                 </div>
-                <hr class="my-3">
-                @role('owner')
-                    @if ($product_transaction->is_paid)
-                        <a href="#"
-                            class="w-fit font-bold bg-green-500 text-white py-3 px-5 rounded-full hover:bg-green-900">
-                            WhatsApp Customer
-                        </a>
-                    @else
-                        <form method="POST" action="{{ route('product_transactions.update', $product_transaction) }}">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit"
-                                class="font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
-                                Approve Order
-                            </button>
-                        </form>
-                    @endif
-                @endrole
-                @role('buyer')
-                    @role('buyer')
-                        <a href="https://wa.me/6285713878266?text=Halo Admin, saya ingin konfirmasi pesanan dengan detail berikut:%0A
+<hr class="my-3">
+                <a href="https://wa.me/6285713878266?text=Halo Admin, saya ingin konfirmasi pesanan dengan detail berikut:%0A
     - Total Transaksi: Rp {{ number_format($product_transaction->total_amount) }}%0A
     - Tanggal: {{ $product_transaction->created_at->format('d F Y') }}%0A
     - Alamat: {{ $product_transaction->address }}, {{ $product_transaction->city }}, {{ $product_transaction->post_code }}%0A
@@ -150,12 +131,11 @@
     @foreach ($product_transaction->transactionDetails as $list_product)
         * {{ $list_product->product->name }} (Qty: {{ $list_product->qty }}) - Rp {{ number_format($list_product->product->price) }}%0A @endforeach
     Terima kasih."
-                            target="_blank"
-                            class="w-fit font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
-                            Contact Admin via WhatsApp
-                        </a>
-                    @endrole
-                @endrole
+                        target="_blank"
+                        class="w-fit font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
+                        Contact Admin via WhatsApp
+                    </a>
             </div>
         </div>
+    </div>
 </x-layout-front>

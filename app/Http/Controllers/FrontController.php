@@ -50,11 +50,10 @@ class FrontController extends Controller
 
     public function productDetails(Product $product)
     {
-        // Produk yang sedang dilihat sudah tersedia di $product (Route Model Binding)
-        $product->load('category'); // load relasi user
+        $product = Product::with('category')->withStock()->findOrFail($product->id);
 
         // Ambil produk terbaru selain produk yang sedang dibaca
-        $products = Product::where('id', '!=', $product->id)
+        $products = Product::with('category')->where('id', '!=', $product->id)
             ->latest()
             ->take(4)
             ->get();
@@ -66,11 +65,10 @@ class FrontController extends Controller
     }
 
 
-
     public function search(Request $request)
     {
         $keyword = $request->input('search');
-        $products = Product::where('name', 'LIKE', '%' . $keyword . '%')->get();
+        $products = Product::with('category')->withStock()->where('name', 'LIKE', '%' . $keyword . '%')->get();
 
         return view('front.search', [
             'products' => $products,
@@ -80,9 +78,7 @@ class FrontController extends Controller
 
     public function category(Category $category)
     {
-        $products = Product::where('category_id', $category->id)->with('category')->get();
-        // $category->load('category');
-        // $products = Product::with('category')->get();
+        $products = Product::where('category_id', $category->id)->with('category')->withStock()->get();
 
         return view('front.category', [
             'products' => $products,

@@ -119,11 +119,19 @@ class ProductTransactionController extends Controller
      */
     public function show(ProductTransaction $productTransaction)
     {
+        $user = auth()->user();
+
+        if ($user->hasAnyRole(['buyer', 'penulis']) && $productTransaction->user_id !== $user->id) {
+            abort(403);
+        }
+
         $productTransaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->find($productTransaction->id);
 
-        if (auth()->user()->hasAnyRole(['admin', 'owner'])) {
+        if ($user->hasAnyRole(['admin', 'owner'])) {
             return view('admin.product_transaction.details', ['product_transaction' => $productTransaction]);
-        } elseif (auth()->user()->hasAnyRole(['buyer', 'penulis'])) {
+        }
+
+        if ($user->hasAnyRole(['buyer', 'penulis'])) {
             return view('front.product_transaction.details', ['product_transaction' => $productTransaction]);
         }
 

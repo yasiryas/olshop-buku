@@ -14,7 +14,6 @@ use App\Http\Controllers\DashboardController;
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
 Route::get('/search', [FrontController::class, 'search'])->name('front.search');
 Route::get('/category/{category:id}', [FrontController::class, 'category'])->name('front.product.category');
-// Route::get('/details/{product:slug}', [FrontController::class, 'details'])->name('front.product.details');
 Route::get('/product/{product:slug}', [FrontController::class, 'productDetails'])->name('front.product.details');
 Route::get('/product', [FrontController::class, 'product'])->name('front.product');
 Route::get('/blog', [FrontController::class, 'blog'])->name('front.blog');
