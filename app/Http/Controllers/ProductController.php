@@ -50,11 +50,12 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         //
+        $request->merge(['price' => (int) str_replace('.', '', $request->price)]);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'about' => 'required|string',
             'category_id' => 'required|integer',
-            'price' => 'required|integer',
+            'price' => 'required|integer|min:1',
             'photo' => 'required|image|mimes:jpeg,png,jpg,svg',
         ]);
 
@@ -104,6 +105,9 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         //
+        if ($request->has('price')) {
+            $request->merge(['price' => (int) str_replace('.', '', $request->price)]);
+        }
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'about' => 'sometimes|string',

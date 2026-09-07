@@ -40,5 +40,11 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'Penulis', 'password' => bcrypt('12345678')]
         );
         $penulis->syncRoles([$penulisRole]);
+
+        $danang = User::updateOrCreate(
+            ['email' => 'danang@mail.com'],
+            ['name' => 'Danang', 'password' => bcrypt('12345678')]
+        );
+        $danang->syncRoles([$buyerRole]);
     }
 }

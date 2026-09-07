@@ -35,8 +35,9 @@
 
                         <!-- Price -->
                         <div class="mt-4">
-                            <x-input-label for="price" :value="__('Price')" />
-                            <x-text-input id="price" class="block mt-1 w-full" type="number" name="price"
+                            <x-input-label for="price" :value="__('Price (Rp)')" />
+                            <x-text-input id="price" class="block mt-1 w-full" type="text" name="price"
+                                placeholder="Contoh: 50.000"
                                 :value="old('price')" required autofocus autocomplete="price" />
                             <x-input-error :messages="$errors->get('price')" class="mt-2" />
                         </div>
@@ -80,4 +81,12 @@
             </div>
         </div>
     </div>
+    <script>
+        const priceInput = document.getElementById('price');
+        priceInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            e.target.value = value;
+        });
+    </script>
 </x-app-layout>

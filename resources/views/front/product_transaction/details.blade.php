@@ -55,7 +55,7 @@
                                             {{ $list_product->product->name }}
                                         </h3>
                                         <p class="text-base text-slate-500">
-                                            Rp. {{ $list_product->product->price }}
+                                            Rp. {{ number_format($list_product->product->price) }}
                                         </p>
                                     </div>
                                 </div>
