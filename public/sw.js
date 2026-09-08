@@ -1,10 +1,12 @@
-const CACHE_NAME = 'wigati-buku-v2';
+const CACHE_NAME = 'wigati-buku-v3';
+
 const CORE_ASSETS = [
-    '/',
     '/assets/pwa/icon-192.png',
     '/assets/pwa/icon-512.png',
     '/assets/pwa/icon-maskable-512.png'
 ];
+
+const STATIC_ASSET = /\.(css|js|png|jpe?g|webp|svg|ico|gif|woff2?|ttf|otf)$/i;
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -29,21 +31,30 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith('/storage/') || url.origin !== location.origin) {
+    if (url.pathname.startsWith('/storage/') || url.pathname === '/logout' || url.origin !== location.origin) {
         return;
     }
 
-    event.respondWith(
-        caches.match(request).then((cached) => {
-            const fetched = fetch(request).then((response) => {
-                if (response.ok) {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-                }
-                return response;
-            }).catch(() => cached);
+    // HTML pages must always come fresh from the network so session CSRF tokens stay valid.
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request).catch(() => caches.match(request))
+        );
+        return;
+    }
 
-            return cached || fetched;
-        })
-    );
+    // Cache-only static assets.
+    if (STATIC_ASSET.test(url.pathname)) {
+        event.respondWith(
+            caches.match(request).then((cached) =>
+                cached || fetch(request).then((response) => {
+                    if (response.ok) {
+                        const clone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+                    }
+                    return response;
+                })
+            )
+        );
+    }
 });
