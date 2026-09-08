@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\ArticleController;
@@ -10,6 +11,16 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductTransactionController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\DashboardController;
+
+Route::get('/sw.js', fn () => Response::file(resource_path('pwa/sw.js'), [
+    'Content-Type' => 'application/javascript',
+    'Cache-Control' => 'no-cache, no-store, must-revalidate',
+]))->name('sw');
+
+Route::get('/manifest.json', fn () => Response::file(resource_path('pwa/manifest.json'), [
+    'Content-Type' => 'application/manifest+json',
+    'Cache-Control' => 'no-cache, no-store, must-revalidate',
+]))->name('manifest');
 
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
 Route::get('/search', [FrontController::class, 'search'])->name('front.search');
