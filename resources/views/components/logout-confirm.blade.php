@@ -5,7 +5,8 @@
         {{ $slot }}
     </button>
 
-    <div x-show="showLogout" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div x-show="showLogout" x-cloak x-teleport="body"
+        class="fixed inset-0 z-[9999] flex items-center justify-center">
         <div class="absolute inset-0 bg-black bg-opacity-50" @click="showLogout = false"></div>
         <div x-transition class="relative bg-white rounded-2xl shadow-lg p-6 w-80 text-center z-10">
             <div class="text-red-600 text-4xl mb-3">
