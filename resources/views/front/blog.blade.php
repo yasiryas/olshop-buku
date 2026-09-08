@@ -14,7 +14,7 @@
             {{-- Search Box --}}
             <div class="w-1/2 mx-auto">
                 <input type="text" x-model="keyword" @input.debounce.500ms="searchArticles"
-                    style="background-image: url('{{ asset('/assets/svgs/ic-search.svg') }}')"
+                    style="background-image: url('/assets/svgs/ic-search.svg')"
                     class="block w-full py-3.5 pl-4 pr-10 rounded-[50px] font-semibold placeholder:text-grey placeholder:font-normal text-black text-base bg-no-repeat bg-[calc(100%-16px)]  focus:ring-2 focus:ring-primary focus:outline-none focus:border-none transition-all hover:ring-2 hover:ring-red-600"
                     placeholder="Cari artikel...">
             </div>
@@ -68,9 +68,13 @@
                 articles: [],
                 loading: false,
 
-                fetchArticles(url = '{{ route('front.search.article.ajax') }}') {
+                apiUrl() {
+                    return window.location.protocol + '//' + window.location.host + '/search/articles';
+                },
+
+                fetchArticles(url = '') {
                     this.loading = true;
-                    fetch(url)
+                    fetch(url || this.apiUrl())
                         .then(res => res.json())
                         .then(data => {
                             this.articles = data;
@@ -78,7 +82,7 @@
                         });
                 },
                 searchArticles() {
-                    this.fetchArticles(`{{ route('front.search.article.ajax') }}?q=${this.keyword}`);
+                    this.fetchArticles(this.apiUrl() + `?q=${this.keyword}`);
                 }
             }
         }
