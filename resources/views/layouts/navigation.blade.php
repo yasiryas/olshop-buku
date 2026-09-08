@@ -16,7 +16,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
-                @role('admin')
+                @role('owner|admin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
                             {{ __('Manage Products') }}
@@ -33,17 +33,17 @@
                         </x-nav-link>
                     </div>
                 @endrole
-                @role('admin|penulis')
+                @role('owner|penulis')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')">
                             {{ __('Manage Article') }}
                         </x-nav-link>
                     </div>
                 @endrole
-                @role('admin|penulis')
+                @role('owner|admin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.*')">
-                            {{ Auth::user()->hasRole('admin') ? __('Orders') : __('My Transactions') }}
+                            {{ __('Orders') }}
                         </x-nav-link>
                     </div>
                 @endrole
@@ -106,9 +106,11 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.index')">
-                {{ Auth::user()->hasRole('admin') ? __('Orders') : __('My Transactions') }}
-            </x-responsive-nav-link>
+            @role('owner|admin')
+                <x-responsive-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.index')">
+                    {{ __('Orders') }}
+                </x-responsive-nav-link>
+            @endrole
         </div>
 
         <!-- Responsive Settings Options -->

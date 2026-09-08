@@ -148,7 +148,7 @@
                 </div>
 
                 <!-- Recent Transactions -->
-                @if (Auth::user()->hasRole('admin'))
+                @if (Auth::user()->hasRole('owner|admin'))
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
@@ -261,10 +261,6 @@
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">My Articles</h3>
-                            <a href="{{ route('admin.articles.create') }}"
-                                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded">
-                                <i class="fas fa-plus mr-2"></i>New Article
-                            </a>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -303,8 +299,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="4" class="px-6 py-4 text-center text-gray-500">No articles
-                                                yet. <a href="{{ route('admin.articles.create') }}"
-                                                    class="text-red-600 hover:underline">Write your first article!</a>
+                                                yet.
                                             </td>
                                         </tr>
                                     @endforelse

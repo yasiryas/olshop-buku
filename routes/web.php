@@ -44,21 +44,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Route::resource('carts', CartController::class)->middleware('role:buyer');
-    Route::resource('carts', CartController::class)->middleware('role:buyer|penulis')->except(['store', 'create', 'edit']);
+    Route::resource('carts', CartController::class)->middleware('role:buyer')->except(['store', 'create', 'edit']);
     Route::post('/cart/add/{product_id}', [CartController::class, 'store'])
-        ->middleware('role:buyer|penulis')
+        ->middleware('role:buyer')
         ->name('carts.add');
 
     Route::resource('product_transactions', ProductTransactionController::class)
-        ->middleware('role:admin|buyer|penulis');
+        ->middleware('role:owner|admin|buyer');
 
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::resource('products', ProductController::class)->middleware('role:admin');
-        Route::resource('categories', CategoryController::class)->middleware('role:admin');
-        Route::resource('articles', ArticleController::class)->middleware('role:admin|penulis');
+        Route::resource('products', ProductController::class)->middleware('role:owner|admin');
+        Route::resource('categories', CategoryController::class)->middleware('role:owner|admin');
+        Route::resource('articles', ArticleController::class)->middleware('role:owner|penulis');
     });
 
-    Route::prefix('admin/stocks')->name('stocks.')->middleware('role:admin')->group(function () {
+    Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
         Route::get('/', [StockController::class, 'index'])->name('index');
         Route::get('/history', [StockController::class, 'allHistory'])->name('allHistory');
         Route::post('/{product}/update', [StockController::class, 'update'])->name('update');

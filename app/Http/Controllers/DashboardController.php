@@ -31,8 +31,8 @@ class DashboardController extends Controller
 
             $data['recentActivities'] = $this->recentActivities();
 
-            if ($user->hasRole('admin')) {
-                // Admin: Get recent transactions data
+            if ($user->hasAnyRole(['owner', 'admin'])) {
+                // Get recent transactions data
                 $data['transactions'] = ProductTransaction::with('user')->latest()->take(10)->get();
             }
 

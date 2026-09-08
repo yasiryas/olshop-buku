@@ -21,10 +21,10 @@ class ProductTransactionController extends Controller
 
         $query = ProductTransaction::query()->with('user');
 
-        if ($user->hasAnyRole(['buyer', 'penulis'])) {
+        if ($user->hasRole('buyer')) {
             $query->where('user_id', $user->id);
             $view = 'front.product_transaction.index';
-        } elseif ($user->hasRole('admin')) {
+        } elseif ($user->hasAnyRole(['owner', 'admin'])) {
             $view = 'admin.product_transaction.index';
         } else {
             abort(403);
@@ -121,17 +121,19 @@ class ProductTransactionController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasAnyRole(['buyer', 'penulis']) && $productTransaction->user_id !== $user->id) {
-            abort(403);
+        if ($user->hasAnyRole(['buyer'])) {
+            if ($productTransaction->user_id !== $user->id) {
+                abort(403);
+            }
         }
 
         $productTransaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->find($productTransaction->id);
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(['owner', 'admin'])) {
             return view('admin.product_transaction.details', ['product_transaction' => $productTransaction]);
         }
 
-        if ($user->hasAnyRole(['buyer', 'penulis'])) {
+        if ($user->hasRole('buyer')) {
             return view('front.product_transaction.details', ['product_transaction' => $productTransaction]);
         }
 
@@ -151,7 +153,7 @@ class ProductTransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        abort_unless(auth()->user()->hasRole('admin'), 403);
+        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403);
 
         $transaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->findOrFail($id);
 
