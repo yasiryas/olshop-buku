@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wigati-buku-v1';
+const CACHE_NAME = 'wigati-buku-v2';
 const CORE_ASSETS = [
     '/',
     '/assets/pwa/icon-192.png',
