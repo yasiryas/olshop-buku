@@ -8,10 +8,9 @@
     <title>{{ $title ?? 'Wigati Buku' }}</title>
     <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <script src="//unpkg.com/alpinejs" defer></script>
     <script src="{{ asset('assets/js/script.js') }}" defer></script>
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 

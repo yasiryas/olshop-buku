@@ -7,8 +7,8 @@
     <title>Sign In | Wigati Buku</title>
     <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('/assets/css/main.css') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
+    @vite(['resources/css/app.css'])
 </head>
 
 <body class="bg-gray-50 min-h-screen flex flex-col">
@@ -83,8 +83,6 @@
     </div>
 
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script>
         const showPasswordCheckbox = document.getElementById('show-password');
         const passwordInput = document.getElementById('password__');

@@ -277,9 +277,6 @@
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Date</th>
-                                        <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -291,16 +288,10 @@
                                                 {{ $article->category->name ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {{ $article->created_at->format('d M Y') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                <a href="{{ route('admin.articles.edit', $article->id) }}"
-                                                    class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                                                <a href="{{ route('front.article.details', $article->slug) }}"
-                                                    class="text-green-600 hover:text-green-900">View</a>
-                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">No articles
+                                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">No articles
                                                 yet.
                                             </td>
                                         </tr>
@@ -340,7 +331,7 @@
     </div>
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('assets/js/chart.umd.min.js') }}"></script>
 
     @if (Auth::user()->hasRole('owner|admin'))
         <script>

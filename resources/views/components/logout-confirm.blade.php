@@ -1,7 +1,7 @@
 @props(['class' => ''])
 
 <div x-data="{ showLogout: false }" @keydown.escape.window="showLogout = false" class="inline">
-    <button type="button" @click="showLogout = true" class="{{ $class }}">
+    <button type="button" @click.stop="showLogout = true" class="{{ $class }}">
         {{ $slot }}
     </button>
 
