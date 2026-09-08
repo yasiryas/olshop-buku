@@ -123,6 +123,30 @@
                     </div>
                 </div>
 
+                <!-- Recent Activities -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-clock mr-2 text-gray-400"></i> Aktivitas Terbaru
+                        </h3>
+                        <ul class="divide-y divide-gray-100">
+                            @forelse ($recentActivities ?? [] as $activity)
+                                <li class="py-3 flex items-start gap-3">
+                                    <span class="shrink-0 w-8 h-8 rounded-full {{ $activity['color'] }} flex items-center justify-center">
+                                        <i class="fas {{ $activity['icon'] }} text-white text-sm"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm text-gray-800">{{ $activity['text'] }}</p>
+                                        <p class="text-xs text-gray-400">{{ $activity['time']->diffForHumans() }}</p>
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="py-3 text-sm text-gray-500">Belum ada aktivitas.</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+
                 <!-- Recent Transactions -->
                 @if (Auth::user()->hasRole('admin'))
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -287,6 +311,30 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-clock mr-2 text-gray-400"></i> Aktivitas Terbaru
+                        </h3>
+                        <ul class="divide-y divide-gray-100">
+                            @forelse ($recentActivities ?? [] as $activity)
+                                <li class="py-3 flex items-start gap-3">
+                                    <span class="shrink-0 w-8 h-8 rounded-full {{ $activity['color'] }} flex items-center justify-center">
+                                        <i class="fas {{ $activity['icon'] }} text-white text-sm"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm text-gray-800">{{ $activity['text'] }}</p>
+                                        <p class="text-xs text-gray-400">{{ $activity['time']->diffForHumans() }}</p>
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="py-3 text-sm text-gray-500">Belum ada aktivitas.</li>
+                            @endforelse
+                        </ul>
                     </div>
                 </div>
             @endif
