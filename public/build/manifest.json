@@ -1,0 +1,17 @@
+{
+  "public/assets/svgs/ic-search.svg": {
+    "file": "assets/ic-search-VqiPeT5a.svg",
+    "src": "public/assets/svgs/ic-search.svg"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-x4YjNLIz.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DiANq_Lg.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}
