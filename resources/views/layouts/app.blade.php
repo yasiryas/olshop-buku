@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <meta name="theme-color" content="#dc2626">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/assets/pwa/apple-touch-icon.png">
 
     <title>{{ config('app.name', 'Wigati Buku') }}</title>
 
@@ -74,6 +77,60 @@
             });
         }
     </script>
+
+    <!-- PWA Install Prompt -->
+    <div id="pwa-install-banner" class="hidden fixed bottom-4 right-4 z-50 bg-white shadow-lg rounded-xl border border-gray-200 px-5 py-4 flex items-center gap-4 max-w-sm">
+        <img src="/assets/pwa/icon-192.png" alt="Wigati Buku" class="w-12 h-12 rounded-lg">
+        <div class="flex-1">
+            <p class="font-semibold text-gray-800 text-sm">Install Wigati Buku</p>
+            <p class="text-gray-500 text-xs">Akses lebih cepat seperti aplikasi native.</p>
+        </div>
+        <button id="pwa-install-btn"
+            class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+            Install
+        </button>
+        <button id="pwa-install-dismiss" class="text-gray-400 hover:text-gray-600 ml-1">
+            <i class="fas fa-xmark"></i>
+        </button>
+    </div>
+
+    <script>
+        let deferredPrompt;
+
+        const installBanner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const installDismiss = document.getElementById('pwa-install-dismiss');
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredPrompt = event;
+            if (!localStorage.getItem('pwa_install_dismissed')) {
+                installBanner.classList.remove('hidden');
+            }
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            installBanner.classList.add('hidden');
+        });
+
+        installDismiss.addEventListener('click', () => {
+            localStorage.setItem('pwa_install_dismissed', '1');
+            installBanner.classList.add('hidden');
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch((error) => {
+                    console.error('Service worker registration failed:', error);
+                });
+            });
+        }
+    </script>
+
     {{ $script ?? '' }}
 </body>
 

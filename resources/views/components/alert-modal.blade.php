@@ -15,19 +15,27 @@
         class="relative bg-white w-80 rounded-2xl shadow-lg p-6 z-10 text-center">
         <!-- ICON -->
         <template x-if="type === 'error'">
-            <div class="text-red-600 text-5xl mb-2">❌</div>
+            <div class="text-red-600 text-5xl mb-2">
+                <i class="fas fa-circle-xmark"></i>
+            </div>
         </template>
 
         <template x-if="type === 'success'">
-            <div class="text-green-600 text-5xl mb-2">✔️</div>
+            <div class="text-green-600 text-5xl mb-2">
+                <i class="fas fa-circle-check"></i>
+            </div>
         </template>
 
         <template x-if="type === 'warning'">
-            <div class="text-yellow-500 text-5xl mb-2">⚠️</div>
+            <div class="text-yellow-500 text-5xl mb-2">
+                <i class="fas fa-triangle-exclamation"></i>
+            </div>
         </template>
 
         <template x-if="type === 'info'">
-            <div class="text-blue-500 text-5xl mb-2">ℹ️</div>
+            <div class="text-blue-500 text-5xl mb-2">
+                <i class="fas fa-circle-info"></i>
+            </div>
         </template>
 
         <!-- MESSAGE -->

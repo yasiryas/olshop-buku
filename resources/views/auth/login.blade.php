@@ -40,6 +40,11 @@
                     <input type="password" name="password" id="password__"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         placeholder="Protect your password" autocomplete="current-password">
+                    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                        <input type="checkbox" id="show-password" class="rounded text-red-600 focus:ring-red-500">
+                        <i class="fas fa-eye text-gray-400"></i>
+                        Show password
+                    </label>
                     @error('password')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -80,6 +85,14 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        const showPasswordCheckbox = document.getElementById('show-password');
+        const passwordInput = document.getElementById('password__');
+
+        showPasswordCheckbox.addEventListener('change', function() {
+            passwordInput.type = this.checked ? 'text' : 'password';
+        });
+    </script>
 </body>
 
 </html>
