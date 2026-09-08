@@ -10,7 +10,7 @@
     {{-- Tentang Kami --}}
     <section class=" mx-auto px-4 py-16 grid md:grid-cols-2 gap-10 items-center bg-gray-100 w-full">
         <div>
-            <img src="{{ asset('assets/logo/logo-wigati.webp') }}" alt="Tentang Kami" class="w-[400px] mx-auto">
+            <img src="{{ asset('assets/logo/icon-modern.png') }}" alt="Tentang Kami" class="w-[400px] mx-auto">
         </div>
         <div>
             <h2 class="text-3xl font-bold mb-4">Siapa Kami?</h2>

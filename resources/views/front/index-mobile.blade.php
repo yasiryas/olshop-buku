@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Landing Page | Parma</title>
-    <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-modern.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('/assets/css/main.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
     <link rel="stylesheet" href="https://cdn.tailwindcss.com">
