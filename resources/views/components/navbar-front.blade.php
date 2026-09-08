@@ -3,7 +3,7 @@
     class="bg-white sticky top-0 shadow z-50">
     <div class="container mx-auto flex items-center justify-between p-4">
         <a href="#" class="w-[120px] md:w-[150px]">
-            <img src="{{ asset('/assets/logo/icon-modern.png') }}" alt="" class="w-full">
+            <img src="{{ asset('/assets/logo/logo-wigati.webp') }}" alt="" class="w-full">
         </a>
 
         <!-- Desktop Menu -->

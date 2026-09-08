@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | Wigati Buku</title>
-    <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-modern.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('/assets/css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     @vite(['resources/css/app.css'])
@@ -16,7 +16,7 @@
     <nav class="bg-white shadow-md border-b border-gray-200">
         <div class="container mx-auto flex items-center justify-between p-4">
             <a href="{{ route('front.index') }}" class="w-[120px] md:w-[150px]">
-                <img src="{{ asset('/assets/logo/icon-modern.png') }}" alt="" class="w-full">
+                <img src="{{ asset('/assets/logo/logo-wigati.webp') }}" alt="" class="w-full">
             </a>
             <a href="{{ route('front.index') }}" class="text-red-600 font-semibold md:hidden">
                 <i class="fas fa-arrow-left mr-1"></i> Back

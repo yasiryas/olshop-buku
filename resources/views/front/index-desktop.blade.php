@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Wigati Buku</title>
-    <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-modern.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
@@ -17,7 +17,7 @@
     {{-- navigation --}}
     <nav>
         <div class="container mx-auto flex items-center justify-between p-4">
-            <a href="#" class="w-[180px]"><img src="{{ asset('/assets/logo/icon-modern.png') }}"
+            <a href="#" class="w-[180px]"><img src="{{ asset('/assets/logo/logo-wigati.webp') }}"
                     alt=""></a>
             <div class="flex space-x-6 font-semibold">
                 <a href="#" class="hover:text-red-600">Home</a>

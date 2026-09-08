@@ -10,7 +10,7 @@
     <!-- Fonts -->
     <link rel="stylesheet" href="{{ asset('assets/fonts/figtree.css') }}">
 
-    <link rel="shortcut icon" href="{{ url('/assets/logo/icon-modern.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url('/assets/logo/icon-book.webp') }}" type="image/x-icon">
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
