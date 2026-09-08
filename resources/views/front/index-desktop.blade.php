@@ -62,12 +62,9 @@
                             Profile
                         </a>
                     @endrole
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold">
+                    <x-logout-confirm class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold">
                             Logout
-                        </button>
-                    </form>
+                        </x-logout-confirm>
                 </div>
             </div>
         </div>

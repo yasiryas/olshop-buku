@@ -70,12 +70,9 @@
                             class="block px-4 py-2 hover:bg-gray-100 font-semibold">Status Pembelian</a>
                     @endrole
 
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold">
-                            Logout
-                        </button>
-                    </form>
+                    <x-logout-confirm class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold">
+                        Logout
+                    </x-logout-confirm>
                 </div>
             @endauth
         </div>
@@ -143,13 +140,10 @@
                             <i class="fas fa-receipt mr-2"></i> Status Pembelian
                         </a>
                     @endrole
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit"
-                            class="w-full text-left block py-2 px-4 text-red-600 hover:bg-red-50 rounded font-semibold">
-                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                        </button>
-                    </form>
+                    <x-logout-confirm
+                        class="w-full text-left block py-2 px-4 text-red-600 hover:bg-red-50 rounded font-semibold">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                    </x-logout-confirm>
                 </div>
             @endauth
         </div>
