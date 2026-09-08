@@ -39,7 +39,11 @@
                                 </div>
                             </div>
 
-                            @if ($transaction->is_paid)
+                            @if ($transaction->status === 'cancelled')
+                                <span class="font-bold py-1 px-5 rounded-full text-white bg-red-500">
+                                    <p class="text-white font-bold text-sm">Cancelled</p>
+                                </span>
+                            @elseif ($transaction->is_paid || $transaction->status === 'approved')
                                 <span class="font-bold py-1 px-5 rounded-full text-white bg-green-500">
                                     <p class="text-white font-bold text-sm">Success</p>
                                 </span>
@@ -51,15 +55,24 @@
 
                             <div class="hidden md:flex flex-row items-center gap-x-3">
                                 <a href="{{ route('product_transactions.show', $transaction) }}"
-                                    class="font-bold py-3 px-5 rounded-full text-white bg-blue-700">View
+                                    class="font-bold py-3 px-5 rounded-full text-white bg-blue-700 hover:bg-blue-800 transition">View
                                     Details</a>
                             </div>
                         </div>
                         <hr class="my-3">
                     @empty
-                        <p>Ups, transaksi terbaru belum tersedia!</p>
+                        <div class="p-4 text-center">
+                            <p class="text-gray-500 font-semibold">Ups, transaksi belum tersedia!</p>
+                        </div>
                     @endforelse
+
+                    @if ($product_transactions->hasPages())
+                        <div class="mt-4">
+                            {{ $product_transactions->links() }}
+                        </div>
+                    @endif
                 </div>
             </div>
+        </div>
     </section>
 </x-layout-front>

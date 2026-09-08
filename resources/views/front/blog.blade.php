@@ -9,10 +9,10 @@
 
 
     {{-- Article Section --}}
-    <section class="py-20 bg-gray-100 px-10" id="articles" x-data="articleSearch()" x-init="fetchArticles()">
+    <section class="py-12 md:py-20 bg-gray-100 px-4 md:px-10" id="articles" x-data="articleSearch()" x-init="fetchArticles()">
         <div class="container mx-auto flex flex-col gap-10">
             {{-- Search Box --}}
-            <div class="w-1/2 mx-auto">
+            <div class="w-full max-w-xl mx-auto">
                 <input type="text" x-model="keyword" @input.debounce.500ms="searchArticles"
                     style="background-image: url('/assets/svgs/ic-search.svg')"
                     class="block w-full py-3.5 pl-4 pr-10 rounded-[50px] font-semibold placeholder:text-grey placeholder:font-normal text-black text-base bg-no-repeat bg-[calc(100%-16px)]  focus:ring-2 focus:ring-primary focus:outline-none focus:border-none transition-all hover:ring-2 hover:ring-red-600"
@@ -78,6 +78,12 @@
                         .then(res => res.json())
                         .then(data => {
                             this.articles = data;
+                        })
+                        .catch(err => {
+                            console.error('Failed to fetch articles:', err);
+                            this.articles = [];
+                        })
+                        .finally(() => {
                             this.loading = false;
                         });
                 },

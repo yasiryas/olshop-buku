@@ -28,7 +28,11 @@
                         <h3 class="text-xl font-bold text-indigo-900">
                             {{ $product_transaction->created_at->format('d F Y') }}</h3>
                     </div>
-                    @if ($product_transaction->is_paid)
+                    @if ($product_transaction->status === 'cancelled')
+                        <span class="font-bold py-1 px-5 rounded-full w-fit text-white bg-red-500">
+                            <p class="text-white font-bold text-sm">Cancelled</p>
+                        </span>
+                    @elseif ($product_transaction->is_paid || $product_transaction->status === 'approved')
                         <span class="font-bold py-1 px-5 rounded-full w-fit text-white bg-green-500">
                             <p class="text-white font-bold text-sm">Success</p>
                         </span>
@@ -120,8 +124,9 @@
                             class="w-[300px] bg-white-500 h-[400px] ">
                     </div>
                 </div>
-<hr class="my-3">
-                <a href="https://wa.me/6285713878266?text=Halo Admin, saya ingin konfirmasi pesanan dengan detail berikut:%0A
+                <hr class="my-4">
+                <div class="flex flex-wrap gap-4 items-center justify-between">
+                    <a href="https://wa.me/6285713878266?text=Halo Admin, saya ingin konfirmasi pesanan dengan detail berikut:%0A
     - Total Transaksi: Rp {{ number_format($product_transaction->total_amount) }}%0A
     - Tanggal: {{ $product_transaction->created_at->format('d F Y') }}%0A
     - Alamat: {{ $product_transaction->address }}, {{ $product_transaction->city }}, {{ $product_transaction->post_code }}%0A
@@ -132,9 +137,22 @@
         * {{ $list_product->product->name }} (Qty: {{ $list_product->qty }}) - Rp {{ number_format($list_product->product->price) }}%0A @endforeach
     Terima kasih."
                         target="_blank"
-                        class="w-fit font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
-                        Contact Admin via WhatsApp
+                        class="w-fit font-bold bg-indigo-700 text-white py-3 px-6 rounded-full hover:bg-indigo-900 transition">
+                        <i class="fab fa-whatsapp mr-2"></i>Contact Admin via WhatsApp
                     </a>
+
+                    @if (!$product_transaction->is_paid && $product_transaction->status !== 'cancelled')
+                        <form action="{{ route('product_transactions.destroy', $product_transaction->id) }}" method="POST"
+                            onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit"
+                                class="font-bold bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-full transition">
+                                <i class="fas fa-times-circle mr-2"></i>Batalkan Pesanan
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

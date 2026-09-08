@@ -1,15 +1,15 @@
 <x-layout-front title="Product - Wigati Buku">
     {{-- detail product section --}}
 
-    <section class="container mx-auto px-10 mb-20 pt-10 relative justify-between">
-        <div class="grid grid-cols-2 gap-4 bg-white p-6 rounded-lg shadow-lg col-2">
+    <section class="container mx-auto px-4 md:px-10 mb-12 md:mb-20 pt-6 md:pt-10 relative">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-6 md:p-8 rounded-lg shadow-lg">
             <div>
                 <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}"
-                    class="w-full h-96 object-cover mb-4 rounded">
+                    class="w-full h-72 md:h-96 object-cover mb-4 rounded">
             </div>
             <div class="prose max-w-none">
-                <h1 class="text-4xl font-bold mb-4 text-gray-600">{{ $product->name }}</h1>
-                <p class="text-lg mb-8 text-gray-600">Category {{ $product->category->name }}
+                <h1 class="text-2xl md:text-4xl font-bold mb-4 text-gray-700">{{ $product->name }}</h1>
+                <p class="text-base md:text-lg mb-4 text-gray-600">Category: {{ $product->category->name }}
                 </p>
                 <h2 class="text-2xl text-red-600 font-bold mb-2"> Rp {{ number_format($product->price) }}
                 </h2>
@@ -33,9 +33,9 @@
     </section>
     {{-- end article section --}}
     {{-- latest product section --}}
-    <section class="py-20 px-10 bg-gray-100">
+    <section class="py-12 md:py-20 px-4 md:px-10 bg-gray-100">
         <div class="container mx-auto ">
-            <h2 class="text-3xl font-bold text-center mb-10">Latest Product</h2>
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-10">Latest Product</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @forelse ($products as $product)
                     <div class=" bg-white p-6 rounded-lg shadow-lg text-center hover:scale-105 transition">
@@ -62,7 +62,7 @@
                         </form>
                     </div>
                 @empty
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="col-span-full bg-white p-6 rounded-lg shadow-lg text-center">
                         <p>Ups, Tidak ada produk</p>
                     </div>
                 @endforelse

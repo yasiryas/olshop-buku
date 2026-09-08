@@ -126,11 +126,18 @@
                     </div>
                 </div>
                 <hr class="my-3">
-                @role('admin')
+                @hasanyrole(['owner', 'admin'])
                     @if ($product_transaction->is_paid)
-                        <a href="#"
-                            class="w-fit font-bold bg-green-500 text-white py-3 px-5 rounded-full hover:bg-green-900">
-                            WhatsApp Customer
+                        @php
+                            $cleanedPhone = preg_replace('/[^0-9]/', '', $product_transaction->phone_number);
+                            if (str_starts_with($cleanedPhone, '0')) {
+                                $cleanedPhone = '62' . substr($cleanedPhone, 1);
+                            }
+                        @endphp
+                        <a href="https://wa.me/{{ $cleanedPhone }}?text={{ urlencode('Halo ' . $product_transaction->user->name . ', terima kasih sudah memesan di Wigati Buku. Pesanan #' . $product_transaction->id . ' Anda telah kami approve.') }}"
+                            target="_blank"
+                            class="w-fit font-bold bg-green-500 text-white py-3 px-5 rounded-full hover:bg-green-700">
+                            <i class="fab fa-whatsapp mr-1"></i> WhatsApp Customer
                         </a>
                     @else
                         <form method="POST" action="{{ route('product_transactions.update', $product_transaction->id) }}"
@@ -143,7 +150,7 @@
                             </button>
                         </form>
                     @endif
-                @endrole
+                @endhasanyrole
                 @role('buyer')
                     <a class="w-fit font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
                         Contact Admin

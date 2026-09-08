@@ -6,14 +6,14 @@
         </div>
     </section>
     {{-- product section --}}
-    <section class="py-20 bg-gray-100 px-10" id="products">
+    <section class="py-12 md:py-20 bg-gray-100 px-4 md:px-10" id="products">
         <div class="container mx-auto flex flex-col gap-10">
-            <div class="w-1/2 mx-auto">
+            <div class="w-full max-w-xl mx-auto">
                 <form action="{{ route('front.search') }}" method="GET" id="searchForm" class="w-full">
                     <input type="text" name="search" id="searchProduct"
                         style="background-image: url('{{ asset('/assets/svgs/ic-search.svg') }}')"
                         class="block w-full py-3.5 pl-4 pr-10 rounded-[50px] font-semibold placeholder:text-grey placeholder:font-normal text-black text-base bg-no-repeat bg-[calc(100%-16px)]  focus:ring-2 focus:ring-primary focus:outline-none focus:border-none transition-all hover:ring-2 hover:ring-red-600"
-                        placeholder="Cari buku faforitmu...">
+                        placeholder="Cari buku favoritmu...">
                 </form>
             </div>
 
@@ -44,12 +44,11 @@
                     </div>
 
                 @empty
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="col-span-full bg-white p-6 rounded-lg shadow-lg text-center">
                         <p>Ups, Tidak ada produk</p>
                     </div>
                 @endforelse
             </div>
-        </div>
         </div>
     </section>
 

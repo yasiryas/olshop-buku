@@ -16,7 +16,7 @@
                 </div>
             </div>
 
-            @if (Auth::user()->hasRole('owner|admin'))
+            @if (Auth::user()->hasAnyRole(['owner', 'admin']))
                 {{-- Admin/Owner Dashboard --}}
 
                 <!-- Stats Cards -->
@@ -148,7 +148,7 @@
                 </div>
 
                 <!-- Recent Transactions -->
-                @if (Auth::user()->hasRole('owner|admin'))
+                @if (Auth::user()->hasAnyRole(['owner', 'admin']))
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                         <div class="p-6">
                             <div
@@ -333,7 +333,7 @@
     <!-- Chart.js -->
     <script src="{{ asset('assets/js/chart.umd.min.js') }}"></script>
 
-    @if (Auth::user()->hasRole('owner|admin'))
+    @if (Auth::user()->hasAnyRole(['owner', 'admin']))
         <script>
             // Monthly Revenue Chart
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');

@@ -38,12 +38,11 @@
                     </div>
 
                 @empty
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <p>Ups, Tidak ada produk</p>
+                    <div class="col-span-full bg-white p-6 rounded-lg shadow-lg text-center">
+                        <p>Ups, Tidak ada produk yang sesuai dengan pencarian Anda.</p>
                     </div>
                 @endforelse
             </div>
         </div>
-        </div>
     </section>
-    </x-layout-front>
+</x-layout-front>

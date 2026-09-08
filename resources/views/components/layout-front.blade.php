@@ -10,8 +10,6 @@
 
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <script src="{{ asset('assets/js/script.js') }}" defer></script>
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>

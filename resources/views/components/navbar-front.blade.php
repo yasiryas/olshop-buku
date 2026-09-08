@@ -2,8 +2,8 @@
     :class="scrolled ? 'shadow-md border-b border-gray-200' : 'shadow-none border-transparent'"
     class="bg-white sticky top-0 shadow z-50">
     <div class="container mx-auto flex items-center justify-between p-4">
-        <a href="#" class="w-[120px] md:w-[150px]">
-            <img src="{{ asset('/assets/logo/logo-wigati.webp') }}" alt="" class="w-full">
+        <a href="{{ route('front.index') }}" class="w-[120px] md:w-[150px]">
+            <img src="{{ asset('/assets/logo/logo-wigati.webp') }}" alt="Wigati Buku" class="w-full">
         </a>
 
         <!-- Desktop Menu -->

@@ -13,8 +13,7 @@
             {{-- Form Kontak --}}
             <div class="bg-white p-8 rounded-lg shadow-lg">
                 <h2 class="text-2xl font-bold mb-6">Kirim Pesan</h2>
-                <form action="#" method="POST" class="space-y-6">
-                    @csrf
+                <form id="contactForm" onsubmit="event.preventDefault(); const n = document.getElementById('name').value; const m = document.getElementById('message').value; window.open('https://wa.me/6281234567890?text=' + encodeURIComponent('Halo, nama saya ' + n + '. Pesan: ' + m), '_blank');" class="space-y-6">
                     <div>
                         <label for="name" class="block font-semibold mb-2">Nama</label>
                         <input type="text" id="name" name="name"
@@ -34,7 +33,7 @@
                             required></textarea>
                     </div>
                     <button type="submit"
-                        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg">
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition">
                         <i class="fas fa-paper-plane mr-2"></i>Kirim Pesan
                     </button>
                 </form>
