@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <meta name="theme-color" content="#dc2626">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/assets/pwa/apple-touch-icon.png">
 
