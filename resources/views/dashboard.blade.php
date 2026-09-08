@@ -248,7 +248,7 @@
                                         <i class="fas fa-check-circle mr-1"></i> Completed
                                     </p>
                                     <p class="text-2xl font-bold text-gray-800">
-                                        {{ count(array_filter($myOrders ?? [], fn($o) => $o->is_paid)) }}</p>
+                                        {{ $myOrders->where('is_paid', 1)->count() }}</p>
                                 </div>
                             </div>
                         </div>
