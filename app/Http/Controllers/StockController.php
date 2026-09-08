@@ -36,6 +36,10 @@ class StockController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        if ($request->type === 'out' && $request->quantity > $product->stock) {
+            return back()->withErrors(['quantity' => "Stok tidak mencukupi! Stok saat ini: {$product->stock}"])->withInput();
+        }
+
         $product->stockMutations()->create([
             'type' => $request->type,
             'quantity' => $request->quantity,

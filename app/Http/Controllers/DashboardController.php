@@ -16,7 +16,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasRole('owner|admin')) {
+        if ($user->hasAnyRole(['owner', 'admin'])) {
             $totalRevenue = ProductTransaction::where('is_paid', true)->sum('total_amount');
             $totalOrders = ProductTransaction::count();
             $pendingOrders = ProductTransaction::where('is_paid', false)->count();

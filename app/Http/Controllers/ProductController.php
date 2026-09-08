@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
@@ -119,10 +120,15 @@ class ProductController extends Controller
         DB::beginTransaction();
         try {
             if ($request->hasFile('photo')) {
+                if ($product->photo && Storage::disk('public')->exists($product->photo)) {
+                    Storage::disk('public')->delete($product->photo);
+                }
                 $photoPath = $request->file('photo')->store('product_photos', 'public');
                 $validated['photo'] = $photoPath;
             }
-            $validated['slug'] = Str::slug($request->name);
+            if (isset($validated['name'])) {
+                $validated['slug'] = Str::slug($validated['name']);
+            }
             $product->update($validated);
             DB::commit();
             return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
@@ -142,6 +148,9 @@ class ProductController extends Controller
     {
         //
         try {
+            if ($product->photo && Storage::disk('public')->exists($product->photo)) {
+                Storage::disk('public')->delete($product->photo);
+            }
             $product->delete();
             return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
         } catch (\Exception $e) {

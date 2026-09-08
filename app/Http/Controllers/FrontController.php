@@ -16,7 +16,7 @@ class FrontController extends Controller
         $user = Auth::user();
         $products = Product::with('category')->withStock()->orderBy('id', 'DESC')->take(8)->get();
         $categories = Category::all();
-        $articles = Article::with(['user', 'category'])->latest()->take(4)->get();
+        $articles = Article::with(['user', 'category'])->where('is_published', true)->latest()->take(4)->get();
         return view('front.index', [
             'products' => $products,
             'categories' => $categories,
@@ -41,7 +41,7 @@ class FrontController extends Controller
     {
         $query = $request->get('search', '');
         $products = Product::where('name', 'like', "%{$query}%")
-            ->orWhere('description', 'like', "%{$query}%")
+            ->orWhere('about', 'like', "%{$query}%")
             ->take(20)
             ->get();
 
@@ -88,7 +88,7 @@ class FrontController extends Controller
 
     public function blog()
     {
-        $articles = Article::with(['user', 'category'])->latest()->paginate(6);
+        $articles = Article::with(['user', 'category'])->where('is_published', true)->latest()->paginate(6);
         return view('front.blog', [
             'articles' => $articles
         ]);
@@ -96,8 +96,18 @@ class FrontController extends Controller
 
     public function article(Article $article)
     {
+        if (!$article->is_published && (!auth()->check() || !auth()->user()->hasAnyRole(['owner', 'admin', 'penulis']))) {
+            abort(404);
+        }
+
         $article->load(['category', 'user']);
-        $articles = Article::with(['user', 'category'])->latest()->take(4)->get();
+        $articles = Article::with(['user', 'category'])
+            ->where('is_published', true)
+            ->where('id', '!=', $article->id)
+            ->latest()
+            ->take(4)
+            ->get();
+
         return view('front.article', [
             'article' => $article,
             'articles' => $articles
@@ -108,8 +118,11 @@ class FrontController extends Controller
     {
         $keyword = $request->get('q', '');
 
-        $articles = \App\Models\Article::where('title', 'like', "%{$keyword}%")
-            ->orWhere('content', 'like', "%{$keyword}%")
+        $articles = \App\Models\Article::where('is_published', true)
+            ->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                  ->orWhere('content', 'like', "%{$keyword}%");
+            })
             ->latest()
             ->take(20)
             ->get(['id', 'title', 'slug', 'featured_image', 'content']);

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Product;
 use App\Models\TransactionDetail;
 use App\Models\ProductTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ProductTransactionController extends Controller
@@ -74,6 +76,15 @@ class ProductTransactionController extends Controller
                 throw new \Exception('Your cart is empty');
             }
 
+            foreach ($cartItems as $item) {
+                $product = Product::withStock()->find($item->product_id);
+                if (!$product || $product->stock < $item->quantity) {
+                    $prodName = $product ? $product->name : 'Produk';
+                    $prodStock = $product ? $product->stock : 0;
+                    throw new \Exception("Stok produk '{$prodName}' tidak mencukupi! Tersisa: {$prodStock}");
+                }
+            }
+
             $subTotal = 0;
             foreach ($cartItems as $item) {
                 $subTotal += $item->product->price * $item->quantity;
@@ -86,6 +97,7 @@ class ProductTransactionController extends Controller
             $validated['user_id'] = $user->id;
             $validated['total_amount'] = $grandTotal;
             $validated['is_paid'] = false;
+            $validated['status'] = 'pending';
 
             if ($request->hasFile('proof')) {
                 $proofPath = $request->file('proof')->store('payment_proofs', 'public');
@@ -178,7 +190,10 @@ class ProductTransactionController extends Controller
                 ]);
             }
 
-            $transaction->update(['is_paid' => true]);
+            $transaction->update([
+                'is_paid' => true,
+                'status'  => 'approved',
+            ]);
 
             DB::commit();
 
@@ -199,6 +214,24 @@ class ProductTransactionController extends Controller
      */
     public function destroy(ProductTransaction $productTransaction)
     {
-        //
+        $user = auth()->user();
+
+        if ($user->hasRole('buyer')) {
+            if ($productTransaction->user_id !== $user->id) {
+                abort(403);
+            }
+            if ($productTransaction->is_paid) {
+                return redirect()->back()->with('error', 'Order yang sudah diapprove tidak bisa dibatalkan.');
+            }
+        }
+
+        if ($productTransaction->proof && Storage::disk('public')->exists($productTransaction->proof)) {
+            Storage::disk('public')->delete($productTransaction->proof);
+        }
+
+        $productTransaction->update(['status' => 'cancelled']);
+        $productTransaction->delete();
+
+        return redirect()->route('product_transactions.index')->with('success', 'Order berhasil dibatalkan.');
     }
 }
