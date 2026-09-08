@@ -149,68 +149,70 @@
 
                 <!-- Recent Transactions -->
                 @if (Auth::user()->hasRole('owner|admin'))
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                            <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
-                            <a href="{{ route('product_transactions.index') }}"
-                                class="text-sm text-red-600 hover:underline">
-                                View All <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Order ID</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Customer</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Amount</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse($transactions ?? [] as $transaction)
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                        <div class="p-6">
+                            <div
+                                class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                                <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
+                                <a href="{{ route('product_transactions.index') }}"
+                                    class="text-sm text-red-600 hover:underline">
+                                    View All <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
                                         <tr>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                #{{ $transaction->id }}</td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $transaction->user->name ?? 'N/A' }}</td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Rp
-                                                {{ number_format($transaction->total_amount) }}</td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                @if ($transaction->is_paid)
-                                                    <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
-                                                @else
-                                                    <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $transaction->created_at->format('d M Y') }}</td>
+                                            <th
+                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Order ID</th>
+                                            <th
+                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Customer</th>
+                                            <th
+                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Amount</th>
+                                            <th
+                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Status</th>
+                                            <th
+                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Date</th>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">No
-                                                transactions yet</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @forelse($transactions ?? [] as $transaction)
+                                            <tr>
+                                                <td
+                                                    class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    #{{ $transaction->id }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ $transaction->user->name ?? 'N/A' }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Rp
+                                                    {{ number_format($transaction->total_amount) }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    @if ($transaction->is_paid)
+                                                        <span
+                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
+                                                    @else
+                                                        <span
+                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ $transaction->created_at->format('d M Y') }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="px-4 py-4 text-center text-gray-500">No
+                                                    transactions yet</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
                 @endif
             @else
                 {{-- Writer/Author Dashboard --}}
@@ -257,7 +259,7 @@
                 </div>
 
                 <!-- My Articles -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">My Articles</h3>

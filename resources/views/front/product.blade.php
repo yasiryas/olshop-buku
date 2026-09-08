@@ -51,7 +51,6 @@
                 @endforelse
             </div>
         </div>
-        </div>
     </section>
     {{-- Section CTA --}}
     <section>
@@ -67,23 +66,4 @@
             </div>
         </div>
     </section>
-    <script>
-        function productSearch() {
-            return {
-                keyword: '',
-                products: [],
-                fetchProducts() {
-                    fetch('{{ route('front.search.ajax') }}')
-                        .then(res => res.json())
-                        .then(data => this.products = data);
-                },
-                searchProducts() {
-                    fetch(`{{ route('front.search.ajax') }}?search=${this.keyword}`)
-                        .then(res => res.json())
-                        .then(data => this.products = data);
-                }
-            }
-        }
-    </script>
-    <x-alert-modal />
 </x-layout-front>
