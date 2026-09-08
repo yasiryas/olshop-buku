@@ -23,7 +23,9 @@ Route::get('/contact', [FrontController::class, 'contact'])->name('front.contact
 Route::get('/search-products', [FrontController::class, 'searchProduct'])->name('front.search.ajax');
 Route::get('/search/articles', [FrontController::class, 'searchArticle'])->name('front.search.article.ajax');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware(['auth', 'verified', 'role:owner|admin|penulis'])
+        ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

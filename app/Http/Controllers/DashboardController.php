@@ -30,18 +30,12 @@ class DashboardController extends Controller
                 ->get();
 
             return view('dashboard', compact('transactions', 'totalRevenue', 'totalOrders', 'pendingOrders', 'monthlyData'));
-        } elseif ($user->hasRole('buyer')) {
-            // Buyer: Get user's transactions
-            $myOrders = ProductTransaction::where('user_id', $user->id)->latest()->take(10)->get();
-            $totalSpent = ProductTransaction::where('user_id', $user->id)->where('is_paid', true)->sum('total_amount');
-
-            return view('dashboard', compact('myOrders', 'totalSpent'));
-        } else {
-            // Writer/Author: Get their articles
-            $articles = Article::with('category')->where('user_id', $user->id)->latest()->take(10)->get();
-            $totalArticles = Article::where('user_id', $user->id)->count();
-
-            return view('dashboard', compact('articles', 'totalArticles'));
         }
+
+        // Penulis: Get their articles
+        $articles = Article::with('category')->where('user_id', $user->id)->latest()->take(10)->get();
+        $totalArticles = Article::where('user_id', $user->id)->count();
+
+        return view('dashboard', compact('articles', 'totalArticles'));
     }
 }
