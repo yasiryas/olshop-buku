@@ -103,9 +103,8 @@
         window.addEventListener('beforeinstallprompt', (event) => {
             event.preventDefault();
             deferredPrompt = event;
-            if (!localStorage.getItem('pwa_install_dismissed')) {
-                installBanner.classList.remove('hidden');
-            }
+            // Selalu tampilkan banner, tidak simpan dismiss
+            installBanner.classList.remove('hidden');
         });
 
         installBtn.addEventListener('click', async () => {
@@ -117,13 +116,18 @@
         });
 
         installDismiss.addEventListener('click', () => {
-            localStorage.setItem('pwa_install_dismissed', '1');
+            // Hanya sembunyikan sementara, tidak disimpan ke localStorage
             installBanner.classList.add('hidden');
         });
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch((error) => {
+                navigator.serviceWorker.register('/sw.js').then(() => {
+                    // Auto-request notification permission setelah SW terdaftar
+                    if ('Notification' in window && Notification.permission === 'default') {
+                        Notification.requestPermission();
+                    }
+                }).catch((error) => {
                     console.error('Service worker registration failed:', error);
                 });
             });
