@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div x-data="stockModal()">
+    <div x-data="stockModal()" @keydown.escape.window="close()">
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white flex flex-col gap-y-5 p-10 shadow-sm sm:rounded-lg">
@@ -78,6 +78,13 @@
         <div x-show="show"
             class="fixed bg-white w-full max-w-md p-6 rounded-lg shadow-xl z-[60] left-1/2 top-1/2
                     -translate-x-1/2 -translate-y-1/2">
+
+            <button type="button" @click="close()" aria-label="Tutup"
+                class="absolute top-3 right-3 p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
 
             <h2 class="text-xl font-bold text-gray-800 mb-4" x-text="title"></h2>
 
