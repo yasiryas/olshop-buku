@@ -38,15 +38,16 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:buyer|penulis')
         ->name('carts.add');
 
-    Route::resource('product_transactions', ProductTransactionController::class);
+    Route::resource('product_transactions', ProductTransactionController::class)
+        ->middleware('role:admin|buyer|penulis');
 
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::resource('products', ProductController::class)->middleware('role:owner|admin');
-        Route::resource('categories', CategoryController::class)->middleware('role:owner|admin');
-        Route::resource('articles', ArticleController::class)->middleware('role:owner|admin|penulis');
+        Route::resource('products', ProductController::class)->middleware('role:admin');
+        Route::resource('categories', CategoryController::class)->middleware('role:admin');
+        Route::resource('articles', ArticleController::class)->middleware('role:admin|penulis');
     });
 
-    Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
+    Route::prefix('admin/stocks')->name('stocks.')->middleware('role:admin')->group(function () {
         Route::get('/', [StockController::class, 'index'])->name('index');
         Route::get('/history', [StockController::class, 'allHistory'])->name('allHistory');
         Route::post('/{product}/update', [StockController::class, 'update'])->name('update');

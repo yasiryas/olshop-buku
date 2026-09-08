@@ -24,7 +24,7 @@ class ProductTransactionController extends Controller
         if ($user->hasAnyRole(['buyer', 'penulis'])) {
             $query->where('user_id', $user->id);
             $view = 'front.product_transaction.index';
-        } elseif ($user->hasAnyRole(['admin', 'owner'])) {
+        } elseif ($user->hasRole('admin')) {
             $view = 'admin.product_transaction.index';
         } else {
             abort(403);
@@ -127,7 +127,7 @@ class ProductTransactionController extends Controller
 
         $productTransaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->find($productTransaction->id);
 
-        if ($user->hasAnyRole(['admin', 'owner'])) {
+        if ($user->hasRole('admin')) {
             return view('admin.product_transaction.details', ['product_transaction' => $productTransaction]);
         }
 
@@ -151,7 +151,7 @@ class ProductTransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        abort_unless(auth()->user()->hasAnyRole(['admin', 'owner']), 403);
+        abort_unless(auth()->user()->hasRole('admin'), 403);
 
         $transaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->findOrFail($id);
 

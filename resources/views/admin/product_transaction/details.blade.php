@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-row w-full justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ Auth::user()->hasRole('owner|admin') ? __('Details') : __('Details') }}
+                {{ __('Details') }}
             </h2>
             <a href="{{ route('product_transactions.index') }}"
                 class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
@@ -126,7 +126,7 @@
                     </div>
                 </div>
                 <hr class="my-3">
-                @role('owner|admin')
+                @role('admin')
                     @if ($product_transaction->is_paid)
                         <a href="#"
                             class="w-fit font-bold bg-green-500 text-white py-3 px-5 rounded-full hover:bg-green-900">

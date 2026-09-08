@@ -16,7 +16,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
-                @role('owner|admin')
+                @role('admin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
                             {{ __('Manage Products') }}
@@ -33,17 +33,17 @@
                         </x-nav-link>
                     </div>
                 @endrole
-                @role('penulis|owner')
+                @role('admin|penulis')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')">
                             {{ __('Manage Article') }}
                         </x-nav-link>
                     </div>
                 @endrole
-                @role('owner|admin|buyer')
+                @role('admin|penulis')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.*')">
-                            {{ Auth::user()->hasRole('owner|admin') ? __('Orders') : __('Orders') }}
+                            {{ Auth::user()->hasRole('admin') ? __('Orders') : __('My Transactions') }}
                         </x-nav-link>
                     </div>
                 @endrole
@@ -107,7 +107,7 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.index')">
-                {{ Auth::user()->hasRole('owner') ? __('Orders') : __('My Transactions') }}
+                {{ Auth::user()->hasRole('admin') ? __('Orders') : __('My Transactions') }}
             </x-responsive-nav-link>
         </div>
 

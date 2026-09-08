@@ -15,10 +15,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Get data based on user role
         if ($user->hasRole('owner|admin')) {
-            // Admin/Owner: Get all transactions data
-            $transactions = ProductTransaction::with('user')->latest()->take(10)->get();
             $totalRevenue = ProductTransaction::where('is_paid', true)->sum('total_amount');
             $totalOrders = ProductTransaction::count();
             $pendingOrders = ProductTransaction::where('is_paid', false)->count();
@@ -29,7 +26,14 @@ class DashboardController extends Controller
                 ->groupBy('month')
                 ->get();
 
-            return view('dashboard', compact('transactions', 'totalRevenue', 'totalOrders', 'pendingOrders', 'monthlyData'));
+            $data = compact('totalRevenue', 'totalOrders', 'pendingOrders', 'monthlyData');
+
+            if ($user->hasRole('admin')) {
+                // Admin: Get recent transactions data
+                $data['transactions'] = ProductTransaction::with('user')->latest()->take(10)->get();
+            }
+
+            return view('dashboard', $data);
         }
 
         // Penulis: Get their articles

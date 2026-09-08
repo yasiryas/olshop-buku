@@ -124,7 +124,8 @@
                 </div>
 
                 <!-- Recent Transactions -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                @if (Auth::user()->hasRole('admin'))
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
                             <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
@@ -186,6 +187,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
             @else
                 {{-- Writer/Author Dashboard --}}
 
