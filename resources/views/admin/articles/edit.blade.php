@@ -89,6 +89,21 @@
             </div>
         </div>
     </div>
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('vendor/select2/select2.min.css') }}">
+        <style>
+            .select2-container {
+                width: 100%;
+            }
+        </style>
+    @endpush
+
+    @push('scripts')
+        <script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
+        <script>
+            $('#category_id').select2({ width: '100%', placeholder: 'Select Category', allowClear: true });
+        </script>
+    @endpush
 </x-app-layout>
 
 <script src="{{ asset('vendor/trumbowyg/dist/trumbowyg.min.js') }}"></script>

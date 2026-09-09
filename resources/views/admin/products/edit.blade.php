@@ -95,4 +95,21 @@
             e.target.value = value;
         });
     </script>
+
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('vendor/select2/select2.min.css') }}">
+        <style>
+            .select2-container {
+                width: 100%;
+            }
+        </style>
+    @endpush
+
+    @push('scripts')
+        <script src="{{ asset('vendor/jquery/jquery-3.7.1.js') }}"></script>
+        <script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
+        <script>
+            $('#category_id').select2({ width: '100%', placeholder: 'Select Category', allowClear: true });
+        </script>
+    @endpush
 </x-app-layout>

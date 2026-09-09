@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "quill": "^2.0.3",
+        "select2": "^4.1.0",
         "summernote": "^0.9.1"
     }
 }

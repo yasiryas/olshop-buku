@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 
 <body class="font-sans antialiased">
@@ -135,6 +136,7 @@
     </script>
 
     {{ $script ?? '' }}
+    @stack('scripts')
 </body>
 
 </html>
