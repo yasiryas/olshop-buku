@@ -49,19 +49,19 @@ class StoreSettings
         return self::get('wa_contact', '6285713878266');
     }
 
-    public static function waMode(): string
+    public static function biteshipApiKey(): string
     {
-        return self::get('wa_mode', 'manual');
+        return (string) self::get('biteship_api_key', '');
     }
 
-    public static function waApiUrl(): string
+    public static function biteshipOriginPostalCode(): string
     {
-        return self::get('wa_api_url', '');
+        return (string) self::get('biteship_origin_postal_code', '');
     }
 
-    public static function waApiToken(): string
+    public static function biteshipConfigured(): bool
     {
-        return self::get('wa_api_token', '');
+        return self::biteshipApiKey() !== '' && self::biteshipOriginPostalCode() !== '';
     }
 
     public static function lowStockThreshold(): int

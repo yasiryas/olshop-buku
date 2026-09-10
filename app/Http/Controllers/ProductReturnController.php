@@ -8,14 +8,30 @@ use Illuminate\Http\Request;
 
 class ProductReturnController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+
         $returns = ProductReturn::with(['transaction.user'])
+            ->when($search, fn ($q) => $q->where(function ($q2) use ($search) {
+                $q2->where('reason', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%")
+                    ->orWhereHas('transaction', function ($qt) use ($search) {
+                        $qt->where('id', 'like', "%{$search}%")
+                            ->orWhereHas('user', fn ($qu) => $qu->where('name', 'like', "%{$search}%"));
+                    });
+            }))
             ->orderByRaw("FIELD(status, 'requested', 'approved', 'rejected')")
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('admin.returns.index', compact('returns'));
+        if ($request->ajax()) {
+            return view('admin.partials.returns_list', compact('returns', 'search'));
+        }
+
+        return view('admin.returns.index', compact('returns', 'search'));
     }
 
     public function store(Request $request, ProductTransaction $productTransaction)

@@ -413,6 +413,7 @@
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pembeli</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -422,10 +423,15 @@
                                             <td class="px-4 py-3 text-sm text-gray-500">#{{ $returnRequest->transaction->id }}</td>
                                             <td class="px-4 py-3 text-sm text-gray-500">{{ $returnRequest->transaction->user->name ?? 'N/A' }}</td>
                                             <td class="px-4 py-3 text-sm text-gray-700">{{ $returnRequest->reason }}</td>
+                                            <td class="px-4 py-3">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white {{ $returnRequest->statusBadgeColor() }}">
+                                                    {{ $returnRequest->statusLabel() }}
+                                                </span>
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">Tidak ada permintaan retur.</td>
+                                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">Tidak ada permintaan retur.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

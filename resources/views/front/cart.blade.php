@@ -157,24 +157,76 @@
                 {{-- SHIPPING METHOD --}}
                 <div class="bg-white rounded-2xl p-6 shadow">
                     <h3 class="text-lg font-bold mb-4">Metode Pengiriman</h3>
-                    <div class="space-y-3">
-                        @forelse ($shippingRates as $sr)
-                            <label
-                                class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
-                                <input type="radio" name="shipping_method" value="{{ $sr['code'] }}"
-                                    data-cost="{{ $sr['cost'] }}" data-eta="{{ $sr['eta'] }}" class="absolute opacity-0"
-                                    @change="calculatePrice()" {{ $loop->first ? 'checked' : '' }}>
-                                <div>
-                                    <p class="font-semibold">{{ $sr['courier'] }}</p>
-                                    <p class="text-sm text-gray-500">
-                                        {{ $sr['cost'] > 0 ? 'Rp ' . number_format($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
-                                    </p>
-                                </div>
-                            </label>
-                        @empty
-                            <p class="text-sm text-gray-500">Belum ada kurir. Hubungi admin.</p>
-                        @endforelse
-                    </div>
+
+                    @if ($biteshipConfigured)
+                        <div x-data="biteshipShipping()" x-init="$nextTick(() => autoFetch())">
+                            <p class="text-xs text-gray-500 mb-3">Masukkan kode pos tujuan lalu cek ongkir real-time (Biteship).</p>
+                            <div class="flex gap-2">
+                                <input type="number" x-model="postCode" placeholder="Kode pos tujuan"
+                                    class="w-full border rounded-lg px-4 py-2 text-sm">
+                                <button type="button" @click="fetchRates()" :disabled="loading"
+                                    class="shrink-0 bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-indigo-900">
+                                    <span x-show="!loading">Cek Ongkir</span>
+                                    <span x-show="loading">...</span>
+                                </button>
+                            </div>
+                            <p x-show="error" x-text="error" class="text-red-500 text-xs mt-2"></p>
+                            <div id="biteship-results" class="space-y-3 mt-3">
+                                <template x-for="rate in rates" :key="rate.rate_id">
+                                    <label
+                                        class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                        <input type="radio" name="shipping_method" :value="rate.rate_id"
+                                            :data-cost="rate.cost" :data-eta="rate.eta" class="absolute opacity-0"
+                                            @change="calculatePrice()">
+                                        <div>
+                                            <p class="font-semibold" x-text="rate.courier + ' - ' + rate.service"></p>
+                                            <p class="text-sm text-gray-500"
+                                                x-text="(rate.cost > 0 ? 'Rp ' + Number(rate.cost).toLocaleString('id') : 'Gratis') + ' · ' + rate.eta"></p>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div id="manual-rates" class="space-y-3 mt-4 hidden">
+                            <p class="text-xs text-gray-500 font-semibold">Tarif manual (fallback):</p>
+                            @forelse ($shippingRates as $sr)
+                                <label
+                                    class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                    <input type="radio" name="shipping_method" value="{{ $sr['code'] }}"
+                                        data-cost="{{ $sr['cost'] }}" data-eta="{{ $sr['eta'] }}" class="absolute opacity-0"
+                                        @change="calculatePrice()">
+                                    <div>
+                                        <p class="font-semibold">{{ $sr['courier'] }}</p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ $sr['cost'] > 0 ? 'Rp ' . number_format($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
+                                        </p>
+                                    </div>
+                                </label>
+                            @empty
+                                <p class="text-sm text-gray-500">Belum ada kurir. Hubungi admin.</p>
+                            @endforelse
+                        </div>
+                    @else
+                        <div class="space-y-3">
+                            @forelse ($shippingRates as $sr)
+                                <label
+                                    class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                    <input type="radio" name="shipping_method" value="{{ $sr['code'] }}"
+                                        data-cost="{{ $sr['cost'] }}" data-eta="{{ $sr['eta'] }}" class="absolute opacity-0"
+                                        @change="calculatePrice()" {{ $loop->first ? 'checked' : '' }}>
+                                    <div>
+                                        <p class="font-semibold">{{ $sr['courier'] }}</p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ $sr['cost'] > 0 ? 'Rp ' . number_format($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
+                                        </p>
+                                    </div>
+                                </label>
+                            @empty
+                                <p class="text-sm text-gray-500">Belum ada kurir. Hubungi admin.</p>
+                            @endforelse
+                        </div>
+                    @endif
                 </div>
 
                 {{-- DELIVERY --}}
@@ -192,24 +244,28 @@
                             @enderror
                         </div>
 
-                        <div>
+<div>
                             <label class="font-semibold">City</label>
-                            <select name="city" id="citySelect"
-                                class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
-                                @forelse ($shippingZones as $zone)
-                                    <option value="{{ $zone['city'] }}"
-                                        data-costs="{{ json_encode($zone['costs']) }}" {{ old('city', $shippingZones[0]['city'] ?? '') === $zone['city'] ? 'selected' : '' }}>
-                                        {{ $zone['city'] }}
-                                    </option>
-                                @empty
-                                    <option value="">Belum ada zona pengiriman</option>
-                                @endforelse
-                            </select>
+                            @if ($biteshipConfigured)
+                                <input type="text" name="city" value="{{ old('city') }}"
+                                    class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+                            @else
+                                <select name="city" id="citySelect"
+                                    class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+                                    @forelse ($shippingZones as $zone)
+                                        <option value="{{ $zone['city'] }}"
+                                            data-costs="{{ json_encode($zone['costs']) }}" {{ old('city', $shippingZones[0]['city'] ?? '') === $zone['city'] ? 'selected' : '' }}>
+                                            {{ $zone['city'] }}
+                                        </option>
+                                    @empty
+                                        <option value="">Belum ada zona pengiriman</option>
+                                    @endforelse
+                                </select>
+                            @endif
 
                             @error('city')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
-
                         </div>
 
                         <div>
@@ -357,6 +413,70 @@
                 zoneSelect.addEventListener('change', setZoneShippingCosts);
             }
         });
+
+        @if ($biteshipConfigured)
+            /**
+             * ONGKIR Biteship: cek tarif real-time lalu pasang radio kurir.
+             * Bila API gagal / kosong, tampilkan tarif manual (fallback).
+             */
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('biteshipShipping', () => ({
+                    postCode: '',
+                    loading: false,
+                    error: '',
+                    rates: [],
+                    autoFetch() {
+                        const pc = document.querySelector('input[name="post_code"]');
+                        if (pc && pc.value.trim()) {
+                            this.postCode = pc.value.trim();
+                            this.fetchRates();
+                        }
+                    },
+                    fetchRates() {
+                        const pc = (this.postCode || document.querySelector('input[name="post_code"]')?.value || '').trim();
+                        if (!pc) {
+                            this.error = 'Isi kode pos tujuan dulu.';
+                            return;
+                        }
+                        this.loading = true;
+                        this.error = '';
+                        this.rates = [];
+                        document.querySelectorAll('input[name="shipping_method"]').forEach(r => r.checked = false);
+                        fetch('{{ route('carts.rates') }}?post_code=' + encodeURIComponent(pc), {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        }).then(res => res.json()).then(data => {
+                            this.rates = Array.isArray(data) ? data : [];
+                            const manual = document.getElementById('manual-rates');
+                            if (manual) manual.classList.add('hidden');
+                            if (this.rates.length) this.error = '';
+                            this.$nextTick(() => {
+                                const first = document.querySelector('#biteship-results input[name="shipping_method"]:not([checked])');
+                                if (this.rates.length && first) {
+                                    first.checked = true;
+                                    calculatePrice();
+                                }
+                            });
+                            if (!this.rates.length) this.fallback();
+                        }).catch(() => {
+                            this.fallback();
+                        }).finally(() => {
+                            this.loading = false;
+                        });
+                    },
+                    fallback() {
+                        this.error = 'Ongkir API tidak tersedia, memakai tarif manual.';
+                        const manual = document.getElementById('manual-rates');
+                        if (manual) manual.classList.remove('hidden');
+                        const zoneSelect = document.getElementById('citySelect');
+                        if (zoneSelect) setZoneShippingCosts();
+                        calculatePrice();
+                    }
+                }));
+            });
+        @endif
 
 
         /**

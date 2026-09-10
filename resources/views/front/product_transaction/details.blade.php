@@ -173,7 +173,11 @@
                         <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
                             <p class="text-base font-bold text-gray-800">Pengajuan Retur</p>
                             <p class="text-sm text-gray-600 mt-1">
-                                Status: <span class="font-bold">{{ $returnRequest->statusLabel() }}</span> · Alasan: {{ $returnRequest->reason }}
+                                Status:
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white {{ $returnRequest->statusBadgeColor() }}">
+                                    {{ $returnRequest->statusLabel() }}
+                                </span>
+                                · Alasan: {{ $returnRequest->reason }}
                             </p>
                             @if ($returnRequest->description)
                                 <p class="text-sm text-gray-500 mt-1">{{ $returnRequest->description }}</p>

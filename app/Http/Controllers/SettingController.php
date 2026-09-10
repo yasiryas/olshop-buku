@@ -18,9 +18,8 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'wa_contact' => 'required|string|max:20',
-            'wa_mode' => 'required|in:manual,api',
-            'wa_api_url' => 'nullable|string|max:255',
-            'wa_api_token' => 'nullable|string|max:255',
+            'biteship_api_key' => 'nullable|string|max:255',
+            'biteship_origin_postal_code' => 'nullable|string|max:10',
             'low_stock_threshold' => 'required|integer|min:0',
             'shipping_methods' => 'required|array|min:1',
             'shipping_methods.*.courier' => 'required|string|max:100',
@@ -69,9 +68,8 @@ class SettingController extends Controller
             ->all();
 
         \App\Models\Setting::updateOrCreate(['key' => 'wa_contact'], ['value' => $validated['wa_contact']]);
-        \App\Models\Setting::updateOrCreate(['key' => 'wa_mode'], ['value' => $validated['wa_mode']]);
-        \App\Models\Setting::updateOrCreate(['key' => 'wa_api_url'], ['value' => $validated['wa_api_url'] ?? '']);
-        \App\Models\Setting::updateOrCreate(['key' => 'wa_api_token'], ['value' => $validated['wa_api_token'] ?? '']);
+        \App\Models\Setting::updateOrCreate(['key' => 'biteship_api_key'], ['value' => $validated['biteship_api_key'] ?? '']);
+        \App\Models\Setting::updateOrCreate(['key' => 'biteship_origin_postal_code'], ['value' => $validated['biteship_origin_postal_code'] ?? '']);
         \App\Models\Setting::updateOrCreate(['key' => 'low_stock_threshold'], ['value' => $validated['low_stock_threshold']]);
         \App\Models\Setting::updateOrCreate(['key' => 'shipping_methods'], ['value' => $shippingMethods]);
         \App\Models\Setting::updateOrCreate(['key' => 'shipping_zones'], ['value' => $shippingZones]);

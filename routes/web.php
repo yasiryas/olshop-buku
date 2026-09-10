@@ -52,6 +52,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/cart/add/{product_id}', [CartController::class, 'store'])
         ->middleware('role:buyer')
         ->name('carts.add');
+    Route::get('/cart/rates', [CartController::class, 'rates'])
+        ->middleware('role:buyer')
+        ->name('carts.rates');
 
     Route::resource('product_transactions', ProductTransactionController::class)
         ->middleware('role:owner|admin|buyer')
@@ -66,7 +69,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('categories', CategoryController::class)->middleware('permission:manage categories');
         Route::resource('articles', ArticleController::class)->middleware('permission:manage articles');
 
-        Route::resource('staff', StaffController::class)->only(['index', 'create', 'store'])->middleware('permission:manage staff');
+        Route::resource('staff', StaffController::class)->only(['index', 'store'])->middleware('permission:manage staff');
         Route::post('staff/{user}/toggle', [StaffController::class, 'toggleActive'])->name('staff.toggle')->middleware('permission:manage staff');
 
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index')->middleware('permission:view reports');

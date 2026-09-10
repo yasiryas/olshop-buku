@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductTransaction;
 use App\Models\TransactionDetail;
 use App\Support\StoreSettings;
+use App\Support\XlsxWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
@@ -49,18 +50,18 @@ class ReportController extends Controller
             'sales' => $data['productSales']->map(fn ($row) => [
                 $row->product->name ?? 'Produk',
                 $row->product->category->name ?? '-',
-                $row->total_qty,
+                (int) $row->total_qty,
                 (int) $row->total_revenue,
             ]),
             'daily' => $data['dailySales']->map(fn ($row) => [
                 \Carbon\Carbon::parse($row->date)->format('Y-m-d'),
-                $row->total_orders,
+                (int) $row->total_orders,
                 (int) $row->revenue,
             ]),
             'stock' => $data['stockReport']->map(fn ($row) => [
                 $row['name'],
                 $row['category'] ?? '-',
-                $row['stock'],
+                (int) $row['stock'],
                 $row['stock'] <= StoreSettings::lowStockThreshold() ? 'Menipis' : 'Aman',
             ]),
         };
@@ -71,7 +72,7 @@ class ReportController extends Controller
             'stock' => ['Produk', 'Kategori', 'Stok', 'Status'],
         };
 
-        return $this->downloadCsv("laporan-{$type}-{$from}-{$to}.csv", $columns, $rows);
+        return $this->downloadXlsx("laporan-{$type}-{$from}-{$to}.xlsx", $columns, $rows);
     }
 
     private function resolveRange(Request $request): array
@@ -124,22 +125,12 @@ class ReportController extends Controller
         return compact('revenue', 'orderCount', 'paidOrderCount', 'dailySales', 'productSales', 'stockReport');
     }
 
-    private function downloadCsv(string $filename, array $columns, Collection $rows)
+    private function downloadXlsx(string $filename, array $columns, Collection $rows)
     {
-        $stream = fopen('php://temp', 'w+');
-        fwrite($stream, "\xEF\xBB\xBF"); // BOM agar Excel membaca UTF-8
-        fputcsv($stream, $columns);
-
-        foreach ($rows as $row) {
-            fputcsv($stream, $row);
-        }
-
-        rewind($stream);
-        $content = stream_get_contents($stream);
-        fclose($stream);
+        $content = XlsxWriter::create('Laporan', $columns, $rows->toArray());
 
         return Response::make($content, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => XlsxWriter::mime(),
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }

@@ -4,12 +4,49 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Kelola Staff') }}
             </h2>
-            <a href="{{ route('admin.staff.create') }}"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">Tambah Staff</a>
+            <form method="GET" action="{{ route('admin.staff.index') }}" class="flex gap-x-3"
+                x-data="searchableList('{{ route('admin.staff.index') }}', 'results-staff')"
+                @submit.prevent="search()">
+                <input type="text" name="search" placeholder="Cari nama, email, peran..." value="{{ request('search') }}"
+                    x-model="keyword" @input.debounce.500ms="search()"
+                    class="border-2 text-slate-400 rounded-full px-4 py-2">
+            </form>
+            <button type="button" @click="$dispatch('open-modal', 'add-staff')"
+                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">Tambah Staff</button>
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12"
+        x-data="{
+            adding: false,
+            submitAdd(form) {
+                if (this.adding) return;
+                this.adding = true;
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(res => {
+                    if (!res.ok && !res.redirected) throw new Error('Gagal menambah staff');
+                    form.reset();
+                    this.$dispatch('close-modal', 'add-staff');
+                    return this.refreshList();
+                }).catch(() => {
+                    this.adding = false;
+                    alert('Gagal menambah staff. Cek kembali data (email mungkin sudah terdaftar).');
+                });
+            },
+            refreshList() {
+                return fetch('{{ route('admin.staff.index') }}', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(res => res.text()).then(html => {
+                    const el = document.getElementById('results-staff');
+                    el.innerHTML = html;
+                    Alpine.initTree(el);
+                    this.adding = false;
+                });
+            }
+        }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if (session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
@@ -17,60 +54,51 @@
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    @if ($inactiveCount > 0)
-                        <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg mb-4 text-sm">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>{{ $inactiveCount }} akun staff sedang dinonaktifkan.
-                        </div>
-                    @endif
-
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peran</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($staff as $user)
-                                <tr>
-                                    <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $user->name }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-500">{{ $user->email }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-500">{{ ucfirst($user->roles->first()?->name) }}</td>
-                                    <td class="px-4 py-3">
-                                        @if ($user->is_active)
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>
-                                        @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-200 text-gray-700">Nonaktif</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-3 text-sm">
-                                        <form action="{{ route('admin.staff.toggle', $user) }}" method="POST">
-                                            @csrf
-                                            <button type="submit"
-                                                class="font-bold text-sm {{ $user->is_active ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800' }}">
-                                                {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-4 py-4 text-center text-gray-500">Belum ada staff.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-
-                    <div class="mt-5">
-                        {{ $staff->links() }}
-                    </div>
-                </div>
+            <div id="results-staff">
+                @include('admin.partials.staff_list')
             </div>
         </div>
+
+        <x-modal name="add-staff" maxWidth="lg" focusable>
+            <div class="p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">{{ __('Tambah Staff') }}</h2>
+                <form method="POST" action="{{ route('admin.staff.store') }}" class="space-y-5"
+                    @submit.prevent="submitAdd($el)">
+                    @csrf
+                    <div>
+                        <label class="font-semibold">Nama</label>
+                        <input type="text" name="name" required class="w-full border rounded-lg px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="font-semibold">Email</label>
+                        <input type="email" name="email" required class="w-full border rounded-lg px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="font-semibold">Password</label>
+                        <input type="password" name="password" required class="w-full border rounded-lg px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="font-semibold">Konfirmasi Password</label>
+                        <input type="password" name="password_confirmation" required class="w-full border rounded-lg px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="font-semibold">Peran</label>
+                        <select name="role" required class="w-full border rounded-lg px-4 py-2">
+                            <option value="admin">Admin</option>
+                            <option value="penulis">Penulis</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-end gap-3">
+                        <button type="button" @click="$dispatch('close-modal', 'add-staff')"
+                            class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                            Batal
+                        </button>
+                        <button type="submit" class="bg-indigo-700 text-white font-bold py-2 px-5 rounded-xl hover:bg-indigo-900">
+                            Simpan Staff
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </x-modal>
     </div>
 </x-app-layout>

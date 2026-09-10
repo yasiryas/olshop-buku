@@ -4,10 +4,17 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Retur / Pengembalian') }}
             </h2>
+            <form method="GET" action="{{ route('admin.returns.index') }}" class="flex gap-x-3"
+                x-data="searchableList('{{ route('admin.returns.index') }}', 'results-returns')"
+                @submit.prevent="search()">
+                <input type="text" name="search" placeholder="Cari retur, order, pembeli..." value="{{ request('search') }}"
+                    x-model="keyword" @input.debounce.500ms="search()"
+                    class="border-2 text-slate-400 rounded-full px-4 py-2">
+            </form>
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" x-data="{ approveReturn: null, rejectReturn: null }">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             @if (session('success'))
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
@@ -29,88 +36,60 @@
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Retur</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pembeli</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($returns as $returnRequest)
-                                    <tr>
-                                        <td class="px-4 py-3 text-sm font-medium text-gray-900">#{{ $returnRequest->id }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-500">
-                                            <a href="{{ route('product_transactions.show', $returnRequest->transaction) }}"
-                                                class="text-indigo-600 hover:underline">#{{ $returnRequest->transaction->id }}</a>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm text-gray-500">{{ $returnRequest->transaction->user->name ?? 'N/A' }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-700">
-                                            {{ $returnRequest->reason }}
-                                            @if ($returnRequest->description)
-                                                <div class="text-xs text-gray-500 mt-1">{{ $returnRequest->description }}</div>
-                                            @endif
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white {{ $returnRequest->statusBadgeColor() }}">
-                                                {{ $returnRequest->statusLabel() }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            @if ($returnRequest->admin_note)
-                                                <p class="text-xs text-gray-500 mb-2">Catatan: {{ $returnRequest->admin_note }}</p>
-                                            @endif
-                                            @if ($returnRequest->status === 'requested')
-                                                <div class="flex flex-wrap gap-2 items-center" x-data="{ rejectNote: false }">
-                                                    <form
-                                                        action="{{ route('admin.returns.approve', $returnRequest) }}"
-                                                        method="POST"
-                                                        onsubmit="return confirm('Setujui retur ini? Stok akan dikembalikan dan order ditandai Dikembalikan.')">
-                                                        @csrf
-                                                        <button type="submit"
-                                                            class="text-xs font-bold bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-700">
-                                                            Setujui & Balikkan Stok
-                                                        </button>
-                                                    </form>
-                                                    <button type="button" @click="rejectNote = !rejectNote"
-                                                        class="text-xs font-bold bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-700">
-                                                        Tolak
-                                                    </button>
-                                                    <form x-show="rejectNote" x-transition
-                                                        action="{{ route('admin.returns.reject', $returnRequest) }}"
-                                                        method="POST" class="flex flex-wrap gap-2 items-center w-full">
-                                                        @csrf
-                                                        <input type="text" name="admin_note" required placeholder="Alasan penolakan"
-                                                            class="text-sm border rounded-lg px-3 py-2 flex-1 min-w-[200px]">
-                                                        <button type="submit"
-                                                            class="text-xs font-bold bg-gray-800 text-white py-2 px-4 rounded-full hover:bg-gray-900">
-                                                            Simpan
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="px-4 py-4 text-center text-gray-500">Belum ada pengajuan retur.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-5">
-                        {{ $returns->links() }}
-                    </div>
-                </div>
+            <div id="results-returns">
+                @include('admin.partials.returns_list')
             </div>
         </div>
+
+        <x-modal name="approve-return-modal" maxWidth="md" focusable>
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-2">Setujui Retur</h2>
+                <template x-if="approveReturn">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Setujui retur #<span x-text="approveReturn.id"></span>?
+                            Stok akan dikembalikan dan pesanan ditandai <b>Dikembalikan</b>.
+                        </p>
+                        <div class="flex justify-end gap-3">
+                            <button type="button" @click="$dispatch('close-modal', 'approve-return-modal')"
+                                class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                                Batal
+                            </button>
+                            <form method="POST" :action="`/admin/returns/${approveReturn.id}/approve`">
+                                @csrf
+                                <button type="submit"
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+                                    Ya, Setujui
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </x-modal>
+
+        <x-modal name="reject-return-modal" maxWidth="md" focusable>
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Tolak Retur</h2>
+                <template x-if="rejectReturn">
+                    <form method="POST" :action="`/admin/returns/${rejectReturn.id}/reject`">
+                        @csrf
+                        <label class="text-sm font-semibold text-gray-700">Alasan Penolakan</label>
+                        <input type="text" name="admin_note" required placeholder="Alasan penolakan"
+                            class="mt-1 w-full border rounded-lg px-4 py-2">
+                        <div class="flex justify-end gap-3 mt-4">
+                            <button type="button" @click="$dispatch('close-modal', 'reject-return-modal')"
+                                class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                                Tolak
+                            </button>
+                        </div>
+                    </form>
+                </template>
+            </div>
+        </x-modal>
     </div>
 </x-app-layout>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Support\BiteshipShipping;
 use App\Support\StoreSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +25,26 @@ class CartController extends Controller
                 'shippingRates' => StoreSettings::shippingRates(),
                 'shippingZones' => StoreSettings::shippingZones(),
                 'paymentMethods' => StoreSettings::paymentMethods(),
+                'biteshipConfigured' => BiteshipShipping::configured(),
             ]
         );
+    }
+
+    /**
+     * Tarif ongkir real-time via Biteship untuk kode pos tujuan.
+     */
+    public function rates(Request $request)
+    {
+        $validated = $request->validate([
+            'post_code' => 'required|integer',
+        ]);
+
+        $cartItems = Auth::user()->carts()->with('product')->get();
+
+        return response()->json(BiteshipShipping::rates(
+            (int) $validated['post_code'],
+            BiteshipShipping::cartWeightGrams($cartItems)
+        ));
     }
 
     /**

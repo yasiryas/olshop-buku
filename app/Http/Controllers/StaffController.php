@@ -9,22 +9,30 @@ class StaffController extends Controller
 {
     private const STAFF_ROLES = ['admin', 'penulis'];
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+
         $staff = User::whereHas('roles', fn ($q) => $q->whereIn('name', self::STAFF_ROLES))
             ->with('roles')
+            ->when($search, fn ($q) => $q->where(function ($q2) use ($search) {
+                $q2->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('roles', fn ($qr) => $qr->where('name', 'like', "%{$search}%"));
+            }))
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('admin.staff.index', [
-            'staff' => $staff,
-            'inactiveCount' => $staff->where('is_active', false)->count(),
-        ]);
-    }
+        $inactiveCount = User::whereHas('roles', fn ($q) => $q->whereIn('name', self::STAFF_ROLES))
+            ->where('is_active', false)
+            ->count();
 
-    public function create()
-    {
-        return view('admin.staff.create');
+        if ($request->ajax()) {
+            return view('admin.partials.staff_list', compact('staff', 'search', 'inactiveCount'));
+        }
+
+        return view('admin.staff.index', compact('staff', 'search', 'inactiveCount'));
     }
 
     public function store(Request $request)

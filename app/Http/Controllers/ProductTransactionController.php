@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\TransactionDetail;
 use App\Models\ProductTransaction;
 use App\Support\StoreSettings;
+use App\Support\BiteshipShipping;
 use App\Support\WaNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -70,23 +71,45 @@ class ProductTransactionController extends Controller
         $user = Auth::user();
 
         $zoneCities = StoreSettings::shippingZoneCities();
-        if (empty($zoneCities)) {
+        $biteshipConfigured = BiteshipShipping::configured();
+
+        if (!$biteshipConfigured && empty($zoneCities)) {
             throw ValidationException::withMessages([
                 'city' => ['Belum ada zona pengiriman. Hubungi admin.'],
             ]);
         }
 
-        $shippingRates = StoreSettings::shippingRatesFor($request->input('city', ''));
+        if ($biteshipConfigured) {
+            $biteshipRates = BiteshipShipping::rates(
+                (int) $request->input('post_code'),
+                BiteshipShipping::cartWeightGrams($user->carts()->with('product')->get())
+            );
+
+            if (empty($biteshipRates)) {
+                $biteshipConfigured = false;
+            }
+        } else {
+            $biteshipRates = [];
+        }
+
+        $shippingRates = $biteshipConfigured
+            ? $biteshipRates
+            : StoreSettings::shippingRatesFor($request->input('city', ''));
+
         $paymentMethods = StoreSettings::paymentMethods();
 
         $validated = $request->validate([
             'address' => 'required|string|max:512',
-            'city' => 'required|in:' . implode(',', $zoneCities),
+            'city' => $biteshipConfigured
+                ? 'required|string|max:255'
+                : 'required|in:' . implode(',', $zoneCities),
             'post_code' => 'required|integer',
             'phone_number' => 'required',
             'notes' => 'max:65535',
             'proof' => 'required|image|mimes:png,jpg,jpeg',
-            'shipping_method' => 'required|in:' . implode(',', array_column($shippingRates, 'code')),
+            'shipping_method' => $biteshipConfigured
+                ? 'required|in:' . implode(',', array_column($shippingRates, 'rate_id'))
+                : 'required|in:' . implode(',', array_column($shippingRates, 'code')),
             'payment_method' => 'required|in:' . implode(',', array_column($paymentMethods, 'code')),
         ]);
         DB::beginTransaction();
@@ -113,7 +136,10 @@ class ProductTransactionController extends Controller
             $tax = (11 / 100) * $subTotal;
             $insurance = (23 / 100) * $subTotal;
 
-            $selectedShipping = collect($shippingRates)->firstWhere('code', $request->shipping_method);
+            $selectedShipping = $biteshipConfigured
+                ? collect($shippingRates)->firstWhere('rate_id', $request->shipping_method)
+                : collect($shippingRates)->firstWhere('code', $request->shipping_method);
+
             $selectedPayment = collect($paymentMethods)->firstWhere('code', $request->payment_method);
 
             $shippingCost = (int) ($selectedShipping['cost'] ?? 0);
@@ -123,7 +149,9 @@ class ProductTransactionController extends Controller
             $validated['total_amount'] = $grandTotal;
             $validated['is_paid'] = false;
             $validated['status'] = ProductTransaction::STATUS_PENDING;
-            $validated['shipping_method'] = $selectedShipping['courier'] ?? $request->shipping_method;
+            $validated['shipping_method'] = $biteshipConfigured
+                ? trim(($selectedShipping['courier'] ?? '') . ' ' . ($selectedShipping['service'] ?? ''))
+                : ($selectedShipping['courier'] ?? $request->shipping_method);
             $validated['shipping_cost'] = $shippingCost;
             $validated['payment_method'] = $selectedPayment['name'] ?? $request->payment_method;
 
