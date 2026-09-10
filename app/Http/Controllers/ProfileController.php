@@ -42,11 +42,13 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        abort_if($user->isInternal(), 403, 'Akun internal hanya bisa dinonaktifkan oleh Owner.');
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
-
-        $user = $request->user();
 
         Auth::logout();
 

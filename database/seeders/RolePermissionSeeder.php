@@ -4,11 +4,52 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
     protected const DEFAULT_PASSWORD = '12345678';
+
+    private const PERMISSIONS = [
+        'view dashboard',
+        'manage products',
+        'manage categories',
+        'manage articles',
+        'manage stocks',
+        'process orders',
+        'manage customers',
+        'manage staff',
+        'view reports',
+        'manage settings',
+    ];
+
+    private const ROLE_PERMISSIONS = [
+        'owner' => [
+            'view dashboard',
+            'manage products',
+            'manage categories',
+            'manage articles',
+            'manage stocks',
+            'process orders',
+            'view reports',
+            'manage staff',
+            'manage settings',
+        ],
+        'admin' => [
+            'view dashboard',
+            'manage products',
+            'manage categories',
+            'manage stocks',
+            'process orders',
+            'manage customers',
+        ],
+        'penulis' => [
+            'view dashboard',
+            'manage articles',
+        ],
+        'buyer' => [],
+    ];
 
     protected function seedRole(string $name): Role
     {
@@ -22,6 +63,7 @@ class RolePermissionSeeder extends Seeder
             [
                 'name' => $data['name'],
                 'password' => bcrypt($data['password'] ?? self::DEFAULT_PASSWORD),
+                'is_active' => $data['is_active'] ?? true,
             ]
         );
         $user->syncRoles([$data['role']]);
@@ -31,10 +73,15 @@ class RolePermissionSeeder extends Seeder
 
     public function run(): void
     {
-        $roles = ['owner', 'admin', 'penulis', 'buyer'];
+        foreach (self::PERMISSIONS as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
         $roleModels = [];
-        foreach ($roles as $role) {
-            $roleModels[$role] = $this->seedRole($role);
+        foreach (array_keys(self::ROLE_PERMISSIONS) as $role) {
+            $roleModel = $this->seedRole($role);
+            $roleModel->syncPermissions(self::ROLE_PERMISSIONS[$role]);
+            $roleModels[$role] = $roleModel;
         }
 
         $users = [

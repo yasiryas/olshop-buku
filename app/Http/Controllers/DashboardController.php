@@ -3,45 +3,75 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Product;
 use App\Models\ProductTransaction;
 use App\Models\StockMutation;
+use App\Models\TransactionDetail;
 use Illuminate\Support\Collection;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display a dashboard based on user role.
-     */
+    private const PAID_STATUSES = [
+        ProductTransaction::STATUS_PROCESSING,
+        ProductTransaction::STATUS_SHIPPED,
+        ProductTransaction::STATUS_COMPLETED,
+    ];
+
     public function index()
     {
         $user = auth()->user();
 
-        if ($user->hasAnyRole(['owner', 'admin'])) {
-            $totalRevenue = ProductTransaction::where('is_paid', true)->sum('total_amount');
-            $totalOrders = ProductTransaction::count();
-            $pendingOrders = ProductTransaction::where('is_paid', false)->count();
-
-            // Monthly data for chart
-            $monthlyData = ProductTransaction::selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
-                ->whereYear('created_at', date('Y'))
-                ->groupBy('month')
-                ->get();
-
-            $data = compact('totalRevenue', 'totalOrders', 'pendingOrders', 'monthlyData');
-
-            $data['recentActivities'] = $this->recentActivities();
-
-            if ($user->hasAnyRole(['owner', 'admin'])) {
-                // Get recent transactions data
-                $data['transactions'] = ProductTransaction::with('user')->latest()->take(10)->get();
-            }
-
-            return view('dashboard', $data);
+        if ($user->hasRole('owner')) {
+            return $this->ownerDashboard();
         }
 
-        // Penulis: Get their articles
-        $articles = Article::with('category')->where('user_id', $user->id)->latest()->take(10)->get();
-        $totalArticles = Article::where('user_id', $user->id)->count();
+        if ($user->hasRole('admin')) {
+            return $this->adminDashboard();
+        }
+
+        return $this->writerDashboard($user->id);
+    }
+
+    private function ownerDashboard()
+    {
+        $stats = $this->transactionStats();
+
+        $bestSellers = TransactionDetail::selectRaw('product_id, SUM(qty) as total_qty, SUM(price * qty) as total_revenue')
+            ->whereHas('productTransaction', fn ($q) => $q->whereIn('status', self::PAID_STATUSES))
+            ->with('product')
+            ->groupBy('product_id')
+            ->orderByDesc('total_qty')
+            ->limit(5)
+            ->get();
+
+        $data = $stats;
+        $data['bestSellers'] = $bestSellers;
+        $data['lowStockProducts'] = $this->lowStockProducts();
+        $data['recentActivities'] = $this->recentActivities();
+        $data['transactions'] = ProductTransaction::with('user')->latest()->take(10)->get();
+
+        return view('dashboard', $data);
+    }
+
+    private function adminDashboard()
+    {
+        $data = $this->transactionStats();
+        $data['statusCounts'] = ProductTransaction::selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+        $data['lowStockProducts'] = $this->lowStockProducts();
+        $data['recentActivities'] = $this->recentActivities();
+        $data['transactions'] = ProductTransaction::with('user')->where('status', ProductTransaction::STATUS_PENDING)->latest()->take(10)->get();
+
+        return view('dashboard', $data);
+    }
+
+    private function writerDashboard(int $userId)
+    {
+        $articles = Article::with('category')->where('user_id', $userId)->latest()->take(10)->get();
+        $totalArticles = Article::where('user_id', $userId)->count();
+        $publishedArticles = Article::where('user_id', $userId)->where('is_published', true)->count();
 
         $recentActivities = collect([
             [
@@ -52,7 +82,39 @@ class DashboardController extends Controller
             ],
         ])->filter(fn ($a) => $a['time']);
 
-        return view('dashboard', compact('articles', 'totalArticles', 'recentActivities'));
+        return view('dashboard', [
+            'totalArticles' => $totalArticles,
+            'publishedArticles' => $publishedArticles,
+            'articles' => $articles,
+            'recentActivities' => $recentActivities,
+        ]);
+    }
+
+    private function transactionStats(): array
+    {
+        $totalRevenue = ProductTransaction::whereIn('status', self::PAID_STATUSES)->sum('total_amount');
+        $totalOrders = ProductTransaction::count();
+        $pendingOrders = ProductTransaction::where('status', ProductTransaction::STATUS_PENDING)->count();
+        $completedOrders = ProductTransaction::where('status', ProductTransaction::STATUS_COMPLETED)->count();
+
+        $monthlyData = ProductTransaction::selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
+            ->whereIn('status', self::PAID_STATUSES)
+            ->whereYear('created_at', date('Y'))
+            ->groupBy('month')
+            ->get();
+
+        return compact('totalRevenue', 'totalOrders', 'pendingOrders', 'completedOrders', 'monthlyData');
+    }
+
+    private function lowStockProducts(): Collection
+    {
+        $threshold = 5;
+
+        return Product::withStock()->get()
+            ->filter(fn ($product) => $product->stock <= $threshold)
+            ->sortBy('stock')
+            ->take(8)
+            ->values();
     }
 
     /**

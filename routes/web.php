@@ -8,9 +8,13 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ProductTransactionController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/sw.js', fn () => Response::file(resource_path('pwa/sw.js'), [
     'Content-Type' => 'application/javascript',
@@ -38,27 +42,47 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware(['auth', 'verified', 'role:owner|admin|penulis'])
         ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Route::resource('carts', CartController::class)->middleware('role:buyer');
     Route::resource('carts', CartController::class)->middleware('role:buyer')->except(['store', 'create', 'edit']);
     Route::post('/cart/add/{product_id}', [CartController::class, 'store'])
         ->middleware('role:buyer')
         ->name('carts.add');
 
     Route::resource('product_transactions', ProductTransactionController::class)
-        ->middleware('role:owner|admin|buyer');
+        ->middleware('role:owner|admin|buyer')
+        ->only(['index', 'show', 'store', 'destroy']);
 
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::resource('products', ProductController::class)->middleware('role:owner|admin');
-        Route::resource('categories', CategoryController::class)->middleware('role:owner|admin');
-        Route::resource('articles', ArticleController::class)->middleware('role:owner|penulis');
+        Route::resource('products', ProductController::class)->middleware('permission:manage products');
+        Route::resource('categories', CategoryController::class)->middleware('permission:manage categories');
+        Route::resource('articles', ArticleController::class)->middleware('permission:manage articles');
+
+        Route::resource('staff', StaffController::class)->only(['index', 'create', 'store'])->middleware('permission:manage staff');
+        Route::post('staff/{user}/toggle', [StaffController::class, 'toggleActive'])->name('staff.toggle')->middleware('permission:manage staff');
+
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index')->middleware('permission:view reports');
+
+        Route::get('customers', [CustomerController::class, 'index'])->name('customers.index')->middleware('permission:manage customers');
+        Route::get('customers/{user}', [CustomerController::class, 'show'])->name('customers.show')->middleware('permission:manage customers');
+
+        Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit')->middleware('permission:manage settings');
+        Route::put('settings', [SettingController::class, 'update'])->name('settings.update')->middleware('permission:manage settings');
+
+        Route::post('orders/{productTransaction}/approve', [ProductTransactionController::class, 'approve'])->name('orders.approve')
+            ->middleware('permission:process orders');
+        Route::post('orders/{productTransaction}/ship', [ProductTransactionController::class, 'ship'])->name('orders.ship')
+            ->middleware('permission:process orders');
+        Route::post('orders/{productTransaction}/complete', [ProductTransactionController::class, 'complete'])->name('orders.complete')
+            ->middleware('permission:process orders');
+        Route::post('orders/{productTransaction}/reject', [ProductTransactionController::class, 'reject'])->name('orders.reject')
+            ->middleware('permission:process orders');
     });
 
-    Route::prefix('admin/stocks')->name('stocks.')->middleware('role:owner|admin')->group(function () {
+    Route::prefix('admin/stocks')->name('stocks.')->middleware('permission:manage stocks')->group(function () {
         Route::get('/', [StockController::class, 'index'])->name('index');
         Route::get('/history', [StockController::class, 'allHistory'])->name('allHistory');
         Route::post('/{product}/update', [StockController::class, 'update'])->name('update');

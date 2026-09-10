@@ -40,6 +40,30 @@
                         </x-nav-link>
                     </div>
                 @endrole
+                @role('owner')
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('admin.reports.index')" :active="request()->routeIs('admin.reports.*')">
+                            {{ __('Laporan') }}
+                        </x-nav-link>
+                    </div>
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('admin.staff.index')" :active="request()->routeIs('admin.staff.*')">
+                            {{ __('Kelola Staff') }}
+                        </x-nav-link>
+                    </div>
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('admin.settings.edit')" :active="request()->routeIs('admin.settings.*')">
+                            {{ __('Pengaturan Toko') }}
+                        </x-nav-link>
+                    </div>
+                @endrole
+                @role('admin')
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
+                            {{ __('Pelanggan') }}
+                        </x-nav-link>
+                    </div>
+                @endrole
                 @role('owner|admin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.*')">

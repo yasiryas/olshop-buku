@@ -19,11 +19,23 @@
                 </div>
             </div>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
+            @if (!Auth::user()->isInternal())
+                <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                    <div class="max-w-xl">
+                        @include('profile.partials.delete-user-form')
+                    </div>
                 </div>
-            </div>
+            @else
+                <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                    <div class="max-w-xl">
+                        <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg">
+                            Akun internal ({{
+                                ucfirst(Auth::user()->getRoleNames()->first())
+                            }}) tidak boleh dihapus. Jika perlu, Owner akan menonaktifkan akun Anda.
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

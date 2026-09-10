@@ -16,8 +16,8 @@
                 </div>
             </div>
 
-            @if (Auth::user()->hasAnyRole(['owner', 'admin']))
-                {{-- Admin/Owner Dashboard --}}
+            @if (Auth::user()->hasRole('owner'))
+                {{-- Owner Dashboard: ringkasan bisnis --}}
 
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -97,7 +97,7 @@
                                         Completed
                                     </p>
                                     <p class="text-2xl font-bold text-gray-800">
-                                        {{ ($totalOrders ?? 0) - ($pendingOrders ?? 0) }}</p>
+                                        {{ $completedOrders ?? 0 }}</p>
                                 </div>
                             </div>
                         </div>
@@ -119,6 +119,52 @@
                         <div class="p-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-4">Orders Status</h3>
                             <canvas id="ordersChart" height="80"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Owner: Produk Terlaris & Stok Menipis -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Best Sellers -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-trophy mr-2 text-yellow-500"></i> Produk Terlaris
+                            </h3>
+                            <ul class="divide-y divide-gray-100">
+                                @forelse ($bestSellers ?? [] as $item)
+                                    <li class="py-3 flex items-center justify-between gap-3">
+                                        <p class="text-sm text-gray-800">{{ $item->product->name ?? 'Produk' }}</p>
+                                        <p class="text-sm text-gray-500 shrink-0">{{ $item->total_qty }} pcs</p>
+                                    </li>
+                                @empty
+                                    <li class="py-3 text-sm text-gray-500">Belum ada penjualan.</li>
+                                @endforelse
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i> Stok Menipis
+                                </h3>
+                                <a href="{{ route('stocks.index') }}"
+                                    class="text-sm text-red-600 hover:underline">Kelola <i
+                                        class="fas fa-arrow-right ml-1"></i></a>
+                            </div>
+                            <ul class="divide-y divide-gray-100">
+                                @forelse ($lowStockProducts ?? [] as $product)
+                                    <li class="py-3 flex items-center justify-between gap-3">
+                                        <p class="text-sm text-gray-800">{{ $product->name }}</p>
+                                        <p class="text-sm font-semibold text-red-500 shrink-0">{{ $product->stock }} pcs</p>
+                                    </li>
+                                @empty
+                                    <li class="py-3 text-sm text-gray-500">Semua stok aman.</li>
+                                @endforelse
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -148,72 +194,207 @@
                 </div>
 
                 <!-- Recent Transactions -->
-                @if (Auth::user()->hasAnyRole(['owner', 'admin']))
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                        <div class="p-6">
-                            <div
-                                class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                                <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
-                                <a href="{{ route('product_transactions.index') }}"
-                                    class="text-sm text-red-600 hover:underline">
-                                    View All <i class="fas fa-arrow-right ml-1"></i>
-                                </a>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <div
+                            class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                            <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
+                            <a href="{{ route('product_transactions.index') }}"
+                                class="text-sm text-red-600 hover:underline">
+                                View All <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Order ID</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Customer</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Amount</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @forelse($transactions ?? [] as $transaction)
                                         <tr>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Order ID</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Customer</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Amount</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Status</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Date</th>
+                                            <td
+                                                class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                #{{ $transaction->id }}</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                {{ $transaction->user->name ?? 'N/A' }}</td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Rp
+                                                {{ number_format($transaction->total_amount) }}</td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $transaction->statusBadgeColor() }} text-white">{{ $transaction->statusLabel() }}</span>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                {{ $transaction->created_at->format('d M Y') }}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        @forelse($transactions ?? [] as $transaction)
-                                            <tr>
-                                                <td
-                                                    class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    #{{ $transaction->id }}</td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $transaction->user->name ?? 'N/A' }}</td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Rp
-                                                    {{ number_format($transaction->total_amount) }}</td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    @if ($transaction->is_paid)
-                                                        <span
-                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Paid</span>
-                                                    @else
-                                                        <span
-                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
-                                                    @endif
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                    {{ $transaction->created_at->format('d M Y') }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" class="px-4 py-4 text-center text-gray-500">No
-                                                    transactions yet</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">No
+                                                transactions yet</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                </div>
+            @elseif (Auth::user()->hasRole('admin'))
+                {{-- Admin Dashboard: monitoring operasional --}}
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-yellow-500 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Menunggu Proses</p>
+                                    <p class="text-2xl font-bold text-gray-800">{{ $statusCounts['pending'] ?? 0 }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                @endif
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-blue-500 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Diproses (siap kirim)</p>
+                                    <p class="text-2xl font-bold text-gray-800">{{ $statusCounts['processing'] ?? 0 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-indigo-500 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Dikirim</p>
+                                    <p class="text-2xl font-bold text-gray-800">{{ $statusCounts['shipped'] ?? 0 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-red-500 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-500">Stok Menipis (<= 5)</p>
+                                    <p class="text-2xl font-bold text-gray-800">{{ count($lowStockProducts ?? []) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stok Menipis -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i> Stok Menipis
+                            </h3>
+                            <a href="{{ route('stocks.index') }}" class="text-sm text-red-600 hover:underline">Kelola</a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @forelse ($lowStockProducts ?? [] as $product)
+                                        <tr>
+                                            <td class="px-4 py-3 text-sm text-gray-800">{{ $product->name }}</td>
+                                            <td class="px-4 py-3 text-sm font-semibold text-red-500">{{ $product->stock }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="2" class="px-4 py-4 text-center text-gray-500">Semua stok aman.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pesanan menunggu diproses -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Pesanan Menunggu Proses</h3>
+                            <a href="{{ route('product_transactions.index') }}" class="text-sm text-red-600 hover:underline">Lihat Semua</a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @forelse ($transactions ?? [] as $transaction)
+                                        <tr>
+                                            <td class="px-4 py-3 text-sm font-medium text-gray-900">#{{ $transaction->id }}</td>
+                                            <td class="px-4 py-3 text-sm text-gray-500">{{ $transaction->user->name ?? 'N/A' }}</td>
+                                            <td class="px-4 py-3 text-sm text-gray-900">Rp {{ number_format($transaction->total_amount) }}</td>
+                                            <td class="px-4 py-3 text-sm text-gray-500">{{ $transaction->created_at->format('d M Y') }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">Tidak ada pesanan yang menunggu.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             @else
                 {{-- Writer/Author Dashboard --}}
 
@@ -251,7 +432,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-medium text-gray-500">Published</p>
-                                    <p class="text-2xl font-bold text-gray-800">{{ count($articles ?? []) }}</p>
+                                    <p class="text-2xl font-bold text-gray-800">{{ $publishedArticles ?? count($articles ?? []) }}</p>
                                 </div>
                             </div>
                         </div>

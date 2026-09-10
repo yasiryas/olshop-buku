@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_active',
     ];
 
     /**
@@ -55,5 +56,15 @@ class User extends Authenticatable
     public function productTransactions()
     {
         return $this->hasMany(ProductTransaction::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function isInternal(): bool
+    {
+        return $this->hasAnyRole(['owner', 'admin', 'penulis']);
     }
 }
