@@ -30,7 +30,25 @@ class ProductController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.products.index', ['products' => $products, 'search' => $search]);
+        if ($request->ajax()) {
+            return view('admin.partials.products_list', compact('products', 'search'));
+        }
+
+        return view('admin.products.index', [
+            'products' => $products,
+            'search' => $search,
+            'categories' => Category::all(),
+            'editData' => Product::orderBy('id', 'DESC')
+                ->get(['id', 'name', 'price', 'about', 'category_id', 'photo'])
+                ->map(fn ($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'price' => (string) $p->price,
+                    'about' => $p->about,
+                    'category_id' => $p->category_id,
+                    'photo' => Storage::url($p->photo),
+                ]),
+        ]);
     }
 
     /**

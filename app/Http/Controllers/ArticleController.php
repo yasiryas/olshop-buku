@@ -24,7 +24,24 @@ class ArticleController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.articles.index', ['articles' => $articles, 'search' => $search]);
+        if ($request->ajax()) {
+            return view('admin.partials.articles_list', compact('articles', 'search'));
+        }
+
+        return view('admin.articles.index', [
+            'articles' => $articles,
+            'search' => $search,
+            'categories' => Category::all(),
+            'editData' => Article::orderBy('id', 'DESC')
+                ->get(['id', 'title', 'content', 'category_id', 'featured_image'])
+                ->map(fn ($a) => [
+                    'id' => $a->id,
+                    'title' => $a->title,
+                    'content' => $a->content,
+                    'category_id' => $a->category_id,
+                    'featured_image' => $a->featured_image ? Storage::url($a->featured_image) : null,
+                ]),
+        ]);
     }
 
     public function create()

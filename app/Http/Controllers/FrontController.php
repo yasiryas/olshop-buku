@@ -25,11 +25,22 @@ class FrontController extends Controller
         ]);
     }
 
-    public function product()
+    public function product(Request $request)
     {
         $user = Auth::user();
-        $products = Product::with('category')->withStock()->orderBy('id', 'DESC')->get();
+        $search = $request->input('search');
+        $products = Product::with('category')->withStock()
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->orderBy('id', 'DESC')
+            ->get();
         $categories = Category::all();
+
+        if ($request->ajax()) {
+            return view('front.partials.products_grid', compact('products'));
+        }
+
         return view('front.product', [
             'products' => $products,
             'categories' => $categories,
@@ -76,9 +87,19 @@ class FrontController extends Controller
         ]);
     }
 
-    public function category(Category $category)
+    public function category(Request $request, Category $category)
     {
-        $products = Product::where('category_id', $category->id)->with('category')->withStock()->get();
+        $search = $request->input('search');
+        $products = Product::where('category_id', $category->id)
+            ->with('category')->withStock()
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->get();
+
+        if ($request->ajax()) {
+            return view('front.partials.products_grid', compact('products'));
+        }
 
         return view('front.category', [
             'products' => $products,

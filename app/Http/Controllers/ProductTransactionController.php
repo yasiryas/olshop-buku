@@ -43,6 +43,13 @@ class ProductTransactionController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        if ($request->ajax()) {
+            if ($user->hasRole('buyer')) {
+                return view('front.partials.orders_list', compact('product_transactions', 'search'));
+            }
+            return view('admin.partials.orders_list', compact('product_transactions', 'search'));
+        }
+
         return view($view, compact('product_transactions', 'search'));
     }
 

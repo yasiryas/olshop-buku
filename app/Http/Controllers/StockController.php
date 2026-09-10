@@ -25,6 +25,10 @@ class StockController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        if ($request->ajax()) {
+            return view('admin.partials.stocks_list', compact('products', 'search'));
+        }
+
         return view('admin.stocks.index', ['products' => $products, 'search' => $search]);
     }
 
@@ -68,6 +72,10 @@ class StockController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return view('admin.partials.mutations_list', compact('mutations', 'search'));
+        }
 
         return view('admin.stocks.all_history', compact('mutations', 'search'));
     }

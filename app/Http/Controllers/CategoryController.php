@@ -25,7 +25,21 @@ class CategoryController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.categories.index', ['categories' => $categories, 'search' => $search]);
+        if ($request->ajax()) {
+            return view('admin.partials.categories_list', compact('categories', 'search'));
+        }
+
+        return view('admin.categories.index', [
+            'categories' => $categories,
+            'search' => $search,
+            'editData' => Category::orderBy('id', 'DESC')
+                ->get(['id', 'name', 'icon'])
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'icon' => Storage::url($c->icon),
+                ]),
+        ]);
     }
 
     /**
