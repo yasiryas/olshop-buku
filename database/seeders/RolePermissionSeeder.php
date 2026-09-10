@@ -22,6 +22,7 @@ class RolePermissionSeeder extends Seeder
         'manage staff',
         'view reports',
         'manage settings',
+        'process returns',
     ];
 
     private const ROLE_PERMISSIONS = [
@@ -35,6 +36,7 @@ class RolePermissionSeeder extends Seeder
             'view reports',
             'manage staff',
             'manage settings',
+            'process returns',
         ],
         'admin' => [
             'view dashboard',
@@ -43,6 +45,7 @@ class RolePermissionSeeder extends Seeder
             'manage stocks',
             'process orders',
             'manage customers',
+            'process returns',
         ],
         'penulis' => [
             'view dashboard',

@@ -49,6 +49,61 @@ class StoreSettings
         return self::get('wa_contact', '6285713878266');
     }
 
+    public static function waMode(): string
+    {
+        return self::get('wa_mode', 'manual');
+    }
+
+    public static function waApiUrl(): string
+    {
+        return self::get('wa_api_url', '');
+    }
+
+    public static function waApiToken(): string
+    {
+        return self::get('wa_api_token', '');
+    }
+
+    public static function lowStockThreshold(): int
+    {
+        return (int) self::get('low_stock_threshold', 5);
+    }
+
+    public static function shippingZones(): array
+    {
+        $zones = self::get('shipping_zones', []);
+
+        return collect($zones)
+            ->map(fn (array $zone) => [
+                'city' => $zone['city'] ?? '',
+                'costs' => (array) ($zone['costs'] ?? []),
+            ])
+            ->filter(fn (array $zone) => $zone['city'] !== '')
+            ->values()
+            ->all();
+    }
+
+    public static function shippingZoneCities(): array
+    {
+        return array_column(self::shippingZones(), 'city');
+    }
+
+    /**
+     * Tarif per kurir untuk kota tertentu; fallback ke biaya flat (`cost`) bila kota tidak punya tarif khusus.
+     */
+    public static function shippingRatesFor(string $city): array
+    {
+        $zone = collect(self::shippingZones())->firstWhere('city', $city);
+        $zoneCosts = $zone['costs'] ?? [];
+
+        return collect(self::shippingRates())
+            ->map(fn (array $rate) => [
+                ...$rate,
+                'cost' => array_key_exists($rate['code'], $zoneCosts) ? (int) $zoneCosts[$rate['code']] : $rate['cost'],
+            ])
+            ->all();
+    }
+
     public static function invalidateCache(): void
     {
         \Illuminate\Support\Facades\Cache::forget(self::CACHE_KEY);

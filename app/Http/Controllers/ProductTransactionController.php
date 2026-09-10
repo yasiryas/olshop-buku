@@ -69,12 +69,19 @@ class ProductTransactionController extends Controller
     {
         $user = Auth::user();
 
-        $shippingRates = StoreSettings::shippingRates();
+        $zoneCities = StoreSettings::shippingZoneCities();
+        if (empty($zoneCities)) {
+            throw ValidationException::withMessages([
+                'city' => ['Belum ada zona pengiriman. Hubungi admin.'],
+            ]);
+        }
+
+        $shippingRates = StoreSettings::shippingRatesFor($request->input('city', ''));
         $paymentMethods = StoreSettings::paymentMethods();
 
         $validated = $request->validate([
             'address' => 'required|string|max:512',
-            'city' => 'required|string|max:255',
+            'city' => 'required|in:' . implode(',', $zoneCities),
             'post_code' => 'required|integer',
             'phone_number' => 'required',
             'notes' => 'max:65535',
@@ -160,7 +167,10 @@ class ProductTransactionController extends Controller
             }
         }
 
-        $productTransaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->find($productTransaction->id);
+        $productTransaction = ProductTransaction::with([
+            'returns',
+            'transactionDetails.product' => fn ($q) => $q->withStock(),
+        ])->find($productTransaction->id);
 
         if ($user->hasAnyRole(['owner', 'admin'])) {
             return view('admin.product_transaction.details', ['product_transaction' => $productTransaction]);
@@ -222,7 +232,7 @@ class ProductTransactionController extends Controller
             return redirect()
                 ->route('product_transactions.show', $transaction->id)
                 ->with('success', 'Order di-approve & stok berhasil dikurangi.')
-                ->with('wa_link', WaNotifier::url($transaction->phone_number, $waMessage));
+                ->with('wa_link', WaNotifier::send($transaction->phone_number, $waMessage));
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', $e->getMessage());
@@ -254,7 +264,7 @@ class ProductTransactionController extends Controller
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
             ->with('success', 'Order ditandai terkirim.')
-            ->with('wa_link', WaNotifier::url($productTransaction->phone_number, $waMessage));
+            ->with('wa_link', WaNotifier::send($productTransaction->phone_number, $waMessage));
     }
 
     /**
@@ -272,9 +282,12 @@ class ProductTransactionController extends Controller
             'status' => ProductTransaction::STATUS_COMPLETED,
         ]);
 
+        $waMessage = "Halo {$productTransaction->user->name}, pesanan #{$productTransaction->id} telah selesai. Terima kasih sudah berbelanja di Wigati Buku.";
+
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
-            ->with('success', 'Order selesai.');
+            ->with('success', 'Order selesai.')
+            ->with('wa_link', WaNotifier::send($productTransaction->phone_number, $waMessage));
     }
 
     /**
@@ -302,7 +315,7 @@ class ProductTransactionController extends Controller
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
             ->with('success', 'Order ditolak.')
-            ->with('wa_link', WaNotifier::url($productTransaction->phone_number, $waMessage));
+            ->with('wa_link', WaNotifier::send($productTransaction->phone_number, $waMessage));
     }
 
     /**

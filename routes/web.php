@@ -15,6 +15,7 @@ use App\Http\Controllers\ProductTransactionController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProductReturnController;
 
 Route::get('/sw.js', fn () => Response::file(resource_path('pwa/sw.js'), [
     'Content-Type' => 'application/javascript',
@@ -56,6 +57,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->middleware('role:owner|admin|buyer')
         ->only(['index', 'show', 'store', 'destroy']);
 
+    Route::post('product_transactions/{productTransaction}/returns', [ProductReturnController::class, 'store'])
+        ->middleware('role:buyer')
+        ->name('product_returns.store');
+
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('products', ProductController::class)->middleware('permission:manage products');
         Route::resource('categories', CategoryController::class)->middleware('permission:manage categories');
@@ -65,6 +70,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('staff/{user}/toggle', [StaffController::class, 'toggleActive'])->name('staff.toggle')->middleware('permission:manage staff');
 
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index')->middleware('permission:view reports');
+        Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('permission:view reports');
 
         Route::get('customers', [CustomerController::class, 'index'])->name('customers.index')->middleware('permission:manage customers');
         Route::get('customers/{user}', [CustomerController::class, 'show'])->name('customers.show')->middleware('permission:manage customers');
@@ -80,6 +86,13 @@ Route::middleware(['auth', 'active'])->group(function () {
             ->middleware('permission:process orders');
         Route::post('orders/{productTransaction}/reject', [ProductTransactionController::class, 'reject'])->name('orders.reject')
             ->middleware('permission:process orders');
+
+        Route::get('returns', [ProductReturnController::class, 'index'])->name('returns.index')
+            ->middleware('permission:process returns');
+        Route::post('returns/{productReturn}/approve', [ProductReturnController::class, 'approve'])->name('returns.approve')
+            ->middleware('permission:process returns');
+        Route::post('returns/{productReturn}/reject', [ProductReturnController::class, 'reject'])->name('returns.reject')
+            ->middleware('permission:process returns');
     });
 
     Route::prefix('admin/stocks')->name('stocks.')->middleware('permission:manage stocks')->group(function () {

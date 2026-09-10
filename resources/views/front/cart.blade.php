@@ -194,8 +194,17 @@
 
                         <div>
                             <label class="font-semibold">City</label>
-                            <input type="text" name="city" value="{{ old('city') }}"
+                            <select name="city" id="citySelect"
                                 class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+                                @forelse ($shippingZones as $zone)
+                                    <option value="{{ $zone['city'] }}"
+                                        data-costs="{{ json_encode($zone['costs']) }}" {{ old('city', $shippingZones[0]['city'] ?? '') === $zone['city'] ? 'selected' : '' }}>
+                                        {{ $zone['city'] }}
+                                    </option>
+                                @empty
+                                    <option value="">Belum ada zona pengiriman</option>
+                                @endforelse
+                            </select>
 
                             @error('city')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -313,8 +322,40 @@
         // run after full load (defensive: wait a tick to let Blade-rendered attrs settle)
         document.addEventListener("alpine:initialized", () => {
             setTimeout(() => {
+                setZoneShippingCosts();
                 calculatePrice();
             }, 50);
+        });
+
+        /**
+         * TERAPKAN TARIF PER KOTA.
+         * Baca zona terpilih, sesuaikan data-cost tiap kurir, lalu hitung ulang.
+         */
+        function setZoneShippingCosts() {
+            const zoneSelect = document.getElementById('citySelect');
+            if (!zoneSelect || !zoneSelect.selectedIndex) return;
+
+            let costs = {};
+            try {
+                costs = JSON.parse(zoneSelect.options[zoneSelect.selectedIndex].dataset.costs || '{}');
+            } catch (e) {
+                costs = {};
+            }
+
+            document.querySelectorAll('input[name="shipping_method"]').forEach(radio => {
+                if (typeof costs[radio.value] === 'number' && costs[radio.value] >= 0) {
+                    radio.dataset.cost = String(costs[radio.value]);
+                }
+            });
+
+            calculatePrice();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const zoneSelect = document.getElementById('citySelect');
+            if (zoneSelect) {
+                zoneSelect.addEventListener('change', setZoneShippingCosts);
+            }
         });
 
 

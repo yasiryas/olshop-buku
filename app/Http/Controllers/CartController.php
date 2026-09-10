@@ -22,6 +22,7 @@ class CartController extends Controller
             [
                 'carts' => $carts,
                 'shippingRates' => StoreSettings::shippingRates(),
+                'shippingZones' => StoreSettings::shippingZones(),
                 'paymentMethods' => StoreSettings::paymentMethods(),
             ]
         );

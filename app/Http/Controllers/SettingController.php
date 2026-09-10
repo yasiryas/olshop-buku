@@ -18,10 +18,18 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'wa_contact' => 'required|string|max:20',
+            'wa_mode' => 'required|in:manual,api',
+            'wa_api_url' => 'nullable|string|max:255',
+            'wa_api_token' => 'nullable|string|max:255',
+            'low_stock_threshold' => 'required|integer|min:0',
             'shipping_methods' => 'required|array|min:1',
             'shipping_methods.*.courier' => 'required|string|max:100',
             'shipping_methods.*.cost' => 'required|numeric|min:0',
             'shipping_methods.*.eta' => 'required|string|max:50',
+            'shipping_zones' => 'nullable|array',
+            'shipping_zones.*.city' => 'required|string|max:255',
+            'shipping_zones.*.costs' => 'nullable|array',
+            'shipping_zones.*.costs.*' => 'nullable|numeric|min:0',
             'payment_methods' => 'required|array|min:1',
             'payment_methods.*.name' => 'required|string|max:100',
             'payment_methods.*.acc_number' => 'required|string|max:50',
@@ -50,8 +58,23 @@ class SettingController extends Controller
             ->values()
             ->all();
 
+        $shippingZones = collect($validated['shipping_zones'] ?? [])
+            ->map(fn (array $row) => [
+                'city' => $row['city'],
+                'costs' => collect($row['costs'] ?? [])
+                    ->map(fn ($cost) => (int) ($cost ?? 0))
+                    ->all(),
+            ])
+            ->values()
+            ->all();
+
         \App\Models\Setting::updateOrCreate(['key' => 'wa_contact'], ['value' => $validated['wa_contact']]);
+        \App\Models\Setting::updateOrCreate(['key' => 'wa_mode'], ['value' => $validated['wa_mode']]);
+        \App\Models\Setting::updateOrCreate(['key' => 'wa_api_url'], ['value' => $validated['wa_api_url'] ?? '']);
+        \App\Models\Setting::updateOrCreate(['key' => 'wa_api_token'], ['value' => $validated['wa_api_token'] ?? '']);
+        \App\Models\Setting::updateOrCreate(['key' => 'low_stock_threshold'], ['value' => $validated['low_stock_threshold']]);
         \App\Models\Setting::updateOrCreate(['key' => 'shipping_methods'], ['value' => $shippingMethods]);
+        \App\Models\Setting::updateOrCreate(['key' => 'shipping_zones'], ['value' => $shippingZones]);
         \App\Models\Setting::updateOrCreate(['key' => 'payment_methods'], ['value' => $paymentMethods]);
 
         StoreSettings::invalidateCache();

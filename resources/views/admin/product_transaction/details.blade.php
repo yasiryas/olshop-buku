@@ -73,6 +73,28 @@
                     </div>
                 @endif
 
+                @if ($product_transaction->returns->isNotEmpty())
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+                        <p class="text-sm text-slate-500">Retur / Pengembalian</p>
+                        <div class="mt-2 space-y-2">
+                            @foreach ($product_transaction->returns->sortByDesc('id') as $returnRequest)
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-semibold rounded-full text-white px-3 py-1 {{ $returnRequest->statusBadgeColor() }}">
+                                        {{ $returnRequest->statusLabel() }}
+                                    </span>
+                                    <p class="text-sm text-slate-700">#{{ $returnRequest->id }} · {{ $returnRequest->reason }}</p>
+                                </div>
+                                @if ($returnRequest->admin_note)
+                                    <p class="text-xs text-slate-500">Catatan: {{ $returnRequest->admin_note }}</p>
+                                @endif
+                            @endforeach
+                        </div>
+                        @if ($product_transaction->status === \App\Models\ProductTransaction::STATUS_RETURNED)
+                            <p class="text-xs text-slate-500 mt-2">Pesanan ini telah dikembalikan dan stok masuk kembali.</p>
+                        @endif
+                    </div>
+                @endif
+
                 <hr class="my-3">
                 <h3 class="text-xl font-bold text-indigo-900">List of Item</h3>
 

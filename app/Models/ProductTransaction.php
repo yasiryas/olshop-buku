@@ -16,6 +16,7 @@ class ProductTransaction extends Model
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_RETURNED = 'returned';
 
     public const STATUS_LABELS = [
         self::STATUS_PENDING => 'Menunggu Konfirmasi',
@@ -24,6 +25,7 @@ class ProductTransaction extends Model
         self::STATUS_COMPLETED => 'Selesai',
         self::STATUS_REJECTED => 'Ditolak',
         self::STATUS_CANCELLED => 'Dibatalkan',
+        self::STATUS_RETURNED => 'Dikembalikan',
     ];
 
     public const STATUS_BADGE_COLORS = [
@@ -33,6 +35,7 @@ class ProductTransaction extends Model
         self::STATUS_COMPLETED => 'bg-green-500',
         self::STATUS_REJECTED => 'bg-red-500',
         self::STATUS_CANCELLED => 'bg-gray-500',
+        self::STATUS_RETURNED => 'bg-purple-600',
     ];
 
     protected $fillable = [
@@ -63,6 +66,11 @@ class ProductTransaction extends Model
         return $this->hasMany(TransactionDetail::class, 'product_transaction_id');
     }
 
+    public function returns()
+    {
+        return $this->hasMany(ProductReturn::class, 'product_transaction_id');
+    }
+
     public function statusLabel(): string
     {
         return self::STATUS_LABELS[$this->status] ?? ucfirst($this->status);
@@ -75,6 +83,6 @@ class ProductTransaction extends Model
 
     public function isPaid(): bool
     {
-        return in_array($this->status, [self::STATUS_PROCESSING, self::STATUS_SHIPPED, self::STATUS_COMPLETED]);
+        return in_array($this->status, [self::STATUS_PROCESSING, self::STATUS_SHIPPED, self::STATUS_COMPLETED, self::STATUS_RETURNED]);
     }
 }

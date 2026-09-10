@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Product;
+use App\Models\ProductReturn;
 use App\Models\ProductTransaction;
 use App\Models\StockMutation;
 use App\Models\TransactionDetail;
+use App\Support\StoreSettings;
 use Illuminate\Support\Collection;
 
 class DashboardController extends Controller
@@ -15,6 +17,7 @@ class DashboardController extends Controller
         ProductTransaction::STATUS_PROCESSING,
         ProductTransaction::STATUS_SHIPPED,
         ProductTransaction::STATUS_COMPLETED,
+        ProductTransaction::STATUS_RETURNED,
     ];
 
     public function index()
@@ -61,6 +64,12 @@ class DashboardController extends Controller
             ->pluck('total', 'status')
             ->toArray();
         $data['lowStockProducts'] = $this->lowStockProducts();
+        $data['lowStockThreshold'] = StoreSettings::lowStockThreshold();
+        $data['returnRequests'] = ProductReturn::with(['transaction.user'])
+            ->where('status', ProductReturn::STATUS_REQUESTED)
+            ->latest()
+            ->take(5)
+            ->get();
         $data['recentActivities'] = $this->recentActivities();
         $data['transactions'] = ProductTransaction::with('user')->where('status', ProductTransaction::STATUS_PENDING)->latest()->take(10)->get();
 
@@ -108,7 +117,7 @@ class DashboardController extends Controller
 
     private function lowStockProducts(): Collection
     {
-        $threshold = 5;
+        $threshold = StoreSettings::lowStockThreshold();
 
         return Product::withStock()->get()
             ->filter(fn ($product) => $product->stock <= $threshold)

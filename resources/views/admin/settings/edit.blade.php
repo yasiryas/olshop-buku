@@ -37,6 +37,44 @@
                         </div>
                     </div>
 
+                    {{-- WA Notification --}}
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Notifikasi WhatsApp Otomatis</h3>
+                            <p class="text-xs text-gray-500 mb-4">Mode <b>Manual</b> menampilkan tautan wa.me saat transisi status.
+                                Mode <b>API</b> mengirim pesan langsung ke gateway (fallback ke tautan bila gagal).</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Mode</label>
+                                    <select x-model="waMode" name="wa_mode" class="w-full border rounded-lg px-4 py-2 text-sm">
+                                        <option value="manual">Manual (deep-link)</option>
+                                        <option value="api">API (otomatis)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">URL Gateway</label>
+                                    <input type="url" x-model="waApiUrl" name="wa_api_url" placeholder="https://.../send-message"
+                                        class="w-full border rounded-lg px-4 py-2 text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Token</label>
+                                    <input type="text" x-model="waApiToken" name="wa_api_token"
+                                        class="w-full border rounded-lg px-4 py-2 text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Low stock --}}
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Peringatan Stok Menipis</h3>
+                            <p class="text-xs text-gray-500 mb-2">Produk dengan stok ≤ ambang ini ditandai "Menipis" di dashboard & laporan.</p>
+                            <input type="number" x-model="lowStockThreshold" name="low_stock_threshold" min="0"
+                                class="w-32 border rounded-lg px-4 py-2">
+                        </div>
+                    </div>
+
                     {{-- Shipping --}}
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
@@ -56,7 +94,7 @@
                                         </div>
                                         <div class="md:col-span-3">
                                             <input type="number" x-model="row.cost" min="0"
-                                                :name="`shipping_methods[${i}][cost]`" placeholder="Ongkir"
+                                                :name="`shipping_methods[${i}][cost]`" placeholder="Ongkir (fallback)"
                                                 class="w-full border rounded-lg px-3 py-2 text-sm">
                                         </div>
                                         <div class="md:col-span-3">
@@ -67,6 +105,42 @@
                                         <div class="md:col-span-2 flex items-center justify-end">
                                             <button type="button" @click="removeShipping(i)"
                                                 class="text-sm text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Shipping Zones --}}
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Zona / Tarif per Kota</h3>
+                                <button type="button" @click="addZone()"
+                                    class="text-sm font-bold text-indigo-700 hover:text-indigo-900">+ Tambah Zona</button>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-4">Biaya kurir per kota. Kota tanpa tarif khusus memakai nilai fallback kurir.</p>
+                            <div class="space-y-4">
+                                <template x-for="(zone, i) in zones" :key="i">
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <div class="flex items-center justify-between gap-3 mb-3">
+                                            <input type="text" x-model="zone.city"
+                                                :name="`shipping_zones[${i}][city]`" placeholder="Nama kota"
+                                                class="w-full border rounded-lg px-3 py-2 text-sm">
+                                            <button type="button" @click="removeZone(i)"
+                                                class="text-sm text-red-600 hover:text-red-800 shrink-0"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3" x-show="shipping.length">
+                                            <template x-for="(curr, ci) in shipping" :key="ci">
+                                                <div>
+                                                    <label class="text-xs text-gray-500" x-text="curr.courier || 'Kurir'"></label>
+                                                    <input type="number" min="0" placeholder="0"
+                                                        :name="`shipping_zones[${i}][costs][${curr.code}]`"
+                                                        x-model="zone.costs[curr.code]"
+                                                        class="w-full border rounded-lg px-3 py-2 text-sm">
+                                                </div>
+                                            </template>
                                         </div>
                                     </div>
                                 </template>
@@ -128,8 +202,13 @@
 
     <script type="application/json" id="settings-data">{!! json_encode([
         'shipping' => $settings['shipping_methods'] ?? [],
+        'zones' => $settings['shipping_zones'] ?? [],
         'payment' => $settings['payment_methods'] ?? [],
         'wa' => $settings['wa_contact'] ?? '',
+        'wa_mode' => $settings['wa_mode'] ?? 'manual',
+        'wa_api_url' => $settings['wa_api_url'] ?? '',
+        'wa_api_token' => $settings['wa_api_token'] ?? '',
+        'low_stock_threshold' => $settings['low_stock_threshold'] ?? 5,
     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
     <script>
@@ -137,7 +216,12 @@
             const json = JSON.parse(document.getElementById('settings-data').textContent);
             Alpine.data('storeSettings', () => ({
                 wa: json.wa,
+                waMode: json.wa_mode,
+                waApiUrl: json.wa_api_url,
+                waApiToken: json.wa_api_token,
+                lowStockThreshold: json.low_stock_threshold,
                 shipping: (json.shipping || []).map(s => ({ ...s })),
+                zones: (json.zones || []).map(z => ({ city: z.city, costs: { ...(z.costs || {}) } })),
                 payment: (json.payment || []).map(p => ({ ...p })),
 
                 addShipping() {
@@ -145,6 +229,12 @@
                 },
                 removeShipping(i) {
                     this.shipping.splice(i, 1);
+                },
+                addZone() {
+                    this.zones.push({ city: '', costs: {} });
+                },
+                removeZone(i) {
+                    this.zones.splice(i, 1);
                 },
                 addPayment() {
                     this.payment.push({ code: 'method-' + (this.payment.length + 1), name: '', acc_number: '', acc_name: '', active: true });

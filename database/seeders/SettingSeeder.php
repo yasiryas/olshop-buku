@@ -15,12 +15,21 @@ class SettingSeeder extends Seeder
                 ['code' => 'jnt-express', 'courier' => 'J&T Express', 'cost' => 11000, 'eta' => '1-2 hari'],
                 ['code' => 'gosend-now', 'courier' => 'GoSend Same Day', 'cost' => 25000, 'eta' => 'Sama hari'],
             ],
+            'shipping_zones' => [
+                ['city' => 'Bandung', 'costs' => ['jne-reguler' => 12000, 'jnt-express' => 11000, 'gosend-now' => 25000]],
+                ['city' => 'Jakarta', 'costs' => ['jne-reguler' => 15000, 'jnt-express' => 14000, 'gosend-now' => 30000]],
+                ['city' => 'Cimahi', 'costs' => ['jne-reguler' => 11000, 'jnt-express' => 10000, 'gosend-now' => 22000]],
+            ],
             'payment_methods' => [
                 ['code' => 'bca', 'name' => 'Transfer Bank BCA', 'acc_number' => '12345678', 'acc_name' => 'Wigati Buku', 'active' => true],
                 ['code' => 'bri', 'name' => 'Transfer Bank BRI', 'acc_number' => '00001234567', 'acc_name' => 'Wigati Buku', 'active' => true],
                 ['code' => 'mandiri', 'name' => 'Transfer Bank Mandiri', 'acc_number' => '123000456789', 'acc_name' => 'Wigati Buku', 'active' => false],
             ],
             'wa_contact' => '6285713878266',
+            'wa_mode' => 'manual',
+            'wa_api_url' => '',
+            'wa_api_token' => '',
+            'low_stock_threshold' => 5,
         ];
 
         foreach ($settings as $key => $value) {

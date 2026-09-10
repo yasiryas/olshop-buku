@@ -73,6 +73,13 @@
                             <p class="text-sm text-red-700 mt-1">Alasan: {{ $product_transaction->rejection_note }}</p>
                         @endif
                     </div>
+                @elseif ($product_transaction->status === \App\Models\ProductTransaction::STATUS_RETURNED)
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg px-4 py-3">
+                        <p class="text-base font-bold text-purple-800">Pesanan Dikembalikan</p>
+                        @if ($product_transaction->returns->first()?->admin_note)
+                            <p class="text-sm text-purple-700 mt-1">Catatan: {{ $product_transaction->returns->first()->admin_note }}</p>
+                        @endif
+                    </div>
                 @endif
 
                 {{-- Resi --}}
@@ -158,6 +165,58 @@
                             class="w-[300px] bg-white-500 h-[400px] object-contain">
                     </div>
                 </div>
+
+                {{-- Retur --}}
+                @if ($product_transaction->status === \App\Models\ProductTransaction::STATUS_COMPLETED)
+                    @php $returnRequest = $product_transaction->returns->first(); @endphp
+                    @if ($returnRequest)
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+                            <p class="text-base font-bold text-gray-800">Pengajuan Retur</p>
+                            <p class="text-sm text-gray-600 mt-1">
+                                Status: <span class="font-bold">{{ $returnRequest->statusLabel() }}</span> · Alasan: {{ $returnRequest->reason }}
+                            </p>
+                            @if ($returnRequest->description)
+                                <p class="text-sm text-gray-500 mt-1">{{ $returnRequest->description }}</p>
+                            @endif
+                            @if ($returnRequest->admin_note)
+                                <p class="text-sm text-gray-600 mt-1">Catatan admin: {{ $returnRequest->admin_note }}</p>
+                            @endif
+                        </div>
+                    @else
+                        <div x-data="{ open: false }" class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                            <button type="button" @click="open = !open"
+                                class="font-bold bg-orange-600 hover:bg-orange-700 text-white py-3 px-6 rounded-full transition">
+                                <i class="fas fa-rotate-left mr-2"></i>Ajukan Retur
+                            </button>
+                            <form x-show="open" x-transition
+                                action="{{ route('product_returns.store', $product_transaction->id) }}" method="POST"
+                                class="mt-4 space-y-3">
+                                @csrf
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-700">Alasan Retur</label>
+                                    <select name="reason" required
+                                        class="w-full border rounded-lg px-4 py-2 text-sm">
+                                        <option value="">Pilih alasan...</option>
+                                        <option value="produk_cacat">Produk cacat / rusak</option>
+                                        <option value="salah_produk">Produk tidak sesuai pesanan</option>
+                                        <option value="salah_jumlah">Jumlah kurang / lebih</option>
+                                        <option value="lainnya">Lainnya</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-700">Keterangan</label>
+                                    <textarea name="description" rows="3" maxlength="1000"
+                                        class="w-full border rounded-lg px-4 py-2 text-sm"
+                                        placeholder="Jelaskan kondisi pesanan..."></textarea>
+                                </div>
+                                <button type="submit"
+                                    class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-full text-sm">
+                                    Kirim Pengajuan
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+                @endif
 
                 <hr class="my-4">
                 <div class="flex flex-wrap gap-4 items-center justify-between">

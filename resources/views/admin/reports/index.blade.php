@@ -22,6 +22,20 @@
                         </div>
                         <button type="submit"
                             class="bg-indigo-700 text-white text-sm font-bold py-2 px-5 rounded-full">Tampilkan</button>
+                        <div class="ml-auto flex flex-wrap gap-2">
+                            <a href="{{ route('admin.reports.export', ['type' => 'sales', ...request()->query()]) }}"
+                                class="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-full hover:bg-green-700">
+                                <i class="fas fa-download mr-1"></i> Export Penjualan
+                            </a>
+                            <a href="{{ route('admin.reports.export', ['type' => 'daily', ...request()->query()]) }}"
+                                class="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-full hover:bg-green-700">
+                                <i class="fas fa-download mr-1"></i> Harian
+                            </a>
+                            <a href="{{ route('admin.reports.export', ['type' => 'stock', ...request()->query()]) }}"
+                                class="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-full hover:bg-green-700">
+                                <i class="fas fa-download mr-1"></i> Stok
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -138,7 +152,7 @@
                                         <td class="px-4 py-3 text-sm text-gray-500">{{ $product['category'] ?? '-' }}</td>
                                         <td class="px-4 py-3 text-sm text-gray-700">{{ $product['stock'] }}</td>
                                         <td class="px-4 py-3">
-                                            @if ($product['stock'] <= 5)
+                                            @if ($product['stock'] <= $lowStockThreshold)
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Menipis</span>
                                             @else
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aman</span>
