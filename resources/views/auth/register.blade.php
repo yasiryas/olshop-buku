@@ -59,14 +59,15 @@
                 <!-- Password -->
                 <div class="flex flex-col gap-2.5">
                     <label for="password" class="text-base font-semibold">Password</label>
-                    <input type="password" name="password" id="password__"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Protect your password" required>
-                    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                        <input type="checkbox" id="show-password" class="rounded text-red-600 focus:ring-red-500">
-                        <i class="fas fa-eye text-gray-400"></i>
-                        Show password
-                    </label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password__"
+                            class="w-full px-4 py-3 pr-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            placeholder="Protect your password" required>
+                        <button type="button" data-toggle-for="password__"
+                            class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     @error('password')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -75,9 +76,15 @@
                 <!-- Confirm Password -->
                 <div class="flex flex-col gap-2.5">
                     <label for="password_confirmation" class="text-base font-semibold">Confirm Password</label>
-                    <input type="password" name="password_confirmation" id="confirm-password__"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Confirm your password" required>
+                    <div class="relative">
+                        <input type="password" name="password_confirmation" id="confirm-password__"
+                            class="w-full px-4 py-3 pr-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            placeholder="Confirm your password" required>
+                        <button type="button" data-toggle-for="confirm-password__"
+                            class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     @error('password_confirmation')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -108,14 +115,14 @@
     </footer>
 
     <script>
-        const showPasswordCheckbox = document.getElementById('show-password');
-        const passwordInput = document.getElementById('password__');
-        const confirmPasswordInput = document.getElementById('confirm-password__');
-
-        showPasswordCheckbox.addEventListener('change', function() {
-            const type = this.checked ? 'text' : 'password';
-            passwordInput.type = type;
-            confirmPasswordInput.type = type;
+        document.querySelectorAll('.toggle-password-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const input = document.getElementById(this.dataset.toggleFor);
+                const isShown = input.type === 'text';
+                input.type = isShown ? 'password' : 'text';
+                this.querySelector('i').classList.toggle('fa-eye', isShown);
+                this.querySelector('i').classList.toggle('fa-eye-slash', !isShown);
+            });
         });
     </script>
 </body>

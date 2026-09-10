@@ -37,14 +37,15 @@
                 <!-- Password -->
                 <div class="flex flex-col gap-2.5">
                     <label for="password" class="text-base font-semibold">Password</label>
-                    <input type="password" name="password" id="password__"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Protect your password" autocomplete="current-password">
-                    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                        <input type="checkbox" id="show-password" class="rounded text-red-600 focus:ring-red-500">
-                        <i class="fas fa-eye text-gray-400"></i>
-                        Show password
-                    </label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password__"
+                            class="w-full px-4 py-3 pr-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            placeholder="Protect your password" autocomplete="current-password">
+                        <button type="button" id="toggle-password__"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                     @error('password')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -84,11 +85,14 @@
 
 
     <script>
-        const showPasswordCheckbox = document.getElementById('show-password');
+        const togglePasswordButton = document.getElementById('toggle-password__');
         const passwordInput = document.getElementById('password__');
 
-        showPasswordCheckbox.addEventListener('change', function() {
-            passwordInput.type = this.checked ? 'text' : 'password';
+        togglePasswordButton.addEventListener('click', function() {
+            const isShown = passwordInput.type === 'text';
+            passwordInput.type = isShown ? 'password' : 'text';
+            this.querySelector('i').classList.toggle('fa-eye', isShown);
+            this.querySelector('i').classList.toggle('fa-eye-slash', !isShown);
         });
     </script>
 </body>
