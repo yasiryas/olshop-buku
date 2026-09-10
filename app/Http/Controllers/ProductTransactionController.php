@@ -6,9 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\TransactionDetail;
 use App\Models\ProductTransaction;
+use App\Support\StoreSettings;
+use App\Support\WaNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ProductTransactionController extends Controller
@@ -68,6 +69,9 @@ class ProductTransactionController extends Controller
     {
         $user = Auth::user();
 
+        $shippingRates = StoreSettings::shippingRates();
+        $paymentMethods = StoreSettings::paymentMethods();
+
         $validated = $request->validate([
             'address' => 'required|string|max:512',
             'city' => 'required|string|max:255',
@@ -75,6 +79,8 @@ class ProductTransactionController extends Controller
             'phone_number' => 'required',
             'notes' => 'max:65535',
             'proof' => 'required|image|mimes:png,jpg,jpeg',
+            'shipping_method' => 'required|in:' . implode(',', array_column($shippingRates, 'code')),
+            'payment_method' => 'required|in:' . implode(',', array_column($paymentMethods, 'code')),
         ]);
         DB::beginTransaction();
         try {
@@ -99,12 +105,20 @@ class ProductTransactionController extends Controller
 
             $tax = (11 / 100) * $subTotal;
             $insurance = (23 / 100) * $subTotal;
-            $grandTotal = $subTotal + $tax + $insurance;
+
+            $selectedShipping = collect($shippingRates)->firstWhere('code', $request->shipping_method);
+            $selectedPayment = collect($paymentMethods)->firstWhere('code', $request->payment_method);
+
+            $shippingCost = (int) ($selectedShipping['cost'] ?? 0);
+            $grandTotal = $subTotal + $tax + $insurance + $shippingCost;
 
             $validated['user_id'] = $user->id;
             $validated['total_amount'] = $grandTotal;
             $validated['is_paid'] = false;
-            $validated['status'] = 'pending';
+            $validated['status'] = ProductTransaction::STATUS_PENDING;
+            $validated['shipping_method'] = $selectedShipping['courier'] ?? $request->shipping_method;
+            $validated['shipping_cost'] = $shippingCost;
+            $validated['payment_method'] = $selectedPayment['name'] ?? $request->payment_method;
 
             if ($request->hasFile('proof')) {
                 $proofPath = $request->file('proof')->store('payment_proofs', 'public');
@@ -168,20 +182,19 @@ class ProductTransactionController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Approve: pending -> processing (verifikasi pembayaran), stok keluar.
      */
-    public function update(Request $request, $id)
+    public function approve(ProductTransaction $productTransaction)
     {
         abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403);
 
-        $transaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->findOrFail($id);
-
-        if ($transaction->is_paid) {
-            return redirect()->back()->with('error', 'Order sudah di-approve, stok tidak boleh dikurangi dua kali!');
+        if ($productTransaction->status !== ProductTransaction::STATUS_PENDING) {
+            return redirect()->back()->with('error', 'Hanya pesanan pending yang bisa di-approve.');
         }
 
-        DB::beginTransaction();
+        $transaction = ProductTransaction::with(['transactionDetails.product' => fn ($q) => $q->withStock()])->findOrFail($productTransaction->id);
 
+        DB::beginTransaction();
         try {
             foreach ($transaction->transactionDetails as $detail) {
                 if ($detail->product->stock < $detail->qty) {
@@ -199,45 +212,116 @@ class ProductTransactionController extends Controller
 
             $transaction->update([
                 'is_paid' => true,
-                'status'  => 'approved',
+                'status'  => ProductTransaction::STATUS_PROCESSING,
             ]);
 
             DB::commit();
 
+            $waMessage = "Halo {$transaction->user->name}, pesanan #{$transaction->id} Anda telah kami terima dan sedang diproses. Terima kasih sudah berbelanja di Wigati Buku.";
+
             return redirect()
                 ->route('product_transactions.show', $transaction->id)
-                ->with('success', 'Order berhasil di-approve & stok berhasil dikurangi!');
+                ->with('success', 'Order di-approve & stok berhasil dikurangi.')
+                ->with('wa_link', WaNotifier::url($transaction->phone_number, $waMessage));
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
+    /**
+     * Ship: processing -> shipped, input nomor resi.
+     */
+    public function ship(Request $request, ProductTransaction $productTransaction)
+    {
+        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403);
 
+        if ($productTransaction->status !== ProductTransaction::STATUS_PROCESSING) {
+            return redirect()->back()->with('error', 'Hanya pesanan berstatus diproses yang bisa dikirim.');
+        }
 
+        $validated = $request->validate([
+            'tracking_number' => 'required|string|max:100',
+        ]);
+
+        $productTransaction->update([
+            'status' => ProductTransaction::STATUS_SHIPPED,
+            'tracking_number' => $validated['tracking_number'],
+        ]);
+
+        $waMessage = "Halo {$productTransaction->user->name}, pesanan #{$productTransaction->id} sudah dikirim via {$productTransaction->shipping_method}. Nomor resi: {$validated['tracking_number']}. Terima kasih!";
+
+        return redirect()
+            ->route('product_transactions.show', $productTransaction->id)
+            ->with('success', 'Order ditandai terkirim.')
+            ->with('wa_link', WaNotifier::url($productTransaction->phone_number, $waMessage));
+    }
 
     /**
-     * Remove the specified resource from storage.
+     * Complete: shipped -> completed.
+     */
+    public function complete(ProductTransaction $productTransaction)
+    {
+        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403);
+
+        if ($productTransaction->status !== ProductTransaction::STATUS_SHIPPED) {
+            return redirect()->back()->with('error', 'Pesanan harus berstatus dikirim sebelum diselesaikan.');
+        }
+
+        $productTransaction->update([
+            'status' => ProductTransaction::STATUS_COMPLETED,
+        ]);
+
+        return redirect()
+            ->route('product_transactions.show', $productTransaction->id)
+            ->with('success', 'Order selesai.');
+    }
+
+    /**
+     * Reject: pending -> rejected.
+     */
+    public function reject(Request $request, ProductTransaction $productTransaction)
+    {
+        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403);
+
+        if ($productTransaction->status !== ProductTransaction::STATUS_PENDING) {
+            return redirect()->back()->with('error', 'Hanya pesanan pending yang bisa ditolak.');
+        }
+
+        $validated = $request->validate([
+            'rejection_note' => 'required|string|max:500',
+        ]);
+
+        $productTransaction->update([
+            'status' => ProductTransaction::STATUS_REJECTED,
+            'rejection_note' => $validated['rejection_note'],
+        ]);
+
+        $waMessage = "Halo {$productTransaction->user->name}, mohon maaf pesanan #{$productTransaction->id} terpaksa kami tolak. Alasan: {$validated['rejection_note']}.";
+
+        return redirect()
+            ->route('product_transactions.show', $productTransaction->id)
+            ->with('success', 'Order ditolak.')
+            ->with('wa_link', WaNotifier::url($productTransaction->phone_number, $waMessage));
+    }
+
+    /**
+     * Cancel order (keep the record for history/audit).
      */
     public function destroy(ProductTransaction $productTransaction)
     {
         $user = auth()->user();
 
         if ($user->hasRole('buyer')) {
-            if ($productTransaction->user_id !== $user->id) {
-                abort(403);
-            }
-            if ($productTransaction->is_paid) {
-                return redirect()->back()->with('error', 'Order yang sudah diapprove tidak bisa dibatalkan.');
-            }
+            abort_unless($productTransaction->user_id === $user->id, 403);
+            abort_unless($productTransaction->status === ProductTransaction::STATUS_PENDING, 403);
+        } elseif (!$user->hasAnyRole(['owner', 'admin'])) {
+            abort(403);
         }
 
-        if ($productTransaction->proof && Storage::disk('public')->exists($productTransaction->proof)) {
-            Storage::disk('public')->delete($productTransaction->proof);
-        }
-
-        $productTransaction->update(['status' => 'cancelled']);
-        $productTransaction->delete();
+        $productTransaction->update([
+            'status' => ProductTransaction::STATUS_CANCELLED,
+        ]);
 
         return redirect()->route('product_transactions.index')->with('success', 'Order berhasil dibatalkan.');
     }

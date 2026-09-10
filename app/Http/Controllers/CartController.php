@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Support\StoreSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,7 +17,14 @@ class CartController extends Controller
     {
         $carts = Auth::user()->carts()->with(['product' => fn ($q) => $q->withStock()])->get();
 
-        return view('front.cart', ['carts' => $carts]);
+        return view(
+            'front.cart',
+            [
+                'carts' => $carts,
+                'shippingRates' => StoreSettings::shippingRates(),
+                'paymentMethods' => StoreSettings::paymentMethods(),
+            ]
+        );
     }
 
     /**

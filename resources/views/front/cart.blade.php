@@ -97,140 +97,153 @@
 
         {{-- RIGHT: PAYMENT + DELIVERY --}}
         <div class="space-y-6">
+            <form action="{{ route('product_transactions.store') }}" method="POST" enctype="multipart/form-data"
+                class="space-y-6">
+                @csrf
 
-            {{-- DETAIL PAYMENT --}}
-            <div class="bg-white rounded-2xl p-6 shadow">
-                <h3 class="text-lg font-bold mb-4">Details Payment</h3>
-                <ul class="space-y-3">
-                    <li class="flex justify-between">
-                        <p>Sub Total</p>
-                        <p id="checkoutSubTotal"></p>
-                    </li>
-                    <li class="flex justify-between">
-                        <p>PPN 11%</p>
-                        <p id="checkoutTax"></p>
-                    </li>
-                    <li class="flex justify-between">
-                        <p>Insurance 23%</p>
-                        <p id="checkoutInsurance"></p>
-                    </li>
-                    <li class="flex justify-between">
-                        <p>Delivery (Promo)</p>
-                        <p id="checkoutDeliveryFee"></p>
-                    </li>
-                    <li class="flex justify-between font-bold text-lg">
-                        <p>Grand Total</p>
-                        <p class="text-primary" id="checkoutGrandTotal"></p>
-                    </li>
-                </ul>
-            </div>
+                {{-- DETAIL PAYMENT --}}
+                <div class="bg-white rounded-2xl p-6 shadow">
+                    <h3 class="text-lg font-bold mb-4">Details Payment</h3>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between">
+                            <p>Sub Total</p>
+                            <p id="checkoutSubTotal"></p>
+                        </li>
+                        <li class="flex justify-between">
+                            <p>PPN 11%</p>
+                            <p id="checkoutTax"></p>
+                        </li>
+                        <li class="flex justify-between">
+                            <p>Insurance 23%</p>
+                            <p id="checkoutInsurance"></p>
+                        </li>
+                        <li class="flex justify-between">
+                            <p>Ongkir</p>
+                            <p id="checkoutDeliveryFee"></p>
+                        </li>
+                        <li class="flex justify-between font-bold text-lg">
+                            <p>Grand Total</p>
+                            <p class="text-primary" id="checkoutGrandTotal"></p>
+                        </li>
+                    </ul>
+                </div>
 
-            {{-- PAYMENT METHOD --}}
-            <div class="bg-white rounded-2xl p-6 shadow">
-                <h3 class="text-lg font-bold mb-4">Payment Method</h3>
+                {{-- PAYMENT METHOD --}}
+                <div class="bg-white rounded-2xl p-6 shadow">
+                    <h3 class="text-lg font-bold mb-4">Payment Method</h3>
+                    <div x-data="{ selected: null }" class="space-y-3">
+                        @forelse ($paymentMethods as $pm)
+                            <label
+                                class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                <input type="radio" name="payment_method" value="{{ $pm['code'] }}"
+                                    data-acc="{{ $pm['acc_number'] }}" data-name="{{ $pm['acc_name'] }}"
+                                    class="absolute opacity-0" @change="selected = { number: $event.target.dataset.acc, name: $event.target.dataset.name, label: $event.target.closest('label').querySelector('.pm-name').textContent.trim() }"
+                                    {{ $loop->first ? 'checked' : '' }}>
+                                <img src="{{ asset('/assets/svgs/ic-receipt-text-filled.svg') }}">
+                                <p class="font-semibold pm-name">{{ $pm['name'] }}</p>
+                            </label>
+                        @empty
+                            <p class="text-sm text-gray-500">Belum ada metode pembayaran. Hubungi admin.</p>
+                        @endforelse
 
-                <div class="grid grid-cols-2 gap-4">
-
-                    {{-- Manual --}}
-                    <div x-data="{ payment: '' }" class="space-y-4">
-                        <label
-                            class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
-                            <input type="radio" name="payment_method" value="manual" class="absolute opacity-0"
-                                x-model="payment">
-                            <img src="{{ asset('/assets/svgs/ic-receipt-text-filled.svg') }}">
-                            <p class="font-semibold">Manual</p>
-                        </label>
-
-                        <div x-show="payment === 'manual'" x-transition
-                            class="bg-gray-100 rounded-lg p-4 border border-gray-300">
-                            <p class="font-semibold text-lg">Nomor Rekening:</p>
-                            <p class="font-bold text-xl">12345678</p>
-                            <p class="text-gray-600">a.n Wigati Buku</p>
+                        <div x-show="selected" x-transition class="bg-gray-100 rounded-lg p-4 border border-gray-300">
+                            <p class="font-semibold text-lg" x-text="selected?.label"></p>
+                            <p class="font-bold text-xl" x-text="'Nomor Rekening: ' + (selected?.number ?? '-')"></p>
+                            <p class="text-gray-600" x-text="'a.n ' + (selected?.name ?? '-')"></p>
                         </div>
                     </div>
-
-                    {{-- Credit (disabled) --}}
-                    <label
-                        class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center opacity-50 cursor-not-allowed">
-                        <input type="radio" disabled>
-                        <img src="{{ asset('/assets/svgs/ic-card-filled.svg') }}">
-                        <p class="font-semibold">Credits</p>
-                    </label>
-
                 </div>
-            </div>
 
-            {{-- DELIVERY --}}
-            <div class="bg-white rounded-2xl p-6 shadow">
-                <h3 class="text-lg font-bold mb-4">Delivery to</h3>
-
-                <form action="{{ route('product_transactions.store') }}" method="POST" enctype="multipart/form-data"
-                    class="space-y-4">
-                    @csrf
-
-                    <div>
-                        <label class="font-semibold">Address</label>
-                        <input type="text" name="address" value="{{ old('address') }}"
-                            class="w-full border rounded-lg px-4 py-2 @error('address') border-red-500 @enderror">
-
-                        @error('address')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                {{-- SHIPPING METHOD --}}
+                <div class="bg-white rounded-2xl p-6 shadow">
+                    <h3 class="text-lg font-bold mb-4">Metode Pengiriman</h3>
+                    <div class="space-y-3">
+                        @forelse ($shippingRates as $sr)
+                            <label
+                                class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                <input type="radio" name="shipping_method" value="{{ $sr['code'] }}"
+                                    data-cost="{{ $sr['cost'] }}" data-eta="{{ $sr['eta'] }}" class="absolute opacity-0"
+                                    @change="calculatePrice()" {{ $loop->first ? 'checked' : '' }}>
+                                <div>
+                                    <p class="font-semibold">{{ $sr['courier'] }}</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ $sr['cost'] > 0 ? 'Rp ' . number_format($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
+                                    </p>
+                                </div>
+                            </label>
+                        @empty
+                            <p class="text-sm text-gray-500">Belum ada kurir. Hubungi admin.</p>
+                        @endforelse
                     </div>
+                </div>
 
-                    <div>
-                        <label class="font-semibold">City</label>
-                        <input type="text" name="city" value="{{ old('city') }}"
-                            class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+                {{-- DELIVERY --}}
+                <div class="bg-white rounded-2xl p-6 shadow">
+                    <h3 class="text-lg font-bold mb-4">Delivery to</h3>
 
-                        @error('city')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                    <div class="space-y-4">
+                        <div>
+                            <label class="font-semibold">Address</label>
+                            <input type="text" name="address" value="{{ old('address') }}"
+                                class="w-full border rounded-lg px-4 py-2 @error('address') border-red-500 @enderror">
 
+                            @error('address')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">City</label>
+                            <input type="text" name="city" value="{{ old('city') }}"
+                                class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+
+                            @error('city')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Post Code</label>
+                            <input type="number" name="post_code" value="{{ old('post_code') }}"
+                                class="w-full border rounded-lg px-4 py-2 @error('post_code') border-red-500 @enderror">
+
+                            @error('post_code')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Phone Number</label>
+                            <input type="number" name="phone_number" value="{{ old('phone_number') }}"
+                                class="w-full border rounded-lg px-4 py-2 @error('phone_number') border-red-500 @enderror">
+
+                            @error('phone_number')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Add. Notes</label>
+                            <textarea name="notes" class="w-full border rounded-lg px-4 py-2"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Proof of Payment</label>
+                            <input type="file" name="proof"
+                                class="w-full border rounded-lg px-4 py-2 @error('proof') border-red-500 @enderror">
+
+                            @error('proof')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <button class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-800">
+                            Confirm
+                        </button>
                     </div>
-
-                    <div>
-                        <label class="font-semibold">Post Code</label>
-                        <input type="number" name="post_code" value="{{ old('post_code') }}"
-                            class="w-full border rounded-lg px-4 py-2 @error('post_code') border-red-500 @enderror">
-
-                        @error('post_code')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label class="font-semibold">Phone Number</label>
-                        <input type="number" name="phone_number" value="{{ old('phone_number') }}"
-                            class="w-full border rounded-lg px-4 py-2 @error('phone_number') border-red-500 @enderror">
-
-                        @error('phone_number')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label class="font-semibold">Add. Notes</label>
-                        <textarea name="notes" class="w-full border rounded-lg px-4 py-2"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="font-semibold">Proof of Payment</label>
-                        <input type="file" name="proof"
-                            class="w-full border rounded-lg px-4 py-2 @error('proof') border-red-500 @enderror">
-
-                        @error('proof')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <button class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-800">
-                        Confirm
-                    </button>
-
-                </form>
-            </div>
-
+                </div>
+            </form>
         </div>
     </div>
 
@@ -282,7 +295,10 @@
             const elGrand = document.getElementById('checkoutGrandTotal');
 
             if (elSub) elSub.textContent = 'Rp ' + subTotal.toLocaleString('id');
-            if (elDel) elDel.textContent = 'Rp 0';
+
+            const checkedShip = document.querySelector('input[name="shipping_method"]:checked');
+            const shippingCost = checkedShip ? asFloat(checkedShip.dataset.cost) : 0;
+            if (elDel) elDel.textContent = shippingCost > 0 ? 'Rp ' + shippingCost.toLocaleString('id') : 'Gratis';
 
             const tax = subTotal * 0.11;
             const insurance = subTotal * 0.23;
@@ -290,7 +306,7 @@
             if (elTax) elTax.textContent = 'Rp ' + tax.toLocaleString('id');
             if (elIns) elIns.textContent = 'Rp ' + insurance.toLocaleString('id');
 
-            const grand = subTotal + tax + insurance;
+            const grand = subTotal + tax + insurance + shippingCost;
             if (elGrand) elGrand.textContent = 'Rp ' + grand.toLocaleString('id');
         }
 

@@ -13,7 +13,7 @@
             {{-- Form Kontak --}}
             <div class="bg-white p-8 rounded-lg shadow-lg">
                 <h2 class="text-2xl font-bold mb-6">Kirim Pesan</h2>
-                <form id="contactForm" onsubmit="event.preventDefault(); const n = document.getElementById('name').value; const m = document.getElementById('message').value; window.open('https://wa.me/6281234567890?text=' + encodeURIComponent('Halo, nama saya ' + n + '. Pesan: ' + m), '_blank');" class="space-y-6">
+                <form id="contactForm" onsubmit="event.preventDefault(); const n = document.getElementById('name').value; const m = document.getElementById('message').value; window.open('https://wa.me/{{ \App\Support\WaNotifier::phoneToWa(\App\Support\StoreSettings::waContact()) }}?text=' + encodeURIComponent('Halo, nama saya ' + n + '. Pesan: ' + m), '_blank');" class="space-y-6">
                     <div>
                         <label for="name" class="block font-semibold mb-2">Nama</label>
                         <input type="text" id="name" name="name"

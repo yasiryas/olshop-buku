@@ -28,18 +28,15 @@
                 </div>
             </div>
 
-            @if ($transaction->status === 'cancelled')
-                <span class="font-bold py-1 px-5 rounded-full text-white bg-red-500">
-                    <p class="text-white font-bold text-sm">Cancelled</p>
-                </span>
-            @elseif ($transaction->is_paid || $transaction->status === 'approved')
-                <span class="font-bold py-1 px-5 rounded-full text-white bg-green-500">
-                    <p class="text-white font-bold text-sm">Success</p>
-                </span>
-            @else
-                <span class="font-bold py-1 px-5 rounded-full text-white bg-orange-500">
-                    <p class="text-white font-bold text-sm">Pending</p>
-                </span>
+            <span class="font-bold py-1 px-5 rounded-full text-white {{ $transaction->statusBadgeColor() }}">
+                <p class="text-white font-bold text-sm">{{ $transaction->statusLabel() }}</p>
+            </span>
+
+            @if (in_array($transaction->status, ['shipped', 'completed']) && $transaction->tracking_number)
+                <div class="hidden md:flex flex-col">
+                    <p class="text-base text-slate-500">Resi</p>
+                    <p class="text-lg font-bold text-indigo-900">{{ $transaction->tracking_number }}</p>
+                </div>
             @endif
 
             <div class="hidden md:flex flex-row items-center gap-x-3">

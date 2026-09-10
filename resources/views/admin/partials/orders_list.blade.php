@@ -28,15 +28,9 @@
                 </div>
             </div>
 
-            @if ($transaction->is_paid)
-                <span class="font-bold py-1 px-5 rounded-full text-white bg-green-500">
-                    <p class="text-white font-bold text-sm">Success</p>
-                </span>
-            @else
-                <span class="font-bold py-1 px-5 rounded-full text-white bg-orange-500">
-                    <p class="text-white font-bold text-sm">Pending</p>
-                </span>
-            @endif
+            <span class="font-bold py-1 px-5 rounded-full text-white {{ $transaction->statusBadgeColor() }}">
+                <p class="text-white font-bold text-sm">{{ $transaction->statusLabel() }}</p>
+            </span>
 
             <div class="hidden md:flex flex-row items-center gap-x-3">
                 <a href="{{ route('product_transactions.show', $transaction) }}"
