@@ -33,7 +33,7 @@
                             required></textarea>
                     </div>
                     <button type="submit"
-                        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition">
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-full transition">
                         <i class="fas fa-paper-plane mr-2"></i>Kirim Pesan
                     </button>
                 </form>
@@ -71,7 +71,7 @@
             </p>
             <div class="text-center">
                 <a href="{{ route('front.about') }}"
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded transition">
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-full transition">
                     About Us
                 </a>
             </div>

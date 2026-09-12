@@ -152,8 +152,8 @@
                                     <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i> Stok Menipis
                                 </h3>
                                 <a href="{{ route('stocks.index') }}"
-                                    class="text-sm text-red-600 hover:underline">Kelola <i
-                                        class="fas fa-arrow-right ml-1"></i></a>
+                                    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Kelola <i
+                                        class="fas fa-arrow-right"></i></a>
                             </div>
                             <ul class="divide-y divide-gray-100">
                                 @forelse ($lowStockProducts ?? [] as $product)
@@ -200,9 +200,9 @@
                             class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
                             <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
                             <a href="{{ route('product_transactions.index') }}"
-                                class="text-sm text-red-600 hover:underline">
-                                View All <i class="fas fa-arrow-right ml-1"></i>
-                            </a>
+    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">
+    View All <i class="fas fa-arrow-right"></i>
+</a>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -333,7 +333,8 @@
                             <h3 class="text-lg font-semibold text-gray-800">
                                 <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i> Stok Menipis
                             </h3>
-                            <a href="{{ route('stocks.index') }}" class="text-sm text-red-600 hover:underline">Kelola</a>
+                            <a href="{{ route('stocks.index') }}"
+    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Kelola</a>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -365,7 +366,7 @@
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">Pesanan Menunggu Proses</h3>
-                            <a href="{{ route('product_transactions.index') }}" class="text-sm text-red-600 hover:underline">Lihat Semua</a>
+                            <a href="{{ route('product_transactions.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Lihat Semua</a>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -403,7 +404,7 @@
                             <h3 class="text-lg font-semibold text-gray-800">
                                 <i class="fas fa-rotate-left mr-2 text-orange-500"></i> Permintaan Retur
                             </h3>
-                            <a href="{{ route('admin.returns.index') }}" class="text-sm text-red-600 hover:underline">Kelola Retur</a>
+                            <a href="{{ route('admin.returns.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Kelola Retur</a>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -488,6 +489,8 @@
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-800">My Articles</h3>
+                            <a href="{{ route('articles.create') }}"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Buat Artikel</a>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -560,85 +563,92 @@
 
     @if (Auth::user()->hasAnyRole(['owner', 'admin']))
         <script>
-            // Monthly Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const monthlyData = new Array(12).fill(0);
+            const revenueChartEl = document.getElementById('revenueChart');
+            const ordersChartEl = document.getElementById('ordersChart');
 
-            @if (isset($monthlyData))
-                @foreach ($monthlyData as $data)
-                    monthlyData[{{ $data->month - 1 }}] = {{ $data->total }};
-                @endforeach
-            @endif
+            if (revenueChartEl) {
+                // Monthly Revenue Chart
+                const revenueCtx = revenueChartEl.getContext('2d');
+                const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const monthlyData = new Array(12).fill(0);
 
-            new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: monthlyLabels,
-                    datasets: [{
-                        label: 'Revenue',
-                        data: monthlyData,
-                        borderColor: 'rgb(34, 197, 94)',
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+                @if (isset($monthlyData))
+                    @foreach ($monthlyData as $data)
+                        monthlyData[{{ $data->month - 1 }}] = {{ $data->total }};
+                    @endforeach
+                @endif
+
+                new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: monthlyLabels,
+                        datasets: [{
+                            label: 'Revenue',
+                            data: monthlyData,
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + value.toLocaleString();
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rp ' + value.toLocaleString();
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
 
-            // Orders Status Chart (Bar)
-            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-            const completedOrders = {{ ($totalOrders ?? 0) - ($pendingOrders ?? 0) }};
+            if (ordersChartEl) {
+                // Orders Status Chart (Bar)
+                const ordersCtx = ordersChartEl.getContext('2d');
+                const completedOrders = {{ ($totalOrders ?? 0) - ($pendingOrders ?? 0) }};
 
-            new Chart(ordersCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Completed', 'Pending'],
-                    datasets: [{
-                        data: [completedOrders, {{ $pendingOrders ?? 0 }}],
-                        backgroundColor: [
-                            'rgb(147, 51, 234)',
-                            'rgb(234, 179, 8)'
-                        ],
-                        borderWidth: 0,
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+                new Chart(ordersCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Completed', 'Pending'],
+                        datasets: [{
+                            data: [completedOrders, {{ $pendingOrders ?? 0 }}],
+                            backgroundColor: [
+                                'rgb(147, 51, 234)',
+                                'rgb(234, 179, 8)'
+                            ],
+                            borderWidth: 0,
+                            borderRadius: 4
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
         </script>
     @endif
 </x-app-layout>

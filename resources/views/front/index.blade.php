@@ -10,7 +10,7 @@
                 sampai</p>
             <a href="#products"
                 @click.prevent="$el.closest('body').querySelector('#products').scrollIntoView({ behavior: 'smooth' })"
-                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded inline-block">
+                class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full inline-block">
                 <i class="fa-solid fa-bag-shopping mr-2"></i> Shop Now
             </a>
         </div>
@@ -64,12 +64,12 @@
                             @csrf
                             @if ($product->stock < 1)
                                 <button type="submit" disabled
-                                    class="bg-gray-400 cursor-not-allowed text-white font-semibold py-2 md:py-3 px-6 md:px-8 rounded transition mt-2 md:mt-4 w-full md:w-auto">
+                                    class="bg-gray-400 cursor-not-allowed text-white font-semibold py-2 md:py-3 px-6 md:px-8 rounded-full transition mt-2 md:mt-4 w-full md:w-auto">
                                     <i class="fas fa-shopping-cart mr-2"></i>Stok Habis
                                 </button>
                             @else
                                 <button type="submit"
-                                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 md:py-3 px-6 md:px-8 rounded transition mt-2 md:mt-4 w-full md:w-auto">
+                                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 md:py-3 px-6 md:px-8 rounded-full transition mt-2 md:mt-4 w-full md:w-auto">
                                     <i class="fas fa-shopping-cart mr-2"></i>Add To Cart
                                 </button>
                             @endif
@@ -83,7 +83,7 @@
             </div>
             <div class="flex justify-center mt-8 md:mt-10">
                 <a href="{{ route('front.product') }}"
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded transition">Selengkapnya</a>
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-full transition">Selengkapnya</a>
             </div>
         </div>
 
@@ -127,7 +127,7 @@
                 panduan bisnis, buku anak, hingga koleksi langka. Semua bisa kamu dapatkan tanpa harus keluar rumah,
                 dengan harga bersahabat dan pelayanan terbaik.</p>
             <div class="flex justify-center">
-                <a href="#" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded">Shop
+                <a href="#" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full">Shop
                     Now</a>
             </div>
         </div>

@@ -21,13 +21,13 @@
                 <p class="text-sm text-gray-500 mt-1">Anda akan keluar dari akun ini.</p>
                 <div class="flex justify-center gap-3 mt-5">
                     <button type="button" @click="showLogout = false"
-                        class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
+                        class="px-5 py-2 bg-gray-200 text-gray-700 rounded-full font-semibold hover:bg-gray-300">
                         Batal
                     </button>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
-                            class="px-5 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">
+                            class="px-5 py-2 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700">
                             Logout
                         </button>
                     </form>

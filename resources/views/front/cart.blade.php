@@ -57,7 +57,7 @@
 
                                 {{-- MINUS --}}
                                 <button type="button" @click="decrease"
-                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300">
+                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300">
                                     −
                                 </button>
 
@@ -68,7 +68,7 @@
 
                                 {{-- PLUS --}}
                                 <button type="button" @click="increase"
-                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300">
+                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300">
                                     +
                                 </button>
 
@@ -158,20 +158,29 @@
                 <div class="bg-white rounded-2xl p-6 shadow">
                     <h3 class="text-lg font-bold mb-4">Metode Pengiriman</h3>
 
-                    @if ($biteshipConfigured)
-                        <div x-data="biteshipShipping()" x-init="$nextTick(() => autoFetch())">
-                            <p class="text-xs text-gray-500 mb-3">Masukkan kode pos tujuan lalu cek ongkir real-time (Biteship).</p>
+                    @if ($agenWebConfigured)
+                        <div x-data="agenwebShipping()" x-init="$nextTick(() => autoFetch())">
+                            <p class="text-xs text-gray-500 mb-3">Pilih kota tujuan lalu cek ongkir real-time (AgenWebsite).</p>
                             <div class="flex gap-2">
-                                <input type="number" x-model="postCode" placeholder="Kode pos tujuan"
+                                <select id="agenweb-city" @change="onCityChange($event)" x-select2="{ dropdownAutoWidth: true }"
                                     class="w-full border rounded-lg px-4 py-2 text-sm">
+                                    <option value="">-- pilih kota --</option>
+                                    @foreach ($agenWebCities as $city)
+                                        <option value="{{ $city['city_id'] }}"
+                                            data-city-name="{{ $city['city_name'] }}"
+                                            data-postal="{{ $city['postal_code'] }}">
+                                            {{ $city['city_name'] }} - {{ $city['province'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 <button type="button" @click="fetchRates()" :disabled="loading"
-                                    class="shrink-0 bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm hover:bg-indigo-900">
+                                    class="shrink-0 bg-indigo-700 text-white font-bold px-4 py-2 rounded-full text-sm hover:bg-indigo-900">
                                     <span x-show="!loading">Cek Ongkir</span>
                                     <span x-show="loading">...</span>
                                 </button>
                             </div>
                             <p x-show="error" x-text="error" class="text-red-500 text-xs mt-2"></p>
-                            <div id="biteship-results" class="space-y-3 mt-3">
+                            <div id="agenweb-results" class="space-y-3 mt-3">
                                 <template x-for="rate in rates" :key="rate.rate_id">
                                     <label
                                         class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
@@ -246,9 +255,12 @@
 
 <div>
                             <label class="font-semibold">City</label>
-                            @if ($biteshipConfigured)
-                                <input type="text" name="city" value="{{ old('city') }}"
-                                    class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
+                            @if ($agenWebConfigured)
+                                <input type="text" name="city" id="agenweb_city_name" value="{{ old('city') }}"
+                                    readonly placeholder="Dipilih dari cek ongkir"
+                                    class="w-full border rounded-lg px-4 py-2 bg-gray-50 @error('city') border-red-500 @enderror">
+                                <input type="hidden" name="agenweb_city_id" id="agenweb-city-id"
+                                    value="{{ old('agenweb_city_id') }}">
                             @else
                                 <select name="city" id="citySelect"
                                     class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
@@ -303,7 +315,7 @@
                             @enderror
                         </div>
 
-                        <button class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-800">
+                        <button class="w-full bg-red-600 text-white font-bold py-3 rounded-full hover:bg-red-800">
                             Confirm
                         </button>
                     </div>
@@ -414,35 +426,54 @@
             }
         });
 
-        @if ($biteshipConfigured)
+        @if ($agenWebConfigured)
             /**
-             * ONGKIR Biteship: cek tarif real-time lalu pasang radio kurir.
+             * ONGKIR AgenWebsite: pilih kota tujuan, cek tarif real-time, pasang radio kurir.
              * Bila API gagal / kosong, tampilkan tarif manual (fallback).
              */
             document.addEventListener('alpine:init', () => {
-                Alpine.data('biteshipShipping', () => ({
-                    postCode: '',
+                Alpine.data('agenwebShipping', () => ({
+                    cityId: '',
                     loading: false,
                     error: '',
                     rates: [],
                     autoFetch() {
-                        const pc = document.querySelector('input[name="post_code"]');
-                        if (pc && pc.value.trim()) {
-                            this.postCode = pc.value.trim();
+                        const sel = document.getElementById('agenweb-city');
+                        const savedId = document.getElementById('agenweb-city-id')?.value;
+                        if (!sel) return;
+                        if (savedId && sel.querySelector(`option[value="${savedId}"]`)) {
+                            sel.value = savedId;
+                            this.applySelectedCity(sel);
                             this.fetchRates();
                         }
                     },
+                    onCityChange(evt) {
+                        this.applySelectedCity(evt.target);
+                    },
+                    applySelectedCity(sel) {
+                        const opt = sel.selectedOptions[0];
+                        if (!opt || !opt.value) {
+                            this.cityId = '';
+                            return;
+                        }
+                        this.cityId = opt.value;
+                        const nameInput = document.getElementById('agenweb_city_name');
+                        const idInput = document.getElementById('agenweb-city-id');
+                        const pcInput = document.querySelector('input[name="post_code"]');
+                        if (nameInput) nameInput.value = opt.dataset.cityName || '';
+                        if (idInput) idInput.value = opt.value;
+                        if (pcInput && opt.dataset.postal) pcInput.value = opt.dataset.postal;
+                    },
                     fetchRates() {
-                        const pc = (this.postCode || document.querySelector('input[name="post_code"]')?.value || '').trim();
-                        if (!pc) {
-                            this.error = 'Isi kode pos tujuan dulu.';
+                        if (!this.cityId) {
+                            this.error = 'Pilih kota tujuan dulu.';
                             return;
                         }
                         this.loading = true;
                         this.error = '';
                         this.rates = [];
                         document.querySelectorAll('input[name="shipping_method"]').forEach(r => r.checked = false);
-                        fetch('{{ route('carts.rates') }}?post_code=' + encodeURIComponent(pc), {
+                        fetch('{{ route('carts.rates') }}?city_id=' + encodeURIComponent(this.cityId), {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
                                 'Accept': 'application/json'
@@ -453,7 +484,7 @@
                             if (manual) manual.classList.add('hidden');
                             if (this.rates.length) this.error = '';
                             this.$nextTick(() => {
-                                const first = document.querySelector('#biteship-results input[name="shipping_method"]:not([checked])');
+                                const first = document.querySelector('#agenweb-results input[name="shipping_method"]:not([checked])');
                                 if (this.rates.length && first) {
                                     first.checked = true;
                                     calculatePrice();
@@ -470,8 +501,6 @@
                         this.error = 'Ongkir API tidak tersedia, memakai tarif manual.';
                         const manual = document.getElementById('manual-rates');
                         if (manual) manual.classList.remove('hidden');
-                        const zoneSelect = document.getElementById('citySelect');
-                        if (zoneSelect) setZoneShippingCosts();
                         calculatePrice();
                     }
                 }));

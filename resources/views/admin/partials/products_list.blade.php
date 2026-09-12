@@ -15,7 +15,7 @@
                 <button type="button" @click="openEdit('{{ $product->id }}')"
                     class="font-bold py-3 px-5 rounded-full text-white bg-yellow-500">Edit</button>
                 <button type="button" @click="openDelete('{{ $product->id }}')"
-                    class="font-bold py-3 px-5 rounded-full text-white bg-red-700">Delete</button>
+                    class="font-semibold py-2 px-4 rounded-full text-white bg-red-700">Delete</button>
             </div>
         </div>
     @empty

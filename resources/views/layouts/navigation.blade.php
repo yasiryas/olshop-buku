@@ -11,71 +11,77 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden sm:-my-px sm:ms-10 sm:flex sm:space-x-10">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                </div>
-                @role('owner|admin')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                            {{ __('Manage Products') }}
-                        </x-nav-link>
-                    </div>
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
-                            {{ __('Manage Categories') }}
-                        </x-nav-link>
-                    </div>
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('stocks.index')" :active="request()->routeIs('stocks.*')">
-                            {{ __('Manage Logistics') }}
-                        </x-nav-link>
-                    </div>
-                @endrole
-                @role('owner|penulis')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')">
-                            {{ __('Manage Article') }}
-                        </x-nav-link>
-                    </div>
-                @endrole
-                @role('owner')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+
+                    @role('owner|admin')
                         <x-nav-link :href="route('admin.reports.index')" :active="request()->routeIs('admin.reports.*')">
                             {{ __('Laporan') }}
                         </x-nav-link>
-                    </div>
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.staff.index')" :active="request()->routeIs('admin.staff.*')">
-                            {{ __('Kelola Staff') }}
-                        </x-nav-link>
-                    </div>
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.settings.edit')" :active="request()->routeIs('admin.settings.*')">
-                            {{ __('Pengaturan Toko') }}
-                        </x-nav-link>
-                    </div>
-                @endrole
-                @role('admin')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
-                            {{ __('Pelanggan') }}
-                        </x-nav-link>
-                    </div>
-                @endrole
-                @role('owner|admin')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.*')">
-                            {{ __('Orders') }}
-                        </x-nav-link>
-                    </div>
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link :href="route('admin.returns.index')" :active="request()->routeIs('admin.returns.*')">
-                            {{ __('Retur') }}
-                        </x-nav-link>
-                    </div>
-                @endrole
+                    @endrole
+
+                    @role('owner|admin')
+                        <x-nav-dropdown label="Katalog"
+                            :active="request()->routeIs('admin.products.*') || request()->routeIs('admin.categories.*') || request()->routeIs('stocks.*')">
+                            <x-dropdown-link :href="route('admin.products.index')"
+                                :class="request()->routeIs('admin.products.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                {{ __('Manage Products') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('admin.categories.index')"
+                                :class="request()->routeIs('admin.categories.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                {{ __('Manage Categories') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('stocks.index')"
+                                :class="request()->routeIs('stocks.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                {{ __('Manage Logistics') }}
+                            </x-dropdown-link>
+                        </x-nav-dropdown>
+                    @endrole
+
+                    @role('owner|admin')
+                        <x-nav-dropdown label="Transaksi"
+                            :active="request()->routeIs('product_transactions.*') || request()->routeIs('admin.returns.*')">
+                            <x-dropdown-link :href="route('product_transactions.index')"
+                                :class="request()->routeIs('product_transactions.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                {{ __('Orders') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('admin.returns.index')"
+                                :class="request()->routeIs('admin.returns.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                {{ __('Retur') }}
+                            </x-dropdown-link>
+                        </x-nav-dropdown>
+                    @endrole
+
+                    @role('owner|penulis')
+                        <x-nav-dropdown label="Konten"
+                            :active="request()->routeIs('admin.articles.*')">
+                            <x-dropdown-link :href="route('admin.articles.index')"
+                                :class="request()->routeIs('admin.articles.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                {{ __('Manage Article') }}
+                            </x-dropdown-link>
+                        </x-nav-dropdown>
+                    @endrole
+
+                    @role('owner|admin')
+                        <x-nav-dropdown label="Manajemen"
+                            :active="request()->routeIs('admin.staff.*') || request()->routeIs('admin.customers.*')">
+                            @role('owner')
+                                <x-dropdown-link :href="route('admin.staff.index')"
+                                    :class="request()->routeIs('admin.staff.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                    {{ __('Kelola Staff') }}
+                                </x-dropdown-link>
+                            @endrole
+                            @role('admin')
+                                <x-dropdown-link :href="route('admin.customers.index')"
+                                    :class="request()->routeIs('admin.customers.*') ? 'text-gray-900 bg-gray-50' : ''">
+                                    {{ __('Pelanggan') }}
+                                </x-dropdown-link>
+                            @endrole
+                        </x-nav-dropdown>
+                    @endrole
+                </div>
             </div>
 
             <!-- Settings Dropdown -->
@@ -83,7 +89,7 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
-                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
@@ -98,6 +104,11 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        @role('owner')
+                            <x-dropdown-link :href="route('admin.settings.edit')">
+                                {{ __('Pengaturan Toko') }}
+                            </x-dropdown-link>
+                        @endrole
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
@@ -113,7 +124,7 @@
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
-                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{ 'hidden': open, 'inline-flex': !open }" class="inline-flex"
                             stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -136,8 +147,38 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
             @role('owner|admin')
-                <x-responsive-nav-link :href="route('product_transactions.index')" :active="request()->routeIs('product_transactions.index')">
+                <x-responsive-nav-link :href="route('admin.products.index')">
+                    {{ __('Manage Products') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.categories.index')">
+                    {{ __('Manage Categories') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('stocks.index')">
+                    {{ __('Manage Logistics') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('product_transactions.index')">
                     {{ __('Orders') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.returns.index')">
+                    {{ __('Retur') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.reports.index')">
+                    {{ __('Laporan') }}
+                </x-responsive-nav-link>
+            @endrole
+            @role('owner|penulis')
+                <x-responsive-nav-link :href="route('admin.articles.index')">
+                    {{ __('Manage Article') }}
+                </x-responsive-nav-link>
+            @endrole
+            @role('owner')
+                <x-responsive-nav-link :href="route('admin.staff.index')">
+                    {{ __('Kelola Staff') }}
+                </x-responsive-nav-link>
+            @endrole
+            @role('admin')
+                <x-responsive-nav-link :href="route('admin.customers.index')">
+                    {{ __('Pelanggan') }}
                 </x-responsive-nav-link>
             @endrole
         </div>

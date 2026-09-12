@@ -32,13 +32,20 @@ class CategoryController extends Controller
         return view('admin.categories.index', [
             'categories' => $categories,
             'search' => $search,
-            'editData' => Category::orderBy('id', 'DESC')
-                ->get(['id', 'name', 'icon'])
-                ->map(fn ($c) => [
-                    'id' => $c->id,
-                    'name' => $c->name,
-                    'icon' => Storage::url($c->icon),
-                ]),
+        ]);
+    }
+
+    /**
+     * Data edit satu kategori (dimuat on-demand untuk modal edit).
+     */
+    public function editData(Category $category)
+    {
+        abort_unless(request()->expectsJson() || request()->ajax(), 404);
+
+        return response()->json([
+            'id' => $category->id,
+            'name' => $category->name,
+            'icon' => Storage::url($category->icon),
         ]);
     }
 
@@ -78,7 +85,7 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['System error!' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
             ]);
             throw $error;
         }
@@ -127,7 +134,7 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['System error!' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
             ]);
             throw $error;
         }
@@ -145,7 +152,7 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['System error!' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
             ]);
             throw $error;
         }

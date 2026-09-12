@@ -5,7 +5,7 @@
                 {{ __('Detail Pesanan #') . $product_transaction->id }}
             </h2>
             <a href="{{ route('product_transactions.index') }}"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
+                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">
                 All Orders
             </a>
         </div>
@@ -27,7 +27,7 @@
                 <div class="bg-green-50 border border-green-300 px-4 py-3 rounded-lg mb-6 flex items-center justify-between gap-4">
                     <p class="text-green-800 text-sm">Notifikasi WhatsApp siap dikirim ke pembeli.</p>
                     <a href="{{ session('wa_link') }}" target="_blank"
-                        class="shrink-0 font-bold text-sm bg-green-500 text-white py-2 px-4 rounded-full hover:bg-green-700">
+                        class="shrink-0 font-semibold text-sm bg-green-500 text-white py-1.5 px-3 rounded-full hover:bg-green-700">
                         <i class="fab fa-whatsapp mr-1"></i> Kirim via WhatsApp
                     </a>
                 </div>
@@ -59,7 +59,7 @@
                         <div class="flex items-center justify-between gap-3">
                             <p class="text-lg font-bold text-indigo-900">{{ $product_transaction->tracking_number }}</p>
                             <a href="{{ \App\Support\WaNotifier::url($product_transaction->phone_number, $waMessage) }}"
-                                target="_blank" class="shrink-0 font-bold text-sm bg-green-500 text-white py-2 px-4 rounded-full hover:bg-green-700">
+                                target="_blank" class="shrink-0 font-semibold text-sm bg-green-500 text-white py-1.5 px-3 rounded-full hover:bg-green-700">
                                 <i class="fab fa-whatsapp mr-1"></i> Kirim Resi
                             </a>
                         </div>
@@ -178,24 +178,24 @@
                             <form method="POST" action="{{ route('admin.orders.approve', $product_transaction) }}">
                                 @csrf
                                 <button type="submit"
-                                    class="w-fit font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
+                                    class="w-fit font-semibold bg-indigo-700 text-white py-2 px-4 rounded-full hover:bg-indigo-900">
                                     <i class="fas fa-check mr-1"></i> Approve & Kurangi Stok
                                 </button>
                             </form>
                             <button type="button" x-data="" @click="$dispatch('open-modal', 'reject-order')"
-                                class="w-fit font-bold bg-red-600 text-white py-3 px-5 rounded-full hover:bg-red-800">
+                                class="w-fit font-semibold bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-800">
                                 <i class="fas fa-times mr-1"></i> Tolak Pesanan
                             </button>
                         @elseif ($product_transaction->status === 'processing')
                             <button type="button" x-data="" @click="$dispatch('open-modal', 'ship-order')"
-                                class="w-fit font-bold bg-indigo-700 text-white py-3 px-5 rounded-full hover:bg-indigo-900">
+                                class="w-fit font-semibold bg-indigo-700 text-white py-2 px-4 rounded-full hover:bg-indigo-900">
                                 <i class="fas fa-paper-plane mr-1"></i> Input Resi & Kirim
                             </button>
                         @elseif ($product_transaction->status === 'shipped')
                             <form method="POST" action="{{ route('admin.orders.complete', $product_transaction) }}">
                                 @csrf
                                 <button type="submit"
-                                    class="w-fit font-bold bg-green-600 text-white py-3 px-5 rounded-full hover:bg-green-800">
+                                    class="w-fit font-semibold bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-800">
                                     <i class="fas fa-check-circle mr-1"></i> Tandai Selesai
                                 </button>
                             </form>
@@ -208,7 +208,7 @@
                         @endphp
                         <a href="{{ \App\Support\WaNotifier::url($product_transaction->phone_number, in_array($product_transaction->status, ['pending']) ? $waPending : $waApproved) }}"
                             target="_blank"
-                            class="w-fit font-bold bg-green-500 text-white py-3 px-5 rounded-full hover:bg-green-700">
+                            class="w-fit font-semibold bg-green-500 text-white py-2 px-4 rounded-full hover:bg-green-700">
                             <i class="fab fa-whatsapp mr-1"></i> WhatsApp Customer
                         </a>
                     @endhasanyrole

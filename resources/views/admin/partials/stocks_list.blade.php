@@ -23,7 +23,7 @@
 
             <div class="flex gap-x-3">
                 <button @click="openModal('{{ $product->id }}','in')"
-                    class="font-bold py-2 px-4 rounded-full text-white bg-blue-600 hover:bg-blue-700">
+                    class="font-semibold py-1.5 px-3 rounded-full text-white bg-blue-600 hover:bg-blue-700">
                     Stock In
                 </button>
 

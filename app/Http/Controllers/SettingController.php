@@ -11,6 +11,7 @@ class SettingController extends Controller
     {
         return view('admin.settings.edit', [
             'settings' => StoreSettings::all(),
+            'agenWebCities' => StoreSettings::agenWebCityList(),
         ]);
     }
 
@@ -18,8 +19,8 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'wa_contact' => 'required|string|max:20',
-            'biteship_api_key' => 'nullable|string|max:255',
-            'biteship_origin_postal_code' => 'nullable|string|max:10',
+            'agenweb_api_key' => 'nullable|string|max:255',
+            'agenweb_origin_city_id' => 'nullable|string|max:10',
             'low_stock_threshold' => 'required|integer|min:0',
             'shipping_methods' => 'required|array|min:1',
             'shipping_methods.*.courier' => 'required|string|max:100',
@@ -68,8 +69,8 @@ class SettingController extends Controller
             ->all();
 
         \App\Models\Setting::updateOrCreate(['key' => 'wa_contact'], ['value' => $validated['wa_contact']]);
-        \App\Models\Setting::updateOrCreate(['key' => 'biteship_api_key'], ['value' => $validated['biteship_api_key'] ?? '']);
-        \App\Models\Setting::updateOrCreate(['key' => 'biteship_origin_postal_code'], ['value' => $validated['biteship_origin_postal_code'] ?? '']);
+        \App\Models\Setting::updateOrCreate(['key' => 'agenweb_api_key'], ['value' => $validated['agenweb_api_key'] ?? '']);
+        \App\Models\Setting::updateOrCreate(['key' => 'agenweb_origin_city_id'], ['value' => $validated['agenweb_origin_city_id'] ?? '']);
         \App\Models\Setting::updateOrCreate(['key' => 'low_stock_threshold'], ['value' => $validated['low_stock_threshold']]);
         \App\Models\Setting::updateOrCreate(['key' => 'shipping_methods'], ['value' => $shippingMethods]);
         \App\Models\Setting::updateOrCreate(['key' => 'shipping_zones'], ['value' => $shippingZones]);

@@ -40,6 +40,8 @@ class StockController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $product = Product::withStock()->findOrFail($product->id);
+
         if ($request->type === 'out' && $request->quantity > $product->stock) {
             return back()->withErrors(['quantity' => "Stok tidak mencukupi! Stok saat ini: {$product->stock}"])->withInput();
         }

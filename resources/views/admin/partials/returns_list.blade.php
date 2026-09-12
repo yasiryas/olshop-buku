@@ -40,12 +40,12 @@
                                     <div class="flex flex-wrap gap-2 items-center">
                                         <button type="button"
                                             @click="approveReturn = { id: '{{ $returnRequest->id }}' }; $dispatch('open-modal', 'approve-return-modal')"
-                                            class="text-xs font-bold bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-700">
+                                            class="text-xs font-semibold bg-green-600 text-white py-1.5 px-3 rounded-full hover:bg-green-700">
                                             Setujui & Balikkan Stok
                                         </button>
                                         <button type="button"
                                             @click="rejectReturn = { id: '{{ $returnRequest->id }}' }; $dispatch('open-modal', 'reject-return-modal')"
-                                            class="text-xs font-bold bg-red-600 text-white py-2 px-4 rounded-full hover:bg-red-700">
+                                            class="text-xs font-semibold bg-red-600 text-white py-1.5 px-3 rounded-full hover:bg-red-700">
                                             Tolak
                                         </button>
                                     </div>

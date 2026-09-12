@@ -43,14 +43,14 @@
         <div class="hidden md:block relative" x-data="{ open: false }">
             @guest
                 <a href="{{ route('login') }}"
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded">
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full">
                     <i class="fas fa-sign-in-alt mr-2"></i> Login
                 </a>
             @endguest
 
             @auth
                 <button @click="open = !open"
-                    class="bg-red-600 text-white px-4 py-2 rounded flex items-center font-semibold">
+                    class="bg-red-600 text-white px-4 py-2 rounded-full flex items-center font-semibold">
                     <i class="fas fa-user mr-2"></i> {{ Auth::user()->name }}
                     <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -118,7 +118,7 @@
         <div class="border-t border-gray-200 p-4">
             @guest
                 <a href="{{ route('login') }}"
-                    class="block w-full text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded">
+                    class="block w-full text-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-full">
                     <i class="fas fa-sign-in-alt mr-2"></i> Login
                 </a>
             @endguest

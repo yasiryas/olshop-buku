@@ -37,23 +37,34 @@
                         </div>
                     </div>
 
-                    {{-- Biteship --}}
+                    {{-- AgenWebsite --}}
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Ongkir Real-time (Biteship)</h3>
-                            <p class="text-xs text-gray-500 mb-4">Jika API key diisi, ongkir dihitung langsung dari Biteship (JNE/J&T/SiCepat/dll) untuk seluruh Indonesia. Kosongkan untuk memakai tarif zona manual.</p>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Ongkir Real-time (AgenWebsite)</h3>
+                            <p class="text-xs text-gray-500 mb-4">
+                                Daftar 501 kota seluruh Indonesia sudah tersedia otomatis (seeder) — pilih Kota Asal lalu Simpan.
+                                Ongkir dihitung dari AgenWebsite Rate API (J&T, Lion Parcel, SAP, SPX, J&T Cargo) bila API key terisi
+                                (gratis: 150 request/hari dari agenwebsite.com); kosongkan untuk tarif zona manual.
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label class="text-sm font-medium text-gray-600">API Key</label>
-                                    <input type="text" x-model="biteshipApiKey" name="biteship_api_key"
-                                        placeholder="BIT..."
+                                    <input type="text" x-model="agenwebApiKey" name="agenweb_api_key"
+                                        placeholder="API key dari agenwebsite.com (awk_live_...)"
                                         class="w-full border rounded-lg px-4 py-2 text-sm">
                                 </div>
                                 <div>
-                                    <label class="text-sm font-medium text-gray-600">Kode Pos Asal (Toko)</label>
-                                    <input type="text" x-model="biteshipOriginPostalCode" name="biteship_origin_postal_code"
-                                        placeholder="40111"
+                                    <label class="text-sm font-medium text-gray-600">Kota Asal (Toko)</label>
+                                    <select name="agenweb_origin_city_id" x-select2
                                         class="w-full border rounded-lg px-4 py-2 text-sm">
+                                        <option value="">-- pilih kota --</option>
+                                        @foreach ($agenWebCities as $city)
+                                            <option value="{{ $city['city_id'] }}"
+                                                @selected((string) ($settings['agenweb_origin_city_id'] ?? '') === (string) $city['city_id'])>
+                                                {{ $city['city_name'] }} - {{ $city['province'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -186,7 +197,7 @@
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-indigo-700 text-white font-bold py-3 rounded-xl hover:bg-indigo-900">
+                        class="w-full bg-indigo-700 text-white font-semibold py-2 rounded-full hover:bg-indigo-900">
                         Simpan Pengaturan
                     </button>
                 </form>
@@ -199,8 +210,7 @@
         'zones' => $settings['shipping_zones'] ?? [],
         'payment' => $settings['payment_methods'] ?? [],
         'wa' => $settings['wa_contact'] ?? '',
-        'biteship_api_key' => $settings['biteship_api_key'] ?? '',
-        'biteship_origin_postal_code' => $settings['biteship_origin_postal_code'] ?? '',
+        'agenweb_api_key' => $settings['agenweb_api_key'] ?? '',
         'low_stock_threshold' => $settings['low_stock_threshold'] ?? 5,
     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
@@ -209,8 +219,7 @@
             const json = JSON.parse(document.getElementById('settings-data').textContent);
             Alpine.data('storeSettings', () => ({
                 wa: json.wa,
-                biteshipApiKey: json.biteship_api_key ?? '',
-                biteshipOriginPostalCode: json.biteship_origin_postal_code ?? '',
+                agenwebApiKey: json.agenweb_api_key ?? '',
                 lowStockThreshold: json.low_stock_threshold,
                 shipping: (json.shipping || []).map(s => ({ ...s })),
                 zones: (json.zones || []).map(z => ({ city: z.city, costs: { ...(z.costs || {}) } })),

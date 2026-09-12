@@ -13,11 +13,7 @@ class CustomerController extends Controller
         $customers = User::whereHas('roles', fn ($q) => $q->where('name', 'buyer'))
             ->withCount([
                 'productTransactions as total_orders',
-                'productTransactions as total_spent' => fn ($q) => $q->selectRaw('COALESCE(SUM(total_amount), 0)')->whereIn('status', [
-                    ProductTransaction::STATUS_PROCESSING,
-                    ProductTransaction::STATUS_SHIPPED,
-                    ProductTransaction::STATUS_COMPLETED,
-                ]),
+                'productTransactions as total_spent' => fn ($q) => $q->selectRaw('COALESCE(SUM(total_amount), 0)')->whereIn('status', ProductTransaction::PAID_STATUSES),
             ])
             ->orderBy('name')
             ->paginate(10);

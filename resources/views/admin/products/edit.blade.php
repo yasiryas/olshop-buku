@@ -5,7 +5,7 @@
                 {{ __('Edit product') }}
             </h2>
             <a href="{{ route('admin.categories.index') }}"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">Edit
+                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Edit
                 product</a>
         </div>
     </x-slot>

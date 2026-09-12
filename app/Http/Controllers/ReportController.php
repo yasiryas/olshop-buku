@@ -13,13 +13,6 @@ use Illuminate\Support\Facades\Response;
 
 class ReportController extends Controller
 {
-    private const PAID_STATUSES = [
-        ProductTransaction::STATUS_PROCESSING,
-        ProductTransaction::STATUS_SHIPPED,
-        ProductTransaction::STATUS_COMPLETED,
-        ProductTransaction::STATUS_RETURNED,
-    ];
-
     private const EXPORT_TYPES = ['sales', 'daily', 'stock'];
 
     public function index(Request $request)
@@ -46,6 +39,7 @@ class ReportController extends Controller
         }
 
         $data = $this->reportData($from, $to);
+        $lowStockThreshold = StoreSettings::lowStockThreshold();
         $rows = match ($type) {
             'sales' => $data['productSales']->map(fn ($row) => [
                 $row->product->name ?? 'Produk',
@@ -62,7 +56,7 @@ class ReportController extends Controller
                 $row['name'],
                 $row['category'] ?? '-',
                 (int) $row['stock'],
-                $row['stock'] <= StoreSettings::lowStockThreshold() ? 'Menipis' : 'Aman',
+                $row['stock'] <= $lowStockThreshold ? 'Menipis' : 'Aman',
             ]),
         };
 
@@ -96,30 +90,33 @@ class ReportController extends Controller
         $transactions = ProductTransaction::query()
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
-        $revenue = (clone $transactions)->whereIn('status', self::PAID_STATUSES)->sum('total_amount');
+        $revenue = (clone $transactions)->whereIn('status', ProductTransaction::PAID_STATUSES)->sum('total_amount');
         $orderCount = (clone $transactions)->count();
-        $paidOrderCount = (clone $transactions)->whereIn('status', self::PAID_STATUSES)->count();
+        $paidOrderCount = (clone $transactions)->whereIn('status', ProductTransaction::PAID_STATUSES)->count();
 
         $dailySales = (clone $transactions)
-            ->selectRaw('DATE(created_at) as date, COUNT(*) as total_orders, SUM(CASE WHEN status IN (?, ?, ?, ?) THEN total_amount ELSE 0 END) as revenue', self::PAID_STATUSES)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as total_orders, SUM(CASE WHEN status IN (?, ?, ?, ?) THEN total_amount ELSE 0 END) as revenue', ProductTransaction::PAID_STATUSES)
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
         $productSales = TransactionDetail::selectRaw('product_id, SUM(qty) as total_qty, SUM(price * qty) as total_revenue')
-            ->whereHas('productTransaction', fn ($q) => $q->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->whereIn('status', self::PAID_STATUSES))
+            ->whereHas('productTransaction', fn ($q) => $q->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->whereIn('status', ProductTransaction::PAID_STATUSES))
             ->with('product.category')
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
             ->get();
 
-        $stockReport = Product::with('category')->withStock()->get()
+        $stockReport = Product::with('category')
+            ->select(['id', 'name', 'category_id'])
+            ->withStock()
+            ->orderByRaw('stock_in - stock_out')
+            ->get()
             ->map(fn ($product) => [
                 'name' => $product->name,
                 'category' => $product->category?->name,
                 'stock' => $product->stock,
             ])
-            ->sortBy('stock')
             ->values();
 
         return compact('revenue', 'orderCount', 'paidOrderCount', 'dailySales', 'productSales', 'stockReport');

@@ -20,7 +20,7 @@
                 memberikan inovasi, kualitas, dan kepuasan pelanggan.
             </p>
             <a href="{{ route('front.contact') }}"
-                class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 mt-4 rounded font-semibold">Hubungi Kami</a>
+                class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 mt-4 rounded-full font-semibold">Hubungi Kami</a>
         </div>
     </section>
 
@@ -56,7 +56,7 @@
             </p>
             <div class="text-center">
                 <a href="{{ route('front.contact') }}"
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded transition">
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-full transition">
                     Hubungi Kami
                 </a>
             </div>

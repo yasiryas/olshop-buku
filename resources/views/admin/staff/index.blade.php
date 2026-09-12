@@ -12,7 +12,7 @@
                     class="border-2 text-slate-400 rounded-full px-4 py-2">
             </form>
             <button type="button" @click="$dispatch('open-modal', 'add-staff')"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">Tambah Staff</button>
+                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Tambah Staff</button>
         </div>
     </x-slot>
 
@@ -90,10 +90,10 @@
                     </div>
                     <div class="flex items-center justify-end gap-3">
                         <button type="button" @click="$dispatch('close-modal', 'add-staff')"
-                            class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                            class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-full">
                             Batal
                         </button>
-                        <button type="submit" class="bg-indigo-700 text-white font-bold py-2 px-5 rounded-xl hover:bg-indigo-900">
+                        <button type="submit" class="bg-indigo-700 text-white font-semibold py-1.5 px-4 rounded-full hover:bg-indigo-900">
                             Simpan Staff
                         </button>
                     </div>

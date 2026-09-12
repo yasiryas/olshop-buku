@@ -49,19 +49,28 @@ class StoreSettings
         return self::get('wa_contact', '6285713878266');
     }
 
-    public static function biteshipApiKey(): string
+    public static function agenWebApiKey(): string
     {
-        return (string) self::get('biteship_api_key', '');
+        return (string) self::get('agenweb_api_key', '');
     }
 
-    public static function biteshipOriginPostalCode(): string
+    public static function agenWebOriginCityId(): string
     {
-        return (string) self::get('biteship_origin_postal_code', '');
+        return (string) self::get('agenweb_origin_city_id', '');
     }
 
-    public static function biteshipConfigured(): bool
+    public static function agenWebCityList(): array
     {
-        return self::biteshipApiKey() !== '' && self::biteshipOriginPostalCode() !== '';
+        $list = self::get('agenweb_city_list', []);
+
+        return is_array($list) ? $list : [];
+    }
+
+    public static function agenWebConfigured(): bool
+    {
+        return self::agenWebApiKey() !== ''
+            && self::agenWebOriginCityId() !== ''
+            && !empty(self::agenWebCityList());
     }
 
     public static function lowStockThreshold(): int

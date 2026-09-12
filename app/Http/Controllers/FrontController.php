@@ -34,7 +34,8 @@ class FrontController extends Controller
                 $query->where('name', 'like', '%' . $search . '%');
             })
             ->orderBy('id', 'DESC')
-            ->get();
+            ->paginate(12)
+            ->withQueryString();
         $categories = Category::all();
 
         if ($request->ajax()) {
@@ -79,7 +80,9 @@ class FrontController extends Controller
     public function search(Request $request)
     {
         $keyword = $request->input('search');
-        $products = Product::with('category')->withStock()->where('name', 'LIKE', '%' . $keyword . '%')->get();
+        $products = Product::with('category')->withStock()->where('name', 'LIKE', '%' . $keyword . '%')
+            ->paginate(12)
+            ->withQueryString();
 
         return view('front.search', [
             'products' => $products,
@@ -95,7 +98,9 @@ class FrontController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })
-            ->get();
+            ->orderBy('id', 'DESC')
+            ->paginate(12)
+            ->withQueryString();
 
         if ($request->ajax()) {
             return view('front.partials.products_grid', compact('products'));

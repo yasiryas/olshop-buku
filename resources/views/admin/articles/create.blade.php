@@ -8,7 +8,7 @@
                 {{ __('New articles') }}
             </h2>
             <a href="{{ route('admin.articles.index') }}"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">Manage
+                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Manage
                 article</a>
         </div>
     </x-slot>

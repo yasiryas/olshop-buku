@@ -32,12 +32,12 @@
                 <!-- Tombol -->
                 @guest
                     <a href="{{ route('login') }}"
-                        class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded">
+class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full">
                         <i class="fas fa-sign-in-alt mr-2"></i> Login</a>
                 @endguest
                 @auth
                     <button @click="open = !open"
-                        class="bg-red-600 text-white px-4 py-2 rounded flex items-center font-semibold"> <i
+                        class="bg-red-600 text-white px-4 py-2 rounded-full flex items-center font-semibold"> <i
                             class="fas fa-user mr-2"></i>
                         {{ Auth::user()->name }}
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@
             <p class="text-lg mb-8 text-gray-600">fiksi, nonfiksi, bisnis, pendidikan, hingga buku anak. Lengkap.
                 Terjangkau. Cepat
                 sampai</p>
-            <a href="#products" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded"><i
+            <a href="#products" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full"><i
                     class="fa-solid fa-bag-shopping mr-2"></i> Shop
                 Now</a>
         </div>
@@ -171,7 +171,7 @@
                 panduan bisnis, buku anak, hingga koleksi langka. Semua bisa kamu dapatkan tanpa harus keluar rumah,
                 dengan harga bersahabat dan pelayanan terbaik.</p>
             <div class="flex justify-center">
-                <a href="#" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded">Shop
+                <a href="#" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full">Shop
                     Now</a>
             </div>
         </div>

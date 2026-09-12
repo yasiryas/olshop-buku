@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Product;
-use App\Support\BiteshipShipping;
+use App\Support\AgenWebShipping;
 use App\Support\StoreSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,25 +25,26 @@ class CartController extends Controller
                 'shippingRates' => StoreSettings::shippingRates(),
                 'shippingZones' => StoreSettings::shippingZones(),
                 'paymentMethods' => StoreSettings::paymentMethods(),
-                'biteshipConfigured' => BiteshipShipping::configured(),
+                'agenWebConfigured' => AgenWebShipping::configured(),
+                'agenWebCities' => StoreSettings::agenWebCityList(),
             ]
         );
     }
 
     /**
-     * Tarif ongkir real-time via Biteship untuk kode pos tujuan.
+     * Tarif ongkir real-time via AgenWebsite untuk kota tujuan.
      */
     public function rates(Request $request)
     {
         $validated = $request->validate([
-            'post_code' => 'required|integer',
+            'city_id' => 'required|integer',
         ]);
 
         $cartItems = Auth::user()->carts()->with('product')->get();
 
-        return response()->json(BiteshipShipping::rates(
-            (int) $validated['post_code'],
-            BiteshipShipping::cartWeightGrams($cartItems)
+        return response()->json(AgenWebShipping::rates(
+            (int) $validated['city_id'],
+            AgenWebShipping::cartWeightGrams($cartItems)
         ));
     }
 
@@ -60,7 +61,7 @@ class CartController extends Controller
      */
     public function store($product_id)
     {
-        $product = Product::findOrFail($product_id);
+        $product = Product::withStock()->findOrFail($product_id);
 
         if ($product->stock < 1) {
             return redirect()->back()->with('error', 'Ups, Produk sudah habis!');
@@ -106,9 +107,9 @@ class CartController extends Controller
      */
     public function update(Request $request, Cart $cart)
     {
-        abort_unless($cart->user_id === Auth::id(), 403);
+        abort_unless($cart->user_id === Auth::id(), 403, 'Anda tidak dapat mengubah keranjang pengguna lain.');
 
-        $cart->load('product');
+        $cart->load(['product' => fn ($q) => $q->withStock()]);
 
         $request->validate([
             'quantity' => 'required|numeric|min:1|max:' . $cart->product->stock,
@@ -131,7 +132,7 @@ class CartController extends Controller
      */
     public function destroy(Cart $cart)
     {
-        abort_unless($cart->user_id === Auth::id(), 403);
+        abort_unless($cart->user_id === Auth::id(), 403, 'Anda tidak dapat mengubah keranjang pengguna lain.');
 
         $cart->delete();
 

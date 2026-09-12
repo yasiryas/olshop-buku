@@ -69,6 +69,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('categories', CategoryController::class)->middleware('permission:manage categories');
         Route::resource('articles', ArticleController::class)->middleware('permission:manage articles');
 
+        Route::get('products/{product}/edit-data', [ProductController::class, 'editData'])
+            ->name('products.edit-data')->middleware('permission:manage products');
+        Route::get('categories/{category}/edit-data', [CategoryController::class, 'editData'])
+            ->name('categories.edit-data')->middleware('permission:manage categories');
+        Route::get('articles/{article}/edit-data', [ArticleController::class, 'editData'])
+            ->name('articles.edit-data')->middleware('permission:manage articles');
+
         Route::resource('staff', StaffController::class)->only(['index', 'store'])->middleware('permission:manage staff');
         Route::post('staff/{user}/toggle', [StaffController::class, 'toggleActive'])->name('staff.toggle')->middleware('permission:manage staff');
 

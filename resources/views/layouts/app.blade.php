@@ -86,7 +86,7 @@
             <p class="text-gray-500 text-xs">Akses lebih cepat seperti aplikasi native.</p>
         </div>
         <button id="pwa-install-btn"
-            class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
+            class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition">
             Install
         </button>
         <button id="pwa-install-dismiss" class="text-gray-400 hover:text-gray-600 ml-1">

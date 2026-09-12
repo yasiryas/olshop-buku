@@ -12,7 +12,7 @@
                     class="border-2 text-slate-400 rounded-full px-4 py-2">
             </form>
             <button type="button" x-data="" @click="$dispatch('open-modal', 'add-product')"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">Add
+                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Add
                 product</button>
         </div>
     </x-slot>
@@ -20,10 +20,14 @@
     <div class="py-12"
         x-data="{
             item: null,
+            editDataUrl: '{{ route('admin.products.edit-data', ['product' => '__ID__']) }}',
             openEdit(id) {
-                const row = JSON.parse(document.getElementById('product-edit-data').textContent).find(p => p.id == id);
-                this.item = row;
-                this.$dispatch('open-modal', 'edit-product');
+                fetch(this.editDataUrl.replace('__ID__', id), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(res => res.json())
+                    .then(row => {
+                        this.item = row;
+                        this.$dispatch('open-modal', 'edit-product');
+                    });
             },
             deleteId: null,
             openDelete(id) {
@@ -41,24 +45,11 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 }).then(res => {
                     if (!res.ok && !res.redirected) throw new Error('Gagal menyimpan');
-                    this.syncEditData(formData);
                     this.$dispatch('close-modal', 'edit-product');
                     return this.refreshList(resultsId, listUrl);
                 }).catch(() => {
                     this.updating = false;
                 });
-            },
-            syncEditData(formData) {
-                const blob = document.getElementById('product-edit-data');
-                const rows = JSON.parse(blob.textContent);
-                const row = rows.find(p => p.id == this.item.id);
-                if (row) {
-                    row.name = formData.get('name');
-                    row.price = formData.get('price');
-                    row.about = formData.get('about');
-                    row.category_id = Number(formData.get('category_id'));
-                }
-                blob.textContent = JSON.stringify(rows);
             },
             deleting: false,
             submitDelete(form, resultsId, listUrl) {
@@ -100,8 +91,6 @@
                 clearInterval(this.pollTimer);
             }
         }">
-        <script type="application/json"
-            id="product-edit-data">{!! json_encode($editData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div id="results-products">
                 @include('admin.partials.products_list')
@@ -232,14 +221,14 @@
                     dapat dibatalkan.</p>
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="$dispatch('close-modal', 'delete-product')"
-                        class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                        class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-full">
                         Batal
                     </button>
                     <form method="POST" :action="`/admin/products/${deleteId}`"
                         @submit.prevent="submitDelete($el, 'results-products', '{{ route('admin.products.index') }}')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                        <button type="submit" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full">
                             Hapus
                         </button>
                     </form>

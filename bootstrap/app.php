@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,5 +25,38 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 403) {
+                return null;
+            }
+
+            $message = $e->getMessage() ?: null;
+
+            if (!$message && $route = $request->route()) {
+                foreach ($route->gatherMiddleware() as $middleware) {
+                    if (str_starts_with($middleware, 'role:')) {
+                        $roles = substr($middleware, 5);
+                        $message = match ($roles) {
+                            'buyer' => 'Fitur ini khusus untuk akun pembeli (buyer). Admin tidak dapat melakukan pemesanan.',
+                            'owner|admin' => 'Fitur ini khusus untuk Owner dan Admin.',
+                            'owner|admin|penulis' => 'Area ini khusus untuk pegawai toko (Owner, Admin, atau Penulis).',
+                            default => "Fitur ini khusus untuk role: {$roles}.",
+                        };
+                    } elseif (str_starts_with($middleware, 'permission:')) {
+                        $permission = substr($middleware, 11);
+                        $message = "Anda tidak memiliki izin mengakses fitur ini. (Permission: {$permission})";
+                    }
+                }
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message ?: 'Anda tidak memiliki izin untuk mengakses halaman ini.',
+                ], 403);
+            }
+
+            return response()->view('errors.403', [
+                'message' => $message ?: 'Anda tidak memiliki izin untuk mengakses halaman ini.',
+            ], 403)->header('Content-Type', 'text/html');
+        });
     })->create();

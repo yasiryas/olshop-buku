@@ -13,13 +13,6 @@ use Illuminate\Support\Collection;
 
 class DashboardController extends Controller
 {
-    private const PAID_STATUSES = [
-        ProductTransaction::STATUS_PROCESSING,
-        ProductTransaction::STATUS_SHIPPED,
-        ProductTransaction::STATUS_COMPLETED,
-        ProductTransaction::STATUS_RETURNED,
-    ];
-
     public function index()
     {
         $user = auth()->user();
@@ -40,7 +33,7 @@ class DashboardController extends Controller
         $stats = $this->transactionStats();
 
         $bestSellers = TransactionDetail::selectRaw('product_id, SUM(qty) as total_qty, SUM(price * qty) as total_revenue')
-            ->whereHas('productTransaction', fn ($q) => $q->whereIn('status', self::PAID_STATUSES))
+            ->whereHas('productTransaction', fn ($q) => $q->whereIn('status', ProductTransaction::PAID_STATUSES))
             ->with('product')
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
@@ -101,13 +94,13 @@ class DashboardController extends Controller
 
     private function transactionStats(): array
     {
-        $totalRevenue = ProductTransaction::whereIn('status', self::PAID_STATUSES)->sum('total_amount');
+        $totalRevenue = ProductTransaction::whereIn('status', ProductTransaction::PAID_STATUSES)->sum('total_amount');
         $totalOrders = ProductTransaction::count();
         $pendingOrders = ProductTransaction::where('status', ProductTransaction::STATUS_PENDING)->count();
         $completedOrders = ProductTransaction::where('status', ProductTransaction::STATUS_COMPLETED)->count();
 
         $monthlyData = ProductTransaction::selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
-            ->whereIn('status', self::PAID_STATUSES)
+            ->whereIn('status', ProductTransaction::PAID_STATUSES)
             ->whereYear('created_at', date('Y'))
             ->groupBy('month')
             ->get();
@@ -119,11 +112,11 @@ class DashboardController extends Controller
     {
         $threshold = StoreSettings::lowStockThreshold();
 
-        return Product::withStock()->get()
-            ->filter(fn ($product) => $product->stock <= $threshold)
-            ->sortBy('stock')
+        return Product::lowStock($threshold)
+            ->withStock()
+            ->orderByRaw('stock_in - stock_out')
             ->take(8)
-            ->values();
+            ->get();
     }
 
     /**

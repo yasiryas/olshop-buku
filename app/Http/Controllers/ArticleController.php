@@ -32,15 +32,22 @@ class ArticleController extends Controller
             'articles' => $articles,
             'search' => $search,
             'categories' => Category::all(),
-            'editData' => Article::orderBy('id', 'DESC')
-                ->get(['id', 'title', 'content', 'category_id', 'featured_image'])
-                ->map(fn ($a) => [
-                    'id' => $a->id,
-                    'title' => $a->title,
-                    'content' => $a->content,
-                    'category_id' => $a->category_id,
-                    'featured_image' => $a->featured_image ? Storage::url($a->featured_image) : null,
-                ]),
+        ]);
+    }
+
+    /**
+     * Data edit satu artikel (dimuat on-demand untuk modal edit).
+     */
+    public function editData(Article $article)
+    {
+        abort_unless(request()->expectsJson() || request()->ajax(), 404);
+
+        return response()->json([
+            'id' => $article->id,
+            'title' => $article->title,
+            'content' => $article->content,
+            'category_id' => $article->category_id,
+            'featured_image' => $article->featured_image ? Storage::url($article->featured_image) : null,
         ]);
     }
 

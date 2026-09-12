@@ -36,6 +36,15 @@ class Product extends Model
             ->withSum(['stockMutations as stock_out' => fn ($q) => $q->where('type', 'out')], 'quantity');
     }
 
+    public function scopeLowStock(Builder $query, int $threshold): Builder
+    {
+        return $query->whereRaw(
+            '(COALESCE((SELECT SUM(quantity) FROM stock_mutations WHERE stock_mutations.product_id = products.id AND stock_mutations.type = ?), 0)'
+            . ' - COALESCE((SELECT SUM(quantity) FROM stock_mutations WHERE stock_mutations.product_id = products.id AND stock_mutations.type = ?), 0)) <= ?',
+            ['in', 'out', $threshold]
+        );
+    }
+
     public function getStockAttribute(): int
     {
         if (array_key_exists('stock_in', $this->attributes) && array_key_exists('stock_out', $this->attributes)) {

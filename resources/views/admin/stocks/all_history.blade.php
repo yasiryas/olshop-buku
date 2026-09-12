@@ -13,7 +13,7 @@
                             x-model="keyword" @input.debounce.500ms="search()"
                             class="border-2 text-slate-400 rounded-full px-4 py-2">
                     </form>
-                <a href="{{ route('stocks.index') }}" class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
+                <a href="{{ route('stocks.index') }}" class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">
                     Stock Mutations
                 </a>
             </div>

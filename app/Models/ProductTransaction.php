@@ -18,6 +18,13 @@ class ProductTransaction extends Model
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_RETURNED = 'returned';
 
+    public const PAID_STATUSES = [
+        self::STATUS_PROCESSING,
+        self::STATUS_SHIPPED,
+        self::STATUS_COMPLETED,
+        self::STATUS_RETURNED,
+    ];
+
     public const STATUS_LABELS = [
         self::STATUS_PENDING => 'Menunggu Konfirmasi',
         self::STATUS_PROCESSING => 'Diproses',
@@ -83,6 +90,6 @@ class ProductTransaction extends Model
 
     public function isPaid(): bool
     {
-        return in_array($this->status, [self::STATUS_PROCESSING, self::STATUS_SHIPPED, self::STATUS_COMPLETED, self::STATUS_RETURNED]);
+        return in_array($this->status, self::PAID_STATUSES, true);
     }
 }

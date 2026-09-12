@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\ProductReturn;
 use App\Models\ProductTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductReturnController extends Controller
 {
@@ -37,7 +39,7 @@ class ProductReturnController extends Controller
     public function store(Request $request, ProductTransaction $productTransaction)
     {
         $user = $request->user();
-        abort_unless($user->hasRole('buyer') && $productTransaction->user_id === $user->id, 403);
+        abort_unless($user->hasRole('buyer') && $productTransaction->user_id === $user->id, 403, 'Hanya pembeli yang bisa mengajukan retur untuk pesanan miliknya.');
         abort_unless($productTransaction->status === ProductTransaction::STATUS_COMPLETED, 403, 'Retur hanya bisa diajukan untuk pesanan selesai.');
         abort_if($productTransaction->returns()->whereIn('status', [ProductReturn::STATUS_REQUESTED, ProductReturn::STATUS_APPROVED])->exists(), 403, 'Sudah ada pengajuan retur untuk pesanan ini.');
 
@@ -59,31 +61,41 @@ class ProductReturnController extends Controller
 
     public function approve(ProductReturn $productReturn)
     {
-        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403);
-        abort_unless($productReturn->status === ProductReturn::STATUS_REQUESTED, 403, 'Hanya retur berstatus menunggu yang bisa disetujui.');
+        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403, 'Hanya Owner atau Admin yang dapat memproses retur.');
 
-        $transaction = $productReturn->transaction()->with('transactionDetails.product')->firstOrFail();
-
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
+            $return = ProductReturn::with(['transaction.transactionDetails.product'])
+                ->lockForUpdate()
+                ->findOrFail($productReturn->id);
+
+            if ($return->status !== ProductReturn::STATUS_REQUESTED) {
+                throw new \Exception('Hanya retur berstatus menunggu yang bisa disetujui.');
+            }
+
+            $transaction = $return->transaction;
+
+            $productIds = $transaction->transactionDetails->pluck('product_id')->all();
+            $products = Product::lockForUpdate()->whereKey($productIds)->get()->keyBy('id');
+
             foreach ($transaction->transactionDetails as $detail) {
-                $detail->product->stockMutations()->create([
+                $products[$detail->product_id]->stockMutations()->create([
                     'type' => 'in',
                     'quantity' => $detail->qty,
                     'description' => 'Stok masuk dari retur pesanan #' . $transaction->id,
                 ]);
             }
 
-            $productReturn->update([
+            $return->update([
                 'status' => ProductReturn::STATUS_APPROVED,
                 'admin_note' => 'Retur disetujui, stok dikembalikan.',
             ]);
 
             $transaction->update(['status' => ProductTransaction::STATUS_RETURNED]);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             return redirect()->back()->with('error', 'Gagal memproses retur: ' . $e->getMessage());
         }
 
@@ -92,7 +104,7 @@ class ProductReturnController extends Controller
 
     public function reject(Request $request, ProductReturn $productReturn)
     {
-        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403);
+        abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403, 'Hanya Owner atau Admin yang dapat memproses retur.');
         abort_unless($productReturn->status === ProductReturn::STATUS_REQUESTED, 403, 'Hanya retur berstatus menunggu yang bisa ditolak.');
 
         $validated = $request->validate([

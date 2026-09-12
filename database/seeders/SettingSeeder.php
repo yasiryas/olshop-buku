@@ -26,8 +26,9 @@ class SettingSeeder extends Seeder
                 ['code' => 'mandiri', 'name' => 'Transfer Bank Mandiri', 'acc_number' => '123000456789', 'acc_name' => 'Wigati Buku', 'active' => false],
             ],
             'wa_contact' => '6285713878266',
-            'biteship_api_key' => '',
-            'biteship_origin_postal_code' => '',
+            'agenweb_api_key' => '',
+            'agenweb_origin_city_id' => '',
+            'agenweb_city_list' => [],
             'low_stock_threshold' => 5,
         ];
 

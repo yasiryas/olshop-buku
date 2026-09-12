@@ -51,11 +51,11 @@
                             @csrf
                             @if ($product->stock < 1)
                                 <button type="submit" disabled
-                                    class="bg-gray-400 cursor-not-allowed text-white font-semibold py-3 px-8 rounded transition mt-4"><i
+                                    class="bg-gray-400 cursor-not-allowed text-white font-semibold py-3 px-8 rounded-full transition mt-4"><i
                                         class="fas fa-shopping-cart mr-2"></i>Stok Habis</button>
                             @else
                                 <button type="submit" name="product_id" value="{{ $product->id }}"
-                                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded transition mt-4"><i
+                                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-full transition mt-4"><i
                                         class="fas fa-shopping-cart mr-2"></i>Add
                                     To Cart</button>
                             @endif

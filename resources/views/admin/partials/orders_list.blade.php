@@ -34,7 +34,7 @@
 
             <div class="hidden md:flex flex-row items-center gap-x-3">
                 <a href="{{ route('product_transactions.show', $transaction) }}"
-                    class="font-bold py-3 px-5 rounded-full text-white bg-blue-700">View
+                    class="font-semibold py-2 px-4 rounded-full text-white bg-blue-700">View
                     Details</a>
             </div>
         </div>

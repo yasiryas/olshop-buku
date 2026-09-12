@@ -21,18 +21,18 @@
                                 class="border rounded-lg px-4 py-2 text-sm">
                         </div>
                         <button type="submit"
-                            class="bg-indigo-700 text-white text-sm font-bold py-2 px-5 rounded-full">Tampilkan</button>
+                            class="bg-indigo-700 text-white text-sm font-semibold py-1.5 px-4 rounded-full">Tampilkan</button>
                         <div class="ml-auto flex flex-wrap gap-2">
                             <a href="{{ route('admin.reports.export', ['type' => 'sales', ...request()->query()]) }}"
-                                class="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-full hover:bg-green-700">
+                                class="bg-green-600 text-white text-sm font-semibold py-1.5 px-3 rounded-full hover:bg-green-700">
                                 <i class="fas fa-download mr-1"></i> Export Penjualan
                             </a>
                             <a href="{{ route('admin.reports.export', ['type' => 'daily', ...request()->query()]) }}"
-                                class="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-full hover:bg-green-700">
+                                class="bg-green-600 text-white text-sm font-semibold py-1.5 px-3 rounded-full hover:bg-green-700">
                                 <i class="fas fa-download mr-1"></i> Harian
                             </a>
                             <a href="{{ route('admin.reports.export', ['type' => 'stock', ...request()->query()]) }}"
-                                class="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-full hover:bg-green-700">
+                                class="bg-green-600 text-white text-sm font-semibold py-1.5 px-3 rounded-full hover:bg-green-700">
                                 <i class="fas fa-download mr-1"></i> Stok
                             </a>
                         </div>

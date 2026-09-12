@@ -12,7 +12,7 @@
                     class="border-2 text-slate-400 rounded-full px-4 py-2">
             </form>
             <a href="{{ route('stocks.allHistory') }}"
-                class="font-bold py-3 px-5 rounded-full text-white bg-indigo-700">
+                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">
                 History Stock
             </a>
         </div>
@@ -54,10 +54,10 @@
                 <input type="hidden" name="type" :value="mode">
 
                 <div class="flex justify-end gap-3 mt-5">
-                    <button type="button" @click="close()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                    <button type="button" @click="close()" class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-full">
                         Cancel
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
+                    <button type="submit" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full">
                         Submit
                     </button>
                 </div>

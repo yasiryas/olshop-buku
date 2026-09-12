@@ -44,6 +44,7 @@ class RolePermissionSeeder extends Seeder
             'manage categories',
             'manage stocks',
             'process orders',
+            'view reports',
             'manage customers',
             'process returns',
         ],
@@ -95,6 +96,11 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'Danang', 'email' => 'danang@mail.com', 'role' => 'buyer'],
             ['name' => 'Siti Rahma', 'email' => 'rahma@mail.com', 'role' => 'buyer'],
             ['name' => 'Budi Santoso', 'email' => 'budi@mail.com', 'role' => 'buyer'],
+            ['name' => 'Ria Anggraini', 'email' => 'ria@mail.com', 'role' => 'buyer'],
+            ['name' => 'Dedi Kurniawan', 'email' => 'dedi@mail.com', 'role' => 'buyer'],
+            ['name' => 'Maya Lestari', 'email' => 'maya@mail.com', 'role' => 'buyer'],
+            ['name' => 'Joko Susilo', 'email' => 'joko@mail.com', 'role' => 'buyer'],
+            ['name' => 'Nina Wulandari', 'email' => 'nina@mail.com', 'role' => 'buyer'],
         ];
 
         foreach ($users as $user) {

@@ -52,13 +52,13 @@
                         </p>
                         <div class="flex justify-end gap-3">
                             <button type="button" @click="$dispatch('close-modal', 'approve-return-modal')"
-                                class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                                class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-full">
                                 Batal
                             </button>
                             <form method="POST" :action="`/admin/returns/${approveReturn.id}/approve`">
                                 @csrf
                                 <button type="submit"
-                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+                                    class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-full">
                                     Ya, Setujui
                                 </button>
                             </form>
@@ -79,11 +79,11 @@
                             class="mt-1 w-full border rounded-lg px-4 py-2">
                         <div class="flex justify-end gap-3 mt-4">
                             <button type="button" @click="$dispatch('close-modal', 'reject-return-modal')"
-                                class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                                class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-full">
                                 Batal
                             </button>
                             <button type="submit"
-                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                                class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full">
                                 Tolak
                             </button>
                         </div>

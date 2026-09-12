@@ -38,16 +38,23 @@ class ProductController extends Controller
             'products' => $products,
             'search' => $search,
             'categories' => Category::all(),
-            'editData' => Product::orderBy('id', 'DESC')
-                ->get(['id', 'name', 'price', 'about', 'category_id', 'photo'])
-                ->map(fn ($p) => [
-                    'id' => $p->id,
-                    'name' => $p->name,
-                    'price' => (string) $p->price,
-                    'about' => $p->about,
-                    'category_id' => $p->category_id,
-                    'photo' => Storage::url($p->photo),
-                ]),
+        ]);
+    }
+
+    /**
+     * Data edit satu produk (dimuat on-demand untuk modal edit).
+     */
+    public function editData(Product $product)
+    {
+        abort_unless(request()->expectsJson() || request()->ajax(), 404);
+
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => (string) $product->price,
+            'about' => $product->about,
+            'category_id' => $product->category_id,
+            'photo' => Storage::url($product->photo),
         ]);
     }
 
@@ -94,7 +101,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['System error!' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
             ]);
             throw $error;
         }
@@ -153,7 +160,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['System error!' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
             ]);
             throw $error;
         }
@@ -174,7 +181,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['System error!' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
             ]);
             throw $error;
         }

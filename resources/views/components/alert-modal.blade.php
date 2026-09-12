@@ -50,7 +50,7 @@
         <p class="text-gray-700 font-semibold" x-text="message"></p>
 
         <!-- BUTTON -->
-        <button @click="show = false" class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+        <button @click="show = false" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition">
             OK
         </button>
     </div>
