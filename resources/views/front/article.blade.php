@@ -1,10 +1,42 @@
-<x-layout-front title="Blog - Wigati Buku">
+@php
+    $metaKeywords = ($article->category->name ?? 'artikel') . ', artikel, blog, Wigati Buku';
+@endphp
+
+<x-layout-front
+    :title="$article->title . ' - Wigati Buku'"
+    :description="strip_tags(Str::limit($article->content, 160))"
+    :keywords="$metaKeywords"
+    :image="$article->featured_image"
+    :canonical="route('front.article.details', $article->slug)">
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'BlogPosting',
+            'headline' => $article->title,
+            'description' => Str::limit(strip_tags($article->content), 160),
+            'image' => Storage::url($article->featured_image),
+            'datePublished' => $article->published_at
+                ? $article->published_at->toIso8601String()
+                : $article->created_at->toIso8601String(),
+            'dateModified' => $article->updated_at->toIso8601String(),
+            'author' => ['@type' => 'Person', 'name' => $article->user->name],
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => config('app.name'),
+                'logo' => ['@type' => 'ImageObject', 'url' => asset('assets/logo/icon-book.webp')],
+            ],
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id' => route('front.article.details', $article->slug),
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
     {{-- article section --}}
     <section class="py-12 md:py-20 px-4 md:px-10 space-x-6 container mx-auto flex items-center justify-between">
         <div class="container mx-auto w-full md:w-3/6 text-center">
             <h4 class="text-2xl md:text-4xl font-bold mb-4 text-gray-700">{{ $article->title }}</h4>
             <p class="text-base md:text-lg mb-8 text-gray-600">By {{ $article->user->name }} |
-                {{ $article->created_at->format('d M Y') }}
+                {{ $article->created_at->idShort() }}
             </p>
         </div>
     </section>

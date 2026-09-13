@@ -1,4 +1,5 @@
-<x-layout-front title="Home - Wigati Buku">
+<x-layout-front title="Wigati Buku – Toko Buku Online Terlengkap"
+    description="Temukan ribuan buku favorit Anda — novel, buku pelajaran, hingga best seller. Belanja mudah, cepat, dan aman di Wigati Buku.">
     {{-- herosection --}}
     <section
         class="py-12 md:py-20 px-4 md:px-10 container mx-auto flex items-center justify-between flex-col md:flex-row gap-8">

@@ -16,6 +16,8 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductReturnController;
+use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/sw.js', fn () => Response::file(resource_path('pwa/sw.js'), [
     'Content-Type' => 'application/javascript',
@@ -26,6 +28,9 @@ Route::get('/manifest.json', fn () => Response::file(resource_path('pwa/manifest
     'Content-Type' => 'application/manifest+json',
     'Cache-Control' => 'no-cache, no-store, must-revalidate',
 ]))->name('manifest');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 Route::get('/', [FrontController::class, 'index'])->name('front.index');
 Route::get('/search', [FrontController::class, 'search'])->name('front.search');
@@ -38,6 +43,8 @@ Route::get('/about', [FrontController::class, 'about'])->name('front.about');
 Route::get('/contact', [FrontController::class, 'contact'])->name('front.contact');
 Route::get('/search-products', [FrontController::class, 'searchProduct'])->name('front.search.ajax');
 Route::get('/search/articles', [FrontController::class, 'searchArticle'])->name('front.search.article.ajax');
+
+Route::get('/session/keep-alive', fn () => Response::noContent())->name('session.keep-alive');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware(['auth', 'verified', 'role:owner|admin|penulis'])
@@ -55,14 +62,28 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/cart/rates', [CartController::class, 'rates'])
         ->middleware('role:buyer')
         ->name('carts.rates');
+    Route::get('/cart/locations', [CartController::class, 'locations'])
+        ->middleware('role:buyer')
+        ->name('carts.locations');
 
     Route::resource('product_transactions', ProductTransactionController::class)
         ->middleware('role:owner|admin|buyer')
         ->only(['index', 'show', 'store', 'destroy']);
 
+    Route::get('product_transactions/{productTransaction}/preview', [ProductTransactionController::class, 'preview'])
+        ->middleware('role:owner|admin')
+        ->name('product_transactions.preview');
+
     Route::post('product_transactions/{productTransaction}/returns', [ProductReturnController::class, 'store'])
         ->middleware('role:buyer')
         ->name('product_returns.store');
+
+    Route::post('product_transactions/{productTransaction}/proof', [ProductTransactionController::class, 'uploadProof'])
+        ->middleware('role:buyer')
+        ->name('product_transactions.proof');
+
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('products', ProductController::class)->middleware('permission:manage products');

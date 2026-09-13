@@ -39,25 +39,56 @@
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', () => {
+                                window.dispatchEvent(new CustomEvent('show-toast', {
+                                    detail: { type: 'success', message: 'Tautan verifikasi baru telah dikirim ke email Anda.' }
+                                }));
+                            });
+                        </script>
                     @endif
                 </div>
             @endif
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+                <x-input-label for="phone_number" value="Nomor Telepon / WhatsApp" />
+                <x-text-input id="phone_number" name="phone_number" type="text" class="mt-1 block w-full" :value="old('phone_number', $user->phone_number)" placeholder="08xxxxxxxxxx" />
+                <x-input-error class="mt-2" :messages="$errors->get('phone_number')" />
+            </div>
+
+            <div>
+                <x-input-label for="post_code" value="Kode Pos" />
+                <x-text-input id="post_code" name="post_code" type="text" class="mt-1 block w-full" :value="old('post_code', $user->post_code)" placeholder="Contoh: 40135" />
+                <x-input-error class="mt-2" :messages="$errors->get('post_code')" />
+            </div>
+        </div>
+
+        <div>
+            <x-input-label for="address" value="Alamat Lengkap" />
+            <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" :value="old('address', $user->address)" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan" />
+            <x-input-error class="mt-2" :messages="$errors->get('address')" />
+        </div>
+
+        <div>
+            <x-input-label for="city" value="Kota / Kabupaten" />
+            <x-text-input id="city" name="city" type="text" class="mt-1 block w-full" :value="old('city', $user->city)" placeholder="Contoh: Bandung" />
+            <p class="mt-1 text-xs text-gray-500">Data ini otomatis mengisi form checkout agar tidak perlu diisi ulang.</p>
+            <x-input-error class="mt-2" :messages="$errors->get('city')" />
         </div>
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: { type: 'success', message: 'Profil berhasil diperbarui.' }
+                        }));
+                    });
+                </script>
             @endif
         </div>
     </form>

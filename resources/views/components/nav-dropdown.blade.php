@@ -14,8 +14,9 @@ $alignmentClasses = match ($align) {
 };
 @endphp
 
-<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
-    <button type="button" class="{{ $triggerClasses }}" @click="open = ! open">
+<div class="relative" x-data="dropdownMenu" @click.outside="open = false" @close.stop="open = false"
+        @mouseenter="openOnHover()" @mouseleave="closeOnLeave()">
+    <button type="button" class="{{ $triggerClasses }}" @click="toggle()">
         {{ $label }}
         <svg class="ms-1 h-4 w-4 fill-current transition-transform duration-200"
             :class="{ 'rotate-180': open }"
@@ -33,10 +34,10 @@ $alignmentClasses = match ($align) {
         x-transition:leave="transition ease-in duration-75"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute z-50 mt-2 {{ $panelWidth }} rounded-md shadow-lg {{ $alignmentClasses }}"
+        class="absolute z-50 mt-2 {{ $panelWidth }} rounded-lg shadow-lg {{ $alignmentClasses }}"
         style="display: none;"
         @click="open = false">
-        <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white">
+        <div class="rounded-lg ring-1 ring-gray-200 overflow-hidden py-1 bg-white">
             {{ $slot }}
         </div>
     </div>

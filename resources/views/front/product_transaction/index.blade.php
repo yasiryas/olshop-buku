@@ -1,7 +1,7 @@
-<x-layout-front title="Transaksi - Wigati Buku">
+<x-layout-front title="Transaksi - Wigati Buku" robots="noindex, nofollow">
     <section class="py-20 px-10 space-x-6 container mx-auto flex items-center justify-between ">
         <div class="container mx-auto w-3/6 text-center">
-            <h4 class="text-4xl font-bold mb-4 text-gray-600">My Order</h4>
+            <h4 class="text-4xl font-bold mb-4 text-gray-600">Pesanan Saya</h4>
             <p class="text-lg mb-8 text-gray-600">Daftar Transaksi</p>
         </div>
     </section>

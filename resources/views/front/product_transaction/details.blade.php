@@ -1,23 +1,17 @@
-<x-layout-front title="Detail Transaksi - Wigati Buku">
+<x-layout-front title="Detail Transaksi - Wigati Buku" robots="noindex, nofollow">
     <section class="py-16 px-10 space-x-6 container mx-auto flex items-center justify-between ">
         <div class="container mx-auto w-3/6 text-center">
             <h4 class="text-4xl font-bold mb-4 text-gray-600">Detail Pesanan #{{ $product_transaction->id }}</h4>
             <p class="text-lg mb-8 text-gray-600">Pantau status pesanan Anda di sini.</p>
+            <a href="{{ route('product_transactions.index') }}"
+                class="inline-flex items-center gap-2 font-bold text-indigo-600 hover:text-indigo-800 transition">
+                <i class="fas fa-arrow-left"></i> Kembali ke Status Pembelian
+            </a>
         </div>
     </section>
 
     <div class="py-10">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    {{ session('error') }}
-                </div>
-            @endif
 
             <div class="bg-grey-100 flex flex-col gap-y-5 p-10 overflow-hidden shadow-lg sm:rounded-lg border">
 
@@ -29,9 +23,9 @@
                     </div>
                     <div>
                         <p class="text-base text-slate-500">Date</p>
-                        <h3 class="text-xl font-bold text-indigo-900">{{ $product_transaction->created_at->format('d F Y') }}</h3>
+                        <h3 class="text-xl font-bold text-indigo-900">{{ $product_transaction->created_at->idLong() }}</h3>
                     </div>
-                    <span class="font-bold py-1 px-5 rounded-full w-fit text-white {{ $product_transaction->statusBadgeColor() }}">
+                    <span class="font-bold py-1 px-5 rounded-full w-fit {{ $product_transaction->statusBadgeColor() }}">
                         {{ $product_transaction->statusLabel() }}
                     </span>
                 </div>
@@ -130,26 +124,18 @@
                         </div>
                         <div class="item-card flex flex-row justify-between items-center">
                             <div>
-                                <p class="text-base text-slate-500">Address</p>
+                                <p class="text-base text-slate-500">Penerima</p>
+                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->recipient_name ?? $product_transaction->user->name }}</h3>
+                                <p class="text-base text-slate-500">{{ $product_transaction->phone_number }}</p>
+                            </div>
+                        </div>
+                        <div class="item-card flex flex-row justify-between items-center">
+                            <div>
+                                <p class="text-base text-slate-500">Alamat</p>
                                 <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->address }}</h3>
-                            </div>
-                        </div>
-                        <div class="item-card flex flex-row justify-between items-center">
-                            <div>
-                                <p class="text-base text-slate-500">City</p>
-                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->city }}</h3>
-                            </div>
-                        </div>
-                        <div class="item-card flex flex-row justify-between items-center">
-                            <div>
-                                <p class="text-base text-slate-500">Post Code</p>
-                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->post_code }}</h3>
-                            </div>
-                        </div>
-                        <div class="item-card flex flex-row justify-between items-center">
-                            <div>
-                                <p class="text-base text-slate-500">Phone Number</p>
-                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->phone_number }}</h3>
+                                <p class="text-base text-slate-500">
+                                    {{ trim(implode(', ', array_filter([$product_transaction->district, $product_transaction->city, $product_transaction->province, $product_transaction->post_code]))) }}
+                                </p>
                             </div>
                         </div>
                         <div class="item-card flex flex-row justify-between items-center">
@@ -161,8 +147,48 @@
                     </div>
                     <div class="flex flex-col gap-y-5 col-span-2 items-center">
                         <h3 class="text-xl font-bold text-indigo-900">Proof of Payment</h3>
-                        <img src="{{ Storage::url($product_transaction->proof) }}" alt=""
-                            class="w-[300px] bg-white-500 h-[400px] object-contain">
+                        @if ($product_transaction->proof)
+                            <img src="{{ Storage::url($product_transaction->proof) }}" alt=""
+                                class="w-[300px] bg-white-500 h-[400px] object-contain">
+                        @else
+                            <div class="w-[300px] h-[200px] text-center text-gray-400 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2">
+                                <i class="fas fa-camera text-3xl"></i>
+                                <p class="text-sm">Belum ada bukti pembayaran.</p>
+                                <p class="text-xs max-w-[220px]">Pesanan tidak akan diproses sampai bukti transfer diunggah.</p>
+                            </div>
+                        @endif
+
+                        @if ($product_transaction->status === \App\Models\ProductTransaction::STATUS_PENDING)
+                            @php
+                                $account = collect(\App\Support\StoreSettings::paymentMethods())
+                                    ->firstWhere('name', $product_transaction->payment_method);
+                            @endphp
+                            @if ($account && $account['acc_number'])
+                                <div class="w-full max-w-[300px] bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
+                                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Transfer ke</p>
+                                    <p class="text-sm font-bold text-indigo-900 mt-1">{{ $account['name'] }}</p>
+                                    <p class="text-base font-bold text-indigo-900">{{ $account['acc_number'] }}</p>
+                                    <p class="text-sm text-slate-500">a.n. {{ $account['acc_name'] }}</p>
+                                </div>
+                            @endif
+                            <form action="{{ route('product_transactions.proof', $product_transaction->id) }}" method="POST"
+                                enctype="multipart/form-data" class="w-full max-w-[300px]">
+                                @csrf
+                                @if ($product_transaction->proof)
+                                    <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-center">
+                                        Bukti sudah diunggah. Hubungi admin jika belum Dikonfirmasi.
+                                    </p>
+                                @else
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Upload Bukti Pembayaran</label>
+                                    <input type="file" name="proof" accept="image/png,image/jpeg" required
+                                        class="block w-full text-sm text-gray-600 border rounded-lg px-3 py-2 mb-2 file:mr-3 file:rounded-full file:border-0 file:bg-indigo-600 file:text-white file:py-1.5 file:px-4">
+                                    <button type="submit"
+                                        class="w-full font-bold bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-6 rounded-full transition text-sm">
+                                        <i class="fas fa-upload mr-2"></i>Unggah Bukti
+                                    </button>
+                                @endif
+                            </form>
+                        @endif
                     </div>
                 </div>
 

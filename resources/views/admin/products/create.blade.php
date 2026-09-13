@@ -2,11 +2,11 @@
     <x-slot name="header">
         <div class="flex flex-row w-full justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('New product') }}
+                {{ __('Produk Baru') }}
             </h2>
             <a href="{{ route('admin.categories.index') }}"
-                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Manage
-                product</a>
+                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Kelola
+                Kategori</a>
         </div>
     </x-slot>
 
@@ -14,20 +14,12 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
 
-                @if ($errors->any())
-                    @foreach ($errors->all() as $error)
-                        <div class="py-3 w-full rounded-lg bg-red-500 text-white">
-                            {{ $error }}
-                        </div>
-                    @endforeach
-                @endif
-
                 <div class="p-6 text-gray-900">
                     <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
                         @csrf
                         <!-- Name -->
                         <div>
-                            <x-input-label for="name" :value="__('Name')" />
+                            <x-input-label for="name" :value="__('Nama')" />
                             <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
                                 :value="old('name')" required autofocus autocomplete="name" />
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
@@ -35,7 +27,7 @@
 
                         <!-- Price -->
                         <div class="mt-4">
-                            <x-input-label for="price" :value="__('Price (Rp)')" />
+                            <x-input-label for="price" :value="__('Harga (Rp)')" />
                             <x-text-input id="price" class="block mt-1 w-full" type="text" name="price"
                                 placeholder="Contoh: 50.000"
                                 :value="old('price')" required autofocus autocomplete="price" />
@@ -44,9 +36,9 @@
 
                         <!-- Category -->
                         <div class="mt-4">
-                            <x-input-label for="category" :value="__('Category')" />
-                            <select name="category_id" id="category_id" class="py-2 rounded-lg w-full border-slate-300">
-                                <option value="">Select Category</option>
+                            <x-input-label for="category" :value="__('Kategori')" />
+                            <select name="category_id" id="category_id" x-select2 class="mt-1 block w-full">
+                                <option value="">Pilih Kategori</option>
                                 @forelse ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @empty
@@ -57,7 +49,7 @@
 
                         <!--About-->
                         <div class="mt-4">
-                            <x-input-label for="about" :value="__('About')" />
+                            <x-input-label for="about" :value="__('Deskripsi')" />
                             <textarea name="about" id="about" cols="30" rows="10"
                                 class="border  rounded-lg w-full border-slate-300"></textarea>
                             <x-input-error :messages="$errors->get('about')" class="mt-2" />
@@ -65,7 +57,7 @@
 
                         <!-- Photo -->
                         <div class="mt-4">
-                            <x-input-label for="photo" :value="__('Photo')" />
+                            <x-input-label for="photo" :value="__('Foto')" />
                             <x-text-input id="photo" class="block mt-1 w-full" type="file" name="photo"
                                 required autofocus autocomplete="photo" />
                             <x-input-error :messages="$errors->get('photo')" class="mt-2" />
@@ -73,7 +65,7 @@
 
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ms-4">
-                                {{ __('Add New Product') }}
+                                {{ __('Simpan Produk') }}
                             </x-primary-button>
                         </div>
                     </form>
@@ -89,21 +81,4 @@
             e.target.value = value;
         });
     </script>
-
-    @push('styles')
-        <link rel="stylesheet" href="{{ asset('vendor/select2/select2.min.css') }}">
-        <style>
-            .select2-container {
-                width: 100%;
-            }
-        </style>
-    @endpush
-
-    @push('scripts')
-        <script src="{{ asset('vendor/jquery/jquery-3.7.1.js') }}"></script>
-        <script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
-        <script>
-            $('#category_id').select2({ width: '100%', placeholder: 'Select Category', allowClear: true });
-        </script>
-    @endpush
 </x-app-layout>

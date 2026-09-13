@@ -15,51 +15,34 @@
                 <div class="p-6">
                     <p class="text-sm text-gray-500">Email</p>
                     <p class="text-lg font-bold text-gray-900">{{ $user->email }}</p>
-                    <p class="mt-2 text-sm text-gray-500">Bergabung sejak {{ $user->created_at->format('d M Y') }}</p>
+                    <p class="mt-2 text-sm text-gray-500">Bergabung sejak {{ $user->created_at->idLong() }}</p>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Transaksi</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($transactions as $transaction)
-                                    <tr>
-                                        <td class="px-4 py-3 text-sm font-medium text-gray-900">#{{ $transaction->id }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-500">{{ $transaction->created_at->format('d M Y') }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-700">Rp {{ number_format($transaction->total_amount) }}</td>
-                                        <td class="px-4 py-3">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $transaction->statusBadgeColor() }} text-white">{{ $transaction->statusLabel() }}</span>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm">
-                                            <a href="{{ route('product_transactions.show', $transaction) }}"
-                                                class="font-bold text-indigo-700 hover:text-indigo-900">Detail</a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="px-4 py-4 text-center text-gray-500">Belum ada transaksi.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-5">
-                        {{ $transactions->links() }}
-                    </div>
-                </div>
-            </div>
+            <x-ui.table title="Riwayat Transaksi" :headers="['Order ID', 'Tanggal', 'Total', 'Status', 'Aksi']"
+                :footer="$transactions->hasPages() ? $transactions->links() : null">
+                @forelse ($transactions as $transaction)
+                    <tr>
+                        <td class="cell"><span class="font-medium text-gray-900">#{{ $transaction->id }}</span></td>
+                        <td class="cell cell-soft">{{ $transaction->created_at->idShort() }}</td>
+                        <td class="cell">Rp {{ number_format($transaction->total_amount) }}</td>
+                        <td class="cell">
+                            <x-ui.badge :class="$transaction->statusBadgeColor()">
+                                {{ $transaction->statusLabel() }}
+                            </x-ui.badge>
+                        </td>
+                        <td class="cell">
+                            <x-ui.pill as="a" href="{{ route('product_transactions.show', $transaction) }}" color="btn-pill-primary">
+                                <i class="fas fa-eye text-xs"></i> Detail
+                            </x-ui.pill>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="cell text-center text-gray-500">Belum ada transaksi.</td>
+                    </tr>
+                @endforelse
+            </x-ui.table>
         </div>
     </div>
 </x-app-layout>

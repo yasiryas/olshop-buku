@@ -1,4 +1,7 @@
-<x-layout-front>
+<x-layout-front
+    title="Hasil Pencarian: {{ request('search') }} - Wigati Buku"
+    description="Hasil pencarian buku untuk kata kunci {{ request('search') }} di Wigati Buku."
+    robots="noindex, follow">
 
     {{-- herosection --}}
     <section class="py-20 px-10 space-x-6 container mx-auto flex items-center justify-between ">

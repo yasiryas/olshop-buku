@@ -1,4 +1,5 @@
-<x-layout-front title="Blog - Wigati Buku">
+<x-layout-front title="Tentang Kami - Wigati Buku"
+    description="Wigati Buku adalah toko buku online yang menyediakan koleksi novel, buku pelajaran, buku anak, dan komik terbaru dengan pelayanan terbaik.">
     {{-- herosection --}}
     <section class="py-20 px-10 space-x-6 container mx-auto flex items-center justify-between ">
         <div class="container mx-auto w-3/6 text-center">

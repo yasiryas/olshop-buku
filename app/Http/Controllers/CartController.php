@@ -18,10 +18,14 @@ class CartController extends Controller
     {
         $carts = Auth::user()->carts()->with(['product' => fn ($q) => $q->withStock()])->get();
 
+        $user = Auth::user();
+
         return view(
             'front.cart',
             [
                 'carts' => $carts,
+                'user' => $user,
+                'userAddresses' => $user->addresses()->get(),
                 'shippingRates' => StoreSettings::shippingRates(),
                 'shippingZones' => StoreSettings::shippingZones(),
                 'paymentMethods' => StoreSettings::paymentMethods(),
@@ -33,19 +37,48 @@ class CartController extends Controller
 
     /**
      * Tarif ongkir real-time via AgenWebsite untuk kota tujuan.
+     * Kode pos presisi (post_code) sudah cukup; city_id opsional.
      */
     public function rates(Request $request)
     {
         $validated = $request->validate([
-            'city_id' => 'required|integer',
+            'city_id' => 'nullable|integer',
+            'post_code' => 'sometimes|required|string|max:10',
         ]);
 
         $cartItems = Auth::user()->carts()->with('product')->get();
 
         return response()->json(AgenWebShipping::rates(
-            (int) $validated['city_id'],
-            AgenWebShipping::cartWeightGrams($cartItems)
+            (int) ($validated['city_id'] ?? 0),
+            AgenWebShipping::cartWeightGrams($cartItems),
+            $validated['post_code'] ?? ''
         ));
+    }
+
+    /**
+     * Saran kecamatan untuk autocomplete checkout dari AgenWebsite.
+     */
+    public function locations(Request $request)
+    {
+        $validated = $request->validate([
+            'q' => 'required|string|max:40',
+        ]);
+
+        $cities = collect(StoreSettings::agenWebCityList());
+
+        $suggestions = collect(AgenWebShipping::districtSuggestions($validated['q']))
+            ->map(function (array $row) use ($cities) {
+                $match = $cities->firstWhere(
+                    fn (array $city) => strtolower(trim($city['city_name'])) === strtolower(trim($row['city']))
+                );
+
+                $row['city_id'] = $match['city_id'] ?? null;
+
+                return $row;
+            })
+            ->values();
+
+        return response()->json($suggestions);
     }
 
     /**

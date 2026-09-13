@@ -23,6 +23,10 @@ class User extends Authenticatable
         'email',
         'password',
         'is_active',
+        'phone_number',
+        'address',
+        'city',
+        'post_code',
     ];
 
     /**
@@ -51,6 +55,11 @@ class User extends Authenticatable
     public function carts()
     {
         return $this->hasMany(Cart::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class)->orderByDesc('is_default')->latest();
     }
 
     public function productTransactions()

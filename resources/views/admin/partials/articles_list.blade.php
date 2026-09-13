@@ -1,34 +1,37 @@
-<div class="bg-white flex flex-col gap-y-4 p-6 sm:p-8 overflow-hidden shadow-sm sm:rounded-lg">
-    @forelse($articles as $article)
-        <div class="item-card flex flex-row justify-between items-center">
-            <div class="flex flex-row items-center gap-x-4">
-                @if ($article->featured_image)
-                    <img src="{{ Storage::url($article->featured_image) }}" alt="{{ $article->title }}"
-                        class="w-[50px] h-[50px] object-cover rounded">
-                @endif
-                <div class="space-y-1.5">
-                    <h3 class="text-xl font-bold text-indigo-900 leading-snug">{{ $article->title }}</h3>
-                    <p class="text-sm text-slate-500">
-                        {{ 'Category: ' . $article->category?->name ?? 'No Category' }} ·
-                        {{ $article->user?->name ?? 'Unknown' }} ·
-                        {{ $article->created_at->format('d M Y H:i') }}
-                    </p>
-                    <p class="text-sm text-gray-500 line-clamp-2">
-                        {{ Str::limit(strip_tags($article->content), 100, '...') }}
-                    </p>
+<x-ui.table :headers="['Artikel', 'Kategori', 'Penulis', 'Tanggal', 'Aksi']"
+    :footer="$articles->hasPages() ? $articles->appends(['search' => $search])->links() : null">
+    @forelse ($articles as $article)
+        <tr>
+            <td class="cell">
+                <div class="flex items-center gap-3 max-w-md">
+                    @if ($article->featured_image)
+                        <img src="{{ Storage::url($article->featured_image) }}" alt="{{ $article->title }}"
+                            class="w-10 h-10 object-cover rounded shrink-0">
+                    @endif
+                    <div class="min-w-0">
+                        <p class="font-medium text-gray-900 truncate">{{ $article->title }}</p>
+                        <p class="text-xs text-gray-500 truncate">{{ Str::limit(strip_tags($article->content), 80, '...') }}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="flex flex-row items-center gap-x-3 ml-4 md:ml-8">
-                <button type="button" @click="openEdit('{{ $article->id }}')"
-                    class="font-bold py-3 px-5 rounded-full text-white bg-yellow-500">Edit</button>
-                <button type="button" @click="openDelete('{{ $article->id }}')"
-                    class="font-semibold py-2 px-4 rounded-full text-white bg-red-700">Delete</button>
-            </div>
-        </div>
+            </td>
+            <td class="cell cell-soft">{{ $article->category?->name ?? '-' }}</td>
+            <td class="cell cell-soft">{{ $article->user?->name ?? '-' }}</td>
+            <td class="cell cell-soft">{{ $article->created_at->idShort() }}</td>
+            <td class="cell">
+                <div class="flex items-center gap-2">
+                    <x-ui.pill as="a" href="{{ route('admin.articles.edit', $article) }}" color="btn-pill-warning">
+                        <i class="fas fa-pen text-xs"></i> Edit
+                    </x-ui.pill>
+                    <x-ui.pill as="button" type="button" color="btn-pill-danger"
+                        @click="openDelete('{{ $article->id }}')">
+                        <i class="fas fa-trash text-xs"></i> Hapus
+                    </x-ui.pill>
+                </div>
+            </td>
+        </tr>
     @empty
-        <p>Ups, belum ada artikel nih!</p>
+        <tr>
+            <td colspan="5" class="cell text-center text-gray-500">Belum ada artikel.</td>
+        </tr>
     @endforelse
-</div>
-<div class="mt-5">
-    {{ $articles->appends(['search' => $search])->links() }}
-</div>
+</x-ui.table>

@@ -9,10 +9,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             <!-- Welcome Message -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+            <div class="bg-gradient-to-r from-indigo-700 to-red-500 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
-                    <h3 class="text-2xl font-bold text-gray-800">Welcome back, {{ Auth::user()->name }}!</h3>
-                    <p class="text-gray-600 mt-2">Here's what's happening with your account today.</p>
+                    <h3 class="text-2xl font-bold text-white">Selamat datang kembali, {{ Auth::user()->name }}!</h3>
+                    <p class="text-indigo-100 mt-2">Berikut ringkasan aktivitas akun Anda hari ini.</p>
                 </div>
             </div>
 
@@ -33,7 +33,7 @@
                                     </svg>
                                 </div>
                                 <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Total Revenue</p>
+                                    <p class="text-sm font-medium text-gray-500">Pendapatan</p>
                                     <p class="text-2xl font-bold text-gray-800">Rp
                                         {{ number_format($totalRevenue ?? 0) }}</p>
                                 </div>
@@ -54,7 +54,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-medium text-gray-500">
-                                        Total Orders
+                                        Total Pesanan
                                     </p>
                                     <p class="text-2xl font-bold text-gray-800">{{ $totalOrders ?? 0 }}</p>
                                 </div>
@@ -74,7 +74,7 @@
                                     </svg>
                                 </div>
                                 <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Pending Orders</p>
+                                    <p class="text-sm font-medium text-gray-500">Pesanan Menunggu Konfirmasi</p>
                                     <p class="text-2xl font-bold text-gray-800">{{ $pendingOrders ?? 0 }}</p>
                                 </div>
                             </div>
@@ -94,7 +94,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-medium text-gray-500">
-                                        Completed
+                                        Selesai
                                     </p>
                                     <p class="text-2xl font-bold text-gray-800">
                                         {{ $completedOrders ?? 0 }}</p>
@@ -109,7 +109,7 @@
                     <!-- Monthly Revenue Chart -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Revenue</h3>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Pendapatan Bulanan</h3>
                             <canvas id="revenueChart" height="150"></canvas>
                         </div>
                     </div>
@@ -117,8 +117,10 @@
                     <!-- Orders Status Chart - Horizontal Bar -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Orders Status</h3>
-                            <canvas id="ordersChart" height="80"></canvas>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Status Pesanan</h3>
+                            <div class="relative h-72">
+                                <canvas id="ordersChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -194,65 +196,33 @@
                 </div>
 
                 <!-- Recent Transactions -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div
-                            class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                            <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
-                            <a href="{{ route('product_transactions.index') }}"
-    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">
-    View All <i class="fas fa-arrow-right"></i>
-</a>
+                <x-ui.table title="Transaksi Terbaru"
+                    :headers="['No. Pesanan', 'Pembeli', 'Total', 'Status', 'Tanggal']" class="mb-6">
+                    <x-slot:footer>
+                        <div class="flex justify-end">
+                            <x-ui.pill as="a" href="{{ route('product_transactions.index') }}" color="btn-pill-primary">
+                                Lihat Semua <i class="fas fa-arrow-right"></i>
+                            </x-ui.pill>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Order ID</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Customer</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Amount</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status</th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse($transactions ?? [] as $transaction)
-                                        <tr>
-                                            <td
-                                                class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                #{{ $transaction->id }}</td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $transaction->user->name ?? 'N/A' }}</td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Rp
-                                                {{ number_format($transaction->total_amount) }}</td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $transaction->statusBadgeColor() }} text-white">{{ $transaction->statusLabel() }}</span>
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $transaction->created_at->format('d M Y') }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">No
-                                                transactions yet</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                    </x-slot:footer>
+                    @forelse ($transactions ?? [] as $transaction)
+                        <tr>
+                            <td class="cell"><span class="font-medium text-gray-900">#{{ $transaction->id }}</span></td>
+                            <td class="cell cell-soft">{{ $transaction->user->name ?? 'N/A' }}</td>
+                            <td class="cell">Rp {{ number_format($transaction->total_amount) }}</td>
+                            <td class="cell">
+                                <x-ui.badge :class="$transaction->statusBadgeColor()">
+                                    {{ $transaction->statusLabel() }}
+                                </x-ui.badge>
+                            </td>
+                            <td class="cell cell-soft">{{ $transaction->created_at->idShort() }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="cell text-center text-gray-500">Belum ada transaksi.</td>
+                        </tr>
+                    @endforelse
+                </x-ui.table>
                 </div>
                 </div>
             @elseif (Auth::user()->hasRole('admin'))
@@ -327,119 +297,78 @@
                 </div>
 
                 <!-- Stok Menipis -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">
-                                <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i> Stok Menipis
-                            </h3>
-                            <a href="{{ route('stocks.index') }}"
-    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Kelola</a>
+                <x-ui.table title="Stok Menipis" :headers="['Produk', 'Stok']" class="mb-6">
+                    <x-slot:footer>
+                        <div class="flex justify-end">
+                            <x-ui.pill as="a" href="{{ route('stocks.index') }}" color="btn-pill-primary">
+                                Kelola Stok <i class="fas fa-arrow-right"></i>
+                            </x-ui.pill>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse ($lowStockProducts ?? [] as $product)
-                                        <tr>
-                                            <td class="px-4 py-3 text-sm text-gray-800">{{ $product->name }}</td>
-                                            <td class="px-4 py-3 text-sm font-semibold text-red-500">{{ $product->stock }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="2" class="px-4 py-4 text-center text-gray-500">Semua stok aman.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                    </x-slot:footer>
+                    @forelse ($lowStockProducts ?? [] as $product)
+                        <tr>
+                            <td class="cell">{{ $product->name }}</td>
+                            <td class="cell"><span class="font-semibold text-red-500">{{ $product->stock }}</span></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="2" class="cell text-center text-gray-500">Semua stok aman.</td>
+                        </tr>
+                    @endforelse
+                </x-ui.table>
 
                 <!-- Pesanan menunggu diproses -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">Pesanan Menunggu Proses</h3>
-                            <a href="{{ route('product_transactions.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Lihat Semua</a>
+                <x-ui.table title="Pesanan Menunggu Proses"
+                    :headers="['Order ID', 'Customer', 'Amount', 'Tanggal']" class="mb-6">
+                    <x-slot:footer>
+                        <div class="flex justify-end">
+                            <x-ui.pill as="a" href="{{ route('product_transactions.index') }}" color="btn-pill-primary">
+                                Lihat Semua <i class="fas fa-arrow-right"></i>
+                            </x-ui.pill>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse ($transactions ?? [] as $transaction)
-                                        <tr>
-                                            <td class="px-4 py-3 text-sm font-medium text-gray-900">#{{ $transaction->id }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">{{ $transaction->user->name ?? 'N/A' }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-900">Rp {{ number_format($transaction->total_amount) }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">{{ $transaction->created_at->format('d M Y') }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">Tidak ada pesanan yang menunggu.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                    </x-slot:footer>
+                    @forelse ($transactions ?? [] as $transaction)
+                        <tr>
+                            <td class="cell"><span class="font-medium text-gray-900">#{{ $transaction->id }}</span></td>
+                            <td class="cell cell-soft">{{ $transaction->user->name ?? 'N/A' }}</td>
+                            <td class="cell">Rp {{ number_format($transaction->total_amount) }}</td>
+                            <td class="cell cell-soft">{{ $transaction->created_at->idShort() }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="cell text-center text-gray-500">Tidak ada pesanan yang menunggu.</td>
+                        </tr>
+                    @endforelse
+                </x-ui.table>
 
                 <!-- Permintaan Retur -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">
-                                <i class="fas fa-rotate-left mr-2 text-orange-500"></i> Permintaan Retur
-                            </h3>
-                            <a href="{{ route('admin.returns.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Kelola Retur</a>
+                <x-ui.table title="Permintaan Retur"
+                    :headers="['Retur', 'Order', 'Pembeli', 'Alasan', 'Status']" class="mb-6">
+                    <x-slot:footer>
+                        <div class="flex justify-end">
+                            <x-ui.pill as="a" href="{{ route('admin.returns.index') }}" color="btn-pill-primary">
+                                Kelola Retur <i class="fas fa-arrow-right"></i>
+                            </x-ui.pill>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Retur</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pembeli</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse ($returnRequests ?? [] as $returnRequest)
-                                        <tr>
-                                            <td class="px-4 py-3 text-sm font-medium text-gray-900">#{{ $returnRequest->id }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">#{{ $returnRequest->transaction->id }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-500">{{ $returnRequest->transaction->user->name ?? 'N/A' }}</td>
-                                            <td class="px-4 py-3 text-sm text-gray-700">{{ $returnRequest->reason }}</td>
-                                            <td class="px-4 py-3">
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white {{ $returnRequest->statusBadgeColor() }}">
-                                                    {{ $returnRequest->statusLabel() }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="px-4 py-4 text-center text-gray-500">Tidak ada permintaan retur.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                    </x-slot:footer>
+                    @forelse ($returnRequests ?? [] as $returnRequest)
+                        <tr>
+                            <td class="cell"><span class="font-medium text-gray-900">#{{ $returnRequest->id }}</span></td>
+                            <td class="cell cell-soft">#{{ $returnRequest->transaction->id }}</td>
+                            <td class="cell cell-soft">{{ $returnRequest->transaction->user->name ?? 'N/A' }}</td>
+                            <td class="cell">{{ $returnRequest->reason }}</td>
+                            <td class="cell">
+                                <x-ui.badge :class="$returnRequest->statusBadgeColor()">
+                                    {{ $returnRequest->statusLabel() }}
+                                </x-ui.badge>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="cell text-center text-gray-500">Tidak ada permintaan retur.</td>
+                        </tr>
+                    @endforelse
+                </x-ui.table>
             @else
                 {{-- Writer/Author Dashboard --}}
 
@@ -457,7 +386,7 @@
                                     </svg>
                                 </div>
                                 <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Total Articles</p>
+                                    <p class="text-sm font-medium text-gray-500">Total Artikel</p>
                                     <p class="text-2xl font-bold text-gray-800">{{ $totalArticles ?? 0 }}</p>
                                 </div>
                             </div>
@@ -476,7 +405,7 @@
                                     </svg>
                                 </div>
                                 <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-500">Published</p>
+                                    <p class="text-sm font-medium text-gray-500">Terbit</p>
                                     <p class="text-2xl font-bold text-gray-800">{{ $publishedArticles ?? count($articles ?? []) }}</p>
                                 </div>
                             </div>
@@ -485,50 +414,26 @@
                 </div>
 
                 <!-- My Articles -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800">My Articles</h3>
-                            <a href="{{ route('articles.create') }}"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white uppercase tracking-wide shadow-sm hover:shadow bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition duration-150">Buat Artikel</a>
+                <x-ui.table title="Artikel Saya" :headers="['Judul', 'Kategori', 'Tanggal']" class="mb-6">
+                    <x-slot:footer>
+                        <div class="flex justify-end">
+                            <x-ui.pill as="a" href="{{ route('admin.articles.create') }}" color="btn-pill-primary">
+                                Buat Artikel <i class="fas fa-arrow-right"></i>
+                            </x-ui.pill>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Title</th>
-                                        <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Category</th>
-                                        <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @forelse($articles ?? [] as $article)
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {{ $article->title }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $article->category->name ?? 'N/A' }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $article->created_at->format('d M Y') }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">No articles
-                                                yet.
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                    </x-slot:footer>
+                    @forelse ($articles ?? [] as $article)
+                        <tr>
+                            <td class="cell"><span class="font-medium text-gray-900">{{ $article->title }}</span></td>
+                            <td class="cell cell-soft">{{ $article->category->name ?? 'N/A' }}</td>
+                            <td class="cell cell-soft">{{ $article->created_at->idShort() }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="cell text-center text-gray-500">Belum ada artikel.</td>
+                        </tr>
+                    @endforelse
+                </x-ui.table>
 
                 <!-- Recent Activities -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
@@ -569,7 +474,7 @@
             if (revenueChartEl) {
                 // Monthly Revenue Chart
                 const revenueCtx = revenueChartEl.getContext('2d');
-                const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                 const monthlyData = new Array(12).fill(0);
 
                 @if (isset($monthlyData))
@@ -583,7 +488,7 @@
                     data: {
                         labels: monthlyLabels,
                         datasets: [{
-                            label: 'Revenue',
+                            label: 'Pendapatan',
                             data: monthlyData,
                             borderColor: 'rgb(34, 197, 94)',
                             backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -613,36 +518,36 @@
             }
 
             if (ordersChartEl) {
-                // Orders Status Chart (Bar)
+                // Orders Status Chart (Bar lengkap semua status)
                 const ordersCtx = ordersChartEl.getContext('2d');
-                const completedOrders = {{ ($totalOrders ?? 0) - ($pendingOrders ?? 0) }};
+                const statusMetas = @json($statusMetas ?? []);
 
                 new Chart(ordersCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['Completed', 'Pending'],
+                        labels: statusMetas.map(meta => meta[0]),
                         datasets: [{
-                            data: [completedOrders, {{ $pendingOrders ?? 0 }}],
-                            backgroundColor: [
-                                'rgb(147, 51, 234)',
-                                'rgb(234, 179, 8)'
-                            ],
+                            data: statusMetas.map(meta => meta[1]),
+                            backgroundColor: statusMetas.map(meta => meta[2]),
                             borderWidth: 0,
                             borderRadius: 4
                         }]
                     },
                     options: {
+                        indexAxis: 'y',
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: {
                                 display: false
                             }
                         },
                         scales: {
-                            y: {
+                            x: {
                                 beginAtZero: true,
                                 ticks: {
-                                    stepSize: 1
+                                    stepSize: 1,
+                                    precision: 0
                                 }
                             }
                         }

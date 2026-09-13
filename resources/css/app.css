@@ -2,4 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+    /* Panel standar (kartu putih) */
+    .panel {
+        @apply bg-white overflow-hidden shadow-sm sm:rounded-lg;
+    }
+
+    /* Tabel konsisten di seluruh modul */
+    .data-table {
+        @apply min-w-full divide-y divide-gray-200;
+    }
+    .data-table thead {
+        @apply bg-gray-50;
+    }
+    .data-table thead th {
+        @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+    }
+    .data-table tbody {
+        @apply bg-white divide-y divide-gray-200;
+    }
+    .cell {
+        @apply px-4 py-3 whitespace-nowrap text-sm;
+    }
+    .cell-align-right {
+        @apply text-right;
+    }
+    .cell-soft {
+        @apply text-gray-500;
+    }
+    .cell-strong {
+        @apply text-gray-900;
+    }
+
+    /* Badge status */
+    .badge-pill {
+        @apply px-2.5 py-0.5 inline-flex items-center text-xs leading-5 font-semibold rounded-full;
+    }
+
+    /* Tombol aksi pill pada tabel */
+    .btn-pill {
+        @apply inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition duration-150;
+    }
+    .btn-pill-primary {
+        @apply text-white bg-indigo-600 hover:bg-indigo-700;
+    }
+    .btn-pill-danger {
+        @apply text-white bg-red-600 hover:bg-red-700;
+    }
+    .btn-pill-success {
+        @apply text-white bg-green-600 hover:bg-green-700;
+    }
+    .btn-pill-warning {
+        @apply text-white bg-amber-500 hover:bg-amber-600;
+    }
+}
+
 @import 'flowbite/dist/flowbite.min.css';
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* Select2 diselaraskan dengan style form sistem */
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-container .select2-selection--single {
+    height: 36px !important;
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.5rem !important;
+    background-color: #fff;
+    padding: 0 0.5rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 1.4;
+    font-size: 0.875rem;
+    color: #111827;
+    padding-left: 0.25rem;
+    padding-right: 1.75rem;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: 0;
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: #4f46e5;
+    color: #fff;
+}
+
+.select2-dropdown {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    overflow: hidden;
+}

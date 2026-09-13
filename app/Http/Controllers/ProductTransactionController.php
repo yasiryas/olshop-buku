@@ -10,6 +10,7 @@ use App\Models\ProductTransaction;
 use App\Support\StoreSettings;
 use App\Support\AgenWebShipping;
 use App\Support\WaNotifier;
+use App\Support\OrderNotifications;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +23,10 @@ class ProductTransactionController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $from = $request->input('from');
+        $to = $request->input('to');
+        $status = $request->input('status');
+        $validStatuses = array_keys(ProductTransaction::STATUS_LABELS);
         $user = Auth::user();
 
         $query = ProductTransaction::query()->with('user');
@@ -40,6 +45,13 @@ class ProductTransactionController extends Controller
             $q->where('id', 'like', "%{$search}%");
         });
 
+        // Filter rentang tanggal
+        $query->when($from, fn ($q) => $q->whereDate('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('created_at', '<=', $to));
+
+        // Filter status
+        $query->when($status && in_array($status, $validStatuses, true), fn ($q) => $q->where('status', $status));
+
         // Pagination
         $product_transactions = $query
             ->orderBy('created_at', 'desc')
@@ -54,6 +66,19 @@ class ProductTransactionController extends Controller
         }
 
         return view($view, compact('product_transactions', 'search'));
+    }
+
+    public function preview(ProductTransaction $productTransaction)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasAnyRole(['owner', 'admin'])) {
+            abort(403, 'Pratinjau pesanan khusus untuk Owner dan Admin.');
+        }
+
+        return view('admin.partials.order_preview', [
+            'product_transaction' => $productTransaction->load('user', 'returns', 'transactionDetails.product'),
+        ]);
     }
 
     /**
@@ -83,7 +108,8 @@ class ProductTransactionController extends Controller
         if ($agenWebConfigured) {
             $agenWebRates = AgenWebShipping::rates(
                 (int) $request->input('agenweb_city_id', 0),
-                AgenWebShipping::cartWeightGrams($user->carts()->with('product')->get())
+                AgenWebShipping::cartWeightGrams($user->carts()->with('product')->get()),
+                (string) $request->input('post_code', '')
             );
 
             if (empty($agenWebRates)) {
@@ -100,15 +126,20 @@ class ProductTransactionController extends Controller
         $paymentMethods = StoreSettings::paymentMethods();
 
         $validated = $request->validate([
+            'recipient_name' => 'required|string|max:100',
             'address' => 'required|string|max:512',
             'city' => $agenWebConfigured
                 ? 'required|string|max:255'
                 : 'required|in:' . implode(',', $zoneCities),
+            'district' => $agenWebConfigured ? 'required|string|max:150' : 'nullable|string|max:150',
+            'province' => $agenWebConfigured ? 'required|string|max:100' : 'nullable|string|max:100',
             'agenweb_city_id' => 'nullable|integer',
             'post_code' => 'required|integer',
-            'phone_number' => 'required',
+            'phone_number' => 'required|string|max:20',
+            'address_label' => 'nullable|string|max:30',
+            'saved_address_id' => 'nullable|integer',
             'notes' => 'max:65535',
-            'proof' => 'required|image|mimes:png,jpg,jpeg',
+            'proof' => 'nullable|image|mimes:png,jpg,jpeg',
             'shipping_method' => $agenWebConfigured
                 ? 'required|in:' . implode(',', array_column($shippingRates, 'rate_id'))
                 : 'required|in:' . implode(',', array_column($shippingRates, 'code')),
@@ -174,7 +205,17 @@ class ProductTransactionController extends Controller
             }
 
             Cart::whereKey($cartItems->pluck('id'))->delete();
+
+            $this->updateProfileAddress($user, $validated, $request);
+
+            if ($request->boolean('save_address')) {
+                $this->saveToAddressBook($user, $validated, $request);
+            }
+
             DB::commit();
+
+            OrderNotifications::orderCreated($newTransaction);
+
             return redirect()->route('product_transactions.index');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -183,6 +224,45 @@ class ProductTransactionController extends Controller
             ]);
             throw $error;
         }
+    }
+
+    private function updateProfileAddress($user, array $validated, Request $request): void
+    {
+        $user->update([
+            'address' => $validated['address'],
+            'city' => $validated['city'] ?? '',
+            'post_code' => (string) $validated['post_code'],
+            'phone_number' => $validated['phone_number'],
+        ]);
+    }
+
+    private function saveToAddressBook($user, array $validated, Request $request): void
+    {
+        $existing = $request->filled('saved_address_id')
+            ? $user->addresses()->find((int) $request->saved_address_id)
+            : null;
+
+        $data = [
+            'label' => trim((string) $request->input('address_label')) ?: 'Alamat',
+            'recipient_name' => $validated['recipient_name'],
+            'phone' => $validated['phone_number'],
+            'address' => $validated['address'],
+            'province' => $validated['province'] ?? '',
+            'city' => $validated['city'],
+            'city_id' => $request->input('agenweb_city_id'),
+            'district' => $validated['district'] ?? '',
+            'postal_code' => (string) $validated['post_code'],
+        ];
+
+        if ($existing) {
+            $existing->update($data);
+
+            return;
+        }
+
+        $data['is_default'] = $user->addresses()->count() === 0;
+
+        $user->addresses()->create($data);
     }
 
     /**
@@ -233,6 +313,10 @@ class ProductTransactionController extends Controller
             return redirect()->back()->with('error', 'Hanya pesanan berstatus menunggu yang bisa disetujui.');
         }
 
+        if (!$productTransaction->proof) {
+            return redirect()->back()->with('error', 'Bukti pembayaran belum diunggah. Pesanan tidak dapat diproses sebelum bukti diverifikasi.');
+        }
+
         DB::beginTransaction();
         try {
             $transaction = ProductTransaction::with(['user', 'transactionDetails'])
@@ -271,6 +355,8 @@ class ProductTransactionController extends Controller
             ]);
 
             DB::commit();
+
+            OrderNotifications::orderStatusChanged($transaction);
 
             $waMessage = "Halo {$transaction->user->name}, pesanan #{$transaction->id} Anda telah kami terima dan sedang diproses. Terima kasih sudah berbelanja di Wigati Buku.";
 
@@ -322,6 +408,8 @@ class ProductTransactionController extends Controller
 
         $waMessage = "Halo {$transaction->user->name}, pesanan #{$transaction->id} sudah dikirim via {$transaction->shipping_method}. Nomor resi: {$validated['tracking_number']}. Terima kasih!";
 
+        OrderNotifications::orderStatusChanged($transaction);
+
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
             ->with('success', 'Order ditandai terkirim.')
@@ -360,6 +448,8 @@ class ProductTransactionController extends Controller
         }
 
         $waMessage = "Halo {$transaction->user->name}, pesanan #{$transaction->id} telah selesai. Terima kasih sudah berbelanja di Wigati Buku.";
+
+        OrderNotifications::orderStatusChanged($transaction);
 
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
@@ -404,6 +494,8 @@ class ProductTransactionController extends Controller
         }
 
         $waMessage = "Halo {$transaction->user->name}, mohon maaf pesanan #{$transaction->id} terpaksa kami tolak. Alasan: {$validated['rejection_note']}.";
+
+        OrderNotifications::orderStatusChanged($transaction);
 
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
@@ -460,6 +552,40 @@ class ProductTransactionController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
 
+        if (!$user->hasRole('buyer')) {
+            OrderNotifications::orderStatusChanged($transaction);
+        }
+
         return redirect()->route('product_transactions.index')->with('success', 'Order berhasil dibatalkan.');
+    }
+
+    /**
+     * Unggah bukti pembayaran setelah checkout (pesanan pending tanpa bukti).
+     */
+    public function uploadProof(Request $request, ProductTransaction $productTransaction)
+    {
+        $user = auth()->user();
+
+        abort_unless(
+            $user->hasRole('buyer') && $productTransaction->user_id === $user->id,
+            403,
+            'Anda hanya dapat mengunggah bukti untuk pesanan milik Anda.'
+        );
+        abort_unless(
+            $productTransaction->status === ProductTransaction::STATUS_PENDING,
+            403,
+            'Bukti hanya bisa diunggah saat pesanan berstatus menunggu.'
+        );
+
+        $request->validate([
+            'proof' => 'required|image|mimes:png,jpg,jpeg',
+        ]);
+
+        $path = $request->file('proof')->store('payment_proofs', 'public');
+        $productTransaction->update(['proof' => $path]);
+
+        OrderNotifications::proofUploaded($productTransaction);
+
+        return back()->with('success', 'Bukti pembayaran berhasil diunggah. Pesanan akan diproses setelah diverifikasi.');
     }
 }

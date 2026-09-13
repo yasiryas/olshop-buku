@@ -1,4 +1,5 @@
-<x-layout-front title="Product - Wigati Buku">
+<x-layout-front title="Product - Wigati Buku"
+    description="Jelajahi koleksi buku lengkap di Wigati Buku — novel, buku pelajaran, buku anak, hingga komik dengan harga bersahabat.">
     {{-- herosection --}}
     <section class="py-20 px-10 space-x-6 container mx-auto flex items-center justify-between ">
         <div class="container mx-auto w-3/6 text-center">

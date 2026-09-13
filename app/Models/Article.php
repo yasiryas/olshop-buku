@@ -20,6 +20,11 @@ class Article extends Model
         'published_at',
     ];
 
+    protected $casts = [
+        'published_at' => 'datetime',
+        'is_published' => 'boolean',
+    ];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

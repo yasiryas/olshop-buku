@@ -26,6 +26,16 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() === 419) {
+                $message = 'Sesi Anda telah berakhir. Muat ulang halaman ini lalu coba lagi.';
+
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => $message], 419);
+                }
+
+                return redirect()->back()->with('error', $message)->withInput();
+            }
+
             if ($e->getStatusCode() !== 403) {
                 return null;
             }

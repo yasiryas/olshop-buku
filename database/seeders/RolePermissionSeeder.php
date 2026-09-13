@@ -33,6 +33,7 @@ class RolePermissionSeeder extends Seeder
             'manage articles',
             'manage stocks',
             'process orders',
+            'manage customers',
             'view reports',
             'manage staff',
             'manage settings',

@@ -1,48 +1,27 @@
-<div class="flex flex-col gap-y-5 p-10 overflow-hidden shadow-sm sm:rounded-lg">
+<x-ui.table :headers="['No. Pesanan', 'Pembeli', 'Tanggal', 'Total', 'Status', 'Resi', 'Aksi']"
+    :footer="$product_transactions->hasPages() ? $product_transactions->appends(request()->except('page'))->links() : null">
     @forelse ($product_transactions as $transaction)
-        <div class="item-card flex flex-row justify-between items-center">
-            <a href="{{ route('product_transactions.show', $transaction) }}">
-                <div>
-                    <p class="text-base text-slate-500">
-                        Date
-                    </p>
-                    <h3 class="text-xl font-bold text-indigo-900">
-                        {{ $transaction->created_at->format('d F Y') }}</h3>
-                </div>
-            </a>
-            <div class="hidden md:flex flex-col">
-                <p class="text-base text-slate-500">
-                    Buyer
-                </p>
-                <h3 class="text-xl font-bold text-indigo-900">
-                    {{ $transaction->user->name }}</h3>
-            </div>
-            <div class="md:flex flex-row items-center gap-x-3 hidden">
-                <div>
-                    <p class="text-base text-slate-500">
-                        Total Transaksi
-                    </p>
-                    <h3 class="text-xl font-bold text-indigo-900">Rp.
-                        {{ number_format($transaction->total_amount) }}
-                    </h3>
-                </div>
-            </div>
-
-            <span class="font-bold py-1 px-5 rounded-full text-white {{ $transaction->statusBadgeColor() }}">
-                <p class="text-white font-bold text-sm">{{ $transaction->statusLabel() }}</p>
-            </span>
-
-            <div class="hidden md:flex flex-row items-center gap-x-3">
-                <a href="{{ route('product_transactions.show', $transaction) }}"
-                    class="font-semibold py-2 px-4 rounded-full text-white bg-blue-700">View
-                    Details</a>
-            </div>
-        </div>
-        <hr class="my-3">
+        <tr class="{{ $transaction->statusRowColor() }}">
+            <td class="cell"><span class="font-medium text-gray-900">#{{ $transaction->id }}</span></td>
+            <td class="cell">{{ $transaction->user->name ?? 'N/A' }}</td>
+            <td class="cell cell-soft">{{ $transaction->created_at->idShort() }}</td>
+            <td class="cell">Rp {{ number_format($transaction->total_amount) }}</td>
+            <td class="cell">
+                <x-ui.badge :class="$transaction->statusBadgeColor()">
+                    {{ $transaction->statusLabel() }}
+                </x-ui.badge>
+            </td>
+            <td class="cell cell-soft">{{ $transaction->tracking_number ?? '-' }}</td>
+            <td class="cell">
+                <x-ui.pill as="button" type="button" color="btn-pill-primary"
+                    @click="openDetail('{{ route('product_transactions.preview', $transaction) }}')">
+                    <i class="fas fa-eye text-xs"></i> Detail
+                </x-ui.pill>
+            </td>
+        </tr>
     @empty
-        <p>Ups, transaksi terbaru belum tersedia!</p>
+        <tr>
+            <td colspan="7" class="cell text-center text-gray-500">Tidak ada pesanan.</td>
+        </tr>
     @endforelse
-</div>
-<div class="mt-5">
-    {{ $product_transactions->appends(['search' => $search])->links() }}
-</div>
+</x-ui.table>

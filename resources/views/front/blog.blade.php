@@ -1,4 +1,5 @@
-<x-layout-front title="Blog - Wigati Buku">
+<x-layout-front title="Blog – Wigati Buku"
+    description="Kumpulan artikel dan berita seputar buku, rekomendasi bacaan, dan tips dari Wigati Buku.">
     {{-- herosection --}}
     <section class="py-20 px-10 space-x-6 container mx-auto flex items-center justify-between ">
         <div class="container mx-auto w-3/6 text-center">

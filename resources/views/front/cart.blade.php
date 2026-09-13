@@ -1,4 +1,4 @@
-<x-layout-front title="Carts - Wigati Buku">
+<x-layout-front title="Carts - Wigati Buku" robots="noindex, nofollow">
 
     {{-- Hero Section --}}
     <section class="py-16 px-10 container mx-auto text-center">
@@ -6,15 +6,8 @@
         <p class="text-lg mb-6 text-gray-600">Checkout sekarang juga!</p>
     </section>
 
-    {{-- Error Handling --}}
-    @error('error')
-        <div class="invalid-feedback text-red-500 text-center mb-4">
-            {{ $message }}
-        </div>
-    @enderror
-
     {{-- MAIN WRAPPER --}}
-    <div class="container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 lg:px-10 mb-10">
+    <div class="container mx-auto grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 lg:px-10 mb-10">
 
         {{-- LEFT: CART ITEMS --}}
         <div class="lg:col-span-2 bg-gray-50 rounded-2xl p-6 shadow">
@@ -78,13 +71,11 @@
 
                         {{-- RIGHT: DELETE --}}
                         <div class="flex items-start">
-                            <form action="{{ route('carts.destroy', $cart) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="hover:bg-red-100 p-2 rounded-full">
-                                    <img src="{{ asset('/assets/svgs/ic-trash-can-filled.svg') }}" class="w-6 h-6">
-                                </button>
-                            </form>
+                            <x-confirm-modal action="{{ route('carts.destroy', $cart) }}" method="DELETE"
+                                title="Hapus produk ini?" message="Produk akan dikeluarkan dari keranjang Anda."
+                                confirmText="Hapus" icon="fa-trash-can" class="hover:bg-red-100 p-2 rounded-full">
+                                <img src="{{ asset('/assets/svgs/ic-trash-can-filled.svg') }}" class="w-6 h-6">
+                            </x-confirm-modal>
                         </div>
 
                     </div>
@@ -95,9 +86,16 @@
             </div>
         </div>
 
-        {{-- RIGHT: PAYMENT + DELIVERY --}}
-        <div class="space-y-6">
+        {{-- RIGHT: CHECKOUT FLOW --}}
+        <div class="lg:col-span-3 space-y-6">
             <form action="{{ route('product_transactions.store') }}" method="POST" enctype="multipart/form-data"
+                x-data="checkoutFlow({
+                    agenWeb: {{ $agenWebConfigured ? 'true' : 'false' }},
+                    rateUrl: '{{ route('carts.rates') }}',
+                    locUrl: '{{ route('carts.locations') }}',
+                    token: '{{ csrf_token() }}',
+                    savedAddresses: {{ Js::from($userAddresses->map->only(['id', 'label', 'recipient_name', 'phone', 'address', 'province', 'city', 'district', 'postal_code', 'is_default'])->values()) }}
+                })"
                 class="space-y-6">
                 @csrf
 
@@ -119,95 +117,214 @@
                         </li>
                         <li class="flex justify-between">
                             <p>Ongkir</p>
-                            <p id="checkoutDeliveryFee"></p>
+                            <p class="text-indigo-700" id="checkoutDeliveryFee"></p>
                         </li>
-                        <li class="flex justify-between font-bold text-lg">
+                        <li class="flex justify-between font-bold text-lg border-t border-gray-200 pt-3">
                             <p>Grand Total</p>
                             <p class="text-primary" id="checkoutGrandTotal"></p>
                         </li>
                     </ul>
                 </div>
 
-                {{-- PAYMENT METHOD --}}
+                {{-- ALAMAT PENGIRIMAN --}}
                 <div class="bg-white rounded-2xl p-6 shadow">
-                    <h3 class="text-lg font-bold mb-4">Payment Method</h3>
-                    <div x-data="{ selected: null }" class="space-y-3">
-                        @forelse ($paymentMethods as $pm)
-                            <label
-                                class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
-                                <input type="radio" name="payment_method" value="{{ $pm['code'] }}"
-                                    data-acc="{{ $pm['acc_number'] }}" data-name="{{ $pm['acc_name'] }}"
-                                    class="absolute opacity-0" @change="selected = { number: $event.target.dataset.acc, name: $event.target.dataset.name, label: $event.target.closest('label').querySelector('.pm-name').textContent.trim() }"
-                                    {{ $loop->first ? 'checked' : '' }}>
-                                <img src="{{ asset('/assets/svgs/ic-receipt-text-filled.svg') }}">
-                                <p class="font-semibold pm-name">{{ $pm['name'] }}</p>
-                            </label>
-                        @empty
-                            <p class="text-sm text-gray-500">Belum ada metode pembayaran. Hubungi admin.</p>
-                        @endforelse
+                    <div class="flex items-center gap-2 mb-1">
+                        <img src="{{ asset('/assets/svgs/ic-location.svg') }}" class="w-5 h-5 mt-1">
+                        <h3 class="text-lg font-bold">Alamat Pengiriman</h3>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4">Kecamatan harus dipilih dari saran; nama, HP, dan alamat bebas ketik.</p>
 
-                        <div x-show="selected" x-transition class="bg-gray-100 rounded-lg p-4 border border-gray-300">
-                            <p class="font-semibold text-lg" x-text="selected?.label"></p>
-                            <p class="font-bold text-xl" x-text="'Nomor Rekening: ' + (selected?.number ?? '-')"></p>
-                            <p class="text-gray-600" x-text="'a.n ' + (selected?.name ?? '-')"></p>
+                    {{-- ADDRESS BOOK --}}
+                    <template x-if="savedAddresses.length && !addNew">
+                        <div class="space-y-2 mb-4">
+                            <template x-for="addr in savedAddresses" :key="addr.id">
+                                <label
+                                    class="relative flex items-start gap-3 rounded-xl border p-3 cursor-pointer bg-gray-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 has-[:checked]:ring-1 has-[:checked]:ring-blue-500">
+                                    <input type="radio" name="saved_address_pick" :value="addr.id"
+                                        :checked="savedId === addr.id"
+                                        class="absolute opacity-0" @change="fillFromSaved(addr)">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <p class="font-semibold text-sm" x-text="addr.label"></p>
+                                            <span x-show="addr.is_default"
+                                                class="text-[10px] font-semibold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Utama</span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mt-0.5" x-text="addr.recipient_name + ' · ' + addr.phone"></p>
+                                        <p class="text-xs text-gray-500 mt-1 truncate" x-text="addr.address"></p>
+                                        <p class="text-xs text-gray-400" x-text="addr.district + ', ' + addr.city + ' · ' + addr.province"></p>
+                                    </div>
+                                </label>
+                            </template>
+                            <button type="button" @click="startNew"
+                                class="w-full rounded-xl border border-dashed border-gray-300 py-2.5 text-sm font-semibold text-blue-700 hover:border-blue-400 hover:bg-blue-50">
+                                + Tambah Alamat Baru
+                            </button>
+                        </div>
+                    </template>
+                    <template x-if="addNew">
+                        <button type="button" @click="cancelNew"
+                            class="mb-3 text-xs font-semibold text-blue-700 underline">← Pilih ulang dari alamat tersimpan</button>
+                    </template>
+
+                    {{-- RECIPIENT + PHONE --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="font-semibold text-sm">Nama Penerima</label>
+                            <input type="text" name="recipient_name" x-model="recipientName"
+                                :value="recipientName"
+                                placeholder="Nama penerima"
+                                class="w-full border rounded-lg px-4 py-2 mt-1 text-sm" required>
+                        </div>
+                        <div>
+                            <label class="font-semibold text-sm">No. HP / WhatsApp</label>
+                            <input type="text" name="phone_number" x-model="phone"
+                                :value="phone"
+                                placeholder="08xxxxxxxxxx"
+                                class="w-full border rounded-lg px-4 py-2 mt-1 text-sm" required>
                         </div>
                     </div>
-                </div>
 
-                {{-- SHIPPING METHOD --}}
-                <div class="bg-white rounded-2xl p-6 shadow">
-                    <h3 class="text-lg font-bold mb-4">Metode Pengiriman</h3>
+                    <div class="mt-4">
+                        <label class="font-semibold text-sm">Alamat Lengkap (jalan, RT/RW, patokan)</label>
+                        <textarea name="address" x-model="fullAddress" :value="fullAddress" rows="3"
+                            placeholder="Contoh: Jl. Merdeka No. 12, RT 03/RW 05, dekat Pasar Segar"
+                            class="w-full border rounded-lg px-4 py-2 mt-1 text-sm resize-none" required></textarea>
+                    </div>
 
                     @if ($agenWebConfigured)
-                        <div x-data="agenwebShipping()" x-init="$nextTick(() => autoFetch())">
-                            <p class="text-xs text-gray-500 mb-3">Pilih kota tujuan lalu cek ongkir real-time (AgenWebsite).</p>
-                            <div class="flex gap-2">
-                                <select id="agenweb-city" @change="onCityChange($event)" x-select2="{ dropdownAutoWidth: true }"
-                                    class="w-full border rounded-lg px-4 py-2 text-sm">
-                                    <option value="">-- pilih kota --</option>
-                                    @foreach ($agenWebCities as $city)
-                                        <option value="{{ $city['city_id'] }}"
-                                            data-city-name="{{ $city['city_name'] }}"
-                                            data-postal="{{ $city['postal_code'] }}">
-                                            {{ $city['city_name'] }} - {{ $city['province'] }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <button type="button" @click="fetchRates()" :disabled="loading"
-                                    class="shrink-0 bg-indigo-700 text-white font-bold px-4 py-2 rounded-full text-sm hover:bg-indigo-900">
-                                    <span x-show="!loading">Cek Ongkir</span>
-                                    <span x-show="loading">...</span>
-                                </button>
+                        {{-- AUTOCOMPLETE KECAMATAN --}}
+                        <div class="mt-4 relative">
+                            <label class="font-semibold text-sm">Kecamatan Pengiriman <span class="text-red-500">*</span></label>
+                            <div class="relative mt-1">
+                                <input type="text" x-model="districtQuery"
+                                    @input.debounce.400ms="searchLocations()"
+                                    @focus="districtQuery.length >= 2 && suggestions.length ? locOpen = true : null"
+                                    placeholder="Ketik nama kecamatan, lalu pilih dari saran…"
+                                    class="w-full border rounded-lg px-4 py-2 pr-10 text-sm">
+                                <i x-show="searchingLoc" class="fas fa-spinner fa-spin absolute right-3 top-3 text-gray-400"></i>
                             </div>
-                            <p x-show="error" x-text="error" class="text-red-500 text-xs mt-2"></p>
-                            <div id="agenweb-results" class="space-y-3 mt-3">
-                                <template x-for="rate in rates" :key="rate.rate_id">
-                                    <label
-                                        class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
-                                        <input type="radio" name="shipping_method" :value="rate.rate_id"
-                                            :data-cost="rate.cost" :data-eta="rate.eta" class="absolute opacity-0"
-                                            @change="calculatePrice()">
-                                        <div>
-                                            <p class="font-semibold" x-text="rate.courier + ' - ' + rate.service"></p>
-                                            <p class="text-sm text-gray-500"
-                                                x-text="(rate.cost > 0 ? 'Rp ' + Number(rate.cost).toLocaleString('id') : 'Gratis') + ' · ' + rate.eta"></p>
-                                        </div>
-                                    </label>
+
+                            <div x-show="locOpen" x-cloak x-transition
+                                class="absolute z-30 w-full mt-1 bg-white rounded-xl border border-gray-200 shadow-lg max-h-64 overflow-auto">
+                                <template x-if="searchingLoc">
+                                    <p class="px-4 py-3 text-sm text-gray-500">Mencari…</p>
                                 </template>
+                                <template x-if="!searchingLoc && !suggestions.length">
+                                    <p class="px-4 py-3 text-sm text-gray-500">Tidak ada kecamatan cocok. Ketik minimal 2 huruf.</p>
+                                </template>
+                                <template x-for="s in suggestions" :key="s.postal_code + s.district">
+                                    <button type="button" @click="pickSuggestion(s)"
+                                        class="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0">
+                                        <p class="text-sm font-medium" x-text="s.district"></p>
+                                        <p class="text-xs text-gray-500" x-text="s.city + ', ' + s.province + ' · ' + s.postal_code"></p>
+                                    </button>
+                                </template>
+                            </div>
+
+                            {{-- LOCATION RESOLVED PILL --}}
+                            <div x-show="addressLocationReady" x-cloak x-transition
+                                class="mt-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <p class="text-xs text-green-700 font-semibold"
+                                        x-text="district + ' · ' + city + ', ' + province"></p>
+                                </div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <label class="font-semibold text-xs">Kode Pos</label>
+                                    <input type="text" name="post_code" x-model="postal" readonly
+                                        class="w-28 border rounded-lg px-3 py-1.5 text-sm bg-green-50">
+                                </div>
+                                <button type="button" @click="districtQuery=''; postal=''; locOpen=true"
+                                    class="mt-1 text-[11px] font-semibold text-green-700 underline">Ganti lokasi</button>
                             </div>
                         </div>
 
-                        <div id="manual-rates" class="space-y-3 mt-4 hidden">
+                        {{-- SAVE TO ADDRESS BOOK --}}
+                        <div class="mt-4 rounded-xl bg-gray-50 p-3 flex items-center justify-between gap-3">
+                            <label class="text-sm cursor-pointer">
+                                <input type="checkbox" x-model="saveAddress" class="mr-2 accent-blue-600">
+                                Simpan untuk checkout berikutnya
+                            </label>
+                            <input type="text" x-model="addressLabel" placeholder="Label: Rumah / Kantor"
+                                class="w-36 border rounded-lg px-3 py-1.5 text-xs">
+                        </div>
+                        <input type="hidden" name="province" :value="province">
+                        <input type="hidden" name="city" :value="city">
+                        <input type="hidden" name="district" :value="district">
+                        <input type="hidden" name="agenweb_city_id" :value="cityId">
+                        <input type="hidden" name="saved_address_id" :value="addNew ? '' : savedId">
+                        <input type="hidden" name="save_address" value="1" :disabled="!saveAddress">
+                        <input type="hidden" name="address_label" :value="addressLabel">
+                    @endif
+                </div>
+
+                {{-- METODE PENGIRIMAN --}}
+                <div class="bg-white rounded-2xl p-6 shadow">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="fas fa-truck text-blue-500"></i>
+                        <h3 class="text-lg font-bold">Metode Pengiriman</h3>
+                    </div>
+
+                    @if ($agenWebConfigured)
+                        <p x-show="!addressLocationReady" class="text-xs text-gray-400 mt-2">
+                            Pilih kecamatan tujuan dulu agar ongkir terhitung otomatis.
+                        </p>
+
+                        <p x-show="addressLocationReady && loading" class="text-sm text-gray-500 mt-2 flex items-center gap-2">
+                            <i class="fas fa-spinner fa-spin"></i> Menghitung ongkir…
+                        </p>
+
+                        <p x-show="error" x-text="error" class="text-red-500 text-xs mt-2"></p>
+
+                        <template x-if="addressLocationReady && !loading && rates.length && !listOpen && selectedRate">
+                            <div x-cloak x-transition class="mt-3">
+                                <div class="rounded-xl border-2 border-indigo-500 bg-indigo-50 p-3 flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-check-circle text-indigo-600"></i>
+                                        <div>
+                                            <p class="font-semibold text-sm"
+                                                x-text="selectedRate.courier + ' \u2013 ' + selectedRate.service"></p>
+                                            <p class="text-sm text-gray-600"
+                                                x-text="(selectedRate.cost > 0 ? 'Rp ' + Number(selectedRate.cost).toLocaleString('id') : 'Gratis') + ' \u00b7 ' + selectedRate.eta"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="listOpen = true"
+                                        class="shrink-0 text-xs font-semibold text-indigo-700 underline">Ganti ongkir</button>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div x-cloak x-show="rates.length && listOpen" class="mt-3 space-y-2">
+                            <template x-for="rate in rates" :key="rate.rate_id">
+                                <label
+                                    class="relative rounded-lg bg-gray-50 p-2.5 flex gap-2.5 items-center cursor-pointer border has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500">
+                                    <input type="radio" name="shipping_method" :value="rate.rate_id"
+                                        :checked="selectedRateId === rate.rate_id"
+                                        :data-cost="rate.cost" :data-eta="rate.eta"
+                                        class="absolute opacity-0" @change="selectRate(rate)">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-semibold text-sm truncate"
+                                            x-text="rate.courier + ' \u2013 ' + rate.service"></p>
+                                        <p class="text-xs text-gray-500"
+                                            x-text="(rate.cost > 0 ? 'Rp ' + Number(rate.cost).toLocaleString('id') : 'Gratis') + ' \u00b7 ' + rate.eta"></p>
+                                    </div>
+                                    <template x-if="selectedRateId === rate.rate_id">
+                                        <i class="fas fa-check-circle text-lg text-indigo-600 shrink-0"></i>
+                                    </template>
+                                </label>
+                            </template>
+                        </div>
+
+                        <div id="manual-rates" x-show="manualShown" x-cloak class="mt-3 space-y-2">
                             <p class="text-xs text-gray-500 font-semibold">Tarif manual (fallback):</p>
                             @forelse ($shippingRates as $sr)
                                 <label
-                                    class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                    class="relative rounded-lg bg-gray-50 p-2.5 flex gap-2.5 items-center cursor-pointer border has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50 has-[:checked]:ring-1 has-[:checked]:ring-indigo-500">
                                     <input type="radio" name="shipping_method" value="{{ $sr['code'] }}"
                                         data-cost="{{ $sr['cost'] }}" data-eta="{{ $sr['eta'] }}" class="absolute opacity-0"
                                         @change="calculatePrice()">
-                                    <div>
-                                        <p class="font-semibold">{{ $sr['courier'] }}</p>
-                                        <p class="text-sm text-gray-500">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-semibold text-sm truncate">{{ $sr['courier'] }}</p>
+                                        <p class="text-xs text-gray-500">
                                             {{ $sr['cost'] > 0 ? 'Rp ' . number_format($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
                                         </p>
                                     </div>
@@ -217,10 +334,38 @@
                             @endforelse
                         </div>
                     @else
-                        <div class="space-y-3">
+                        <div class="space-y-3 mt-3">
+                            <div>
+                                <label class="font-semibold text-sm">Kota</label>
+                                <select name="city" id="citySelect"
+                                    class="w-full border rounded-lg px-4 py-2 mt-1 text-sm @error('city') border-red-500 @enderror">
+                                    @forelse ($shippingZones as $zone)
+                                        <option value="{{ $zone['city'] }}"
+                                            data-costs="{{ json_encode($zone['costs']) }}" {{ old('city', $user->city ?? $shippingZones[0]['city'] ?? '') === $zone['city'] ? 'selected' : '' }}>
+                                            {{ $zone['city'] }}
+                                        </option>
+                                    @empty
+                                        <option value="">Belum ada zona pengiriman</option>
+                                    @endforelse
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="font-semibold text-sm">Kode Pos</label>
+                                <input type="number" name="post_code" value="{{ old('post_code', $user->post_code ?? '') }}"
+                                    class="w-full border rounded-lg px-4 py-2 mt-1 text-sm @error('post_code') border-red-500 @enderror">
+                            </div>
+
+                            <div>
+                                <label class="font-semibold text-sm">Kecamatan (opsional)</label>
+                                <input type="text" name="district" value="{{ old('district', '') }}"
+                                    class="w-full border rounded-lg px-4 py-2 mt-1 text-sm">
+                                <input type="hidden" name="province" value="">
+                            </div>
+
                             @forelse ($shippingRates as $sr)
                                 <label
-                                    class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                    class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-indigo-500">
                                     <input type="radio" name="shipping_method" value="{{ $sr['code'] }}"
                                         data-cost="{{ $sr['cost'] }}" data-eta="{{ $sr['eta'] }}" class="absolute opacity-0"
                                         @change="calculatePrice()" {{ $loop->first ? 'checked' : '' }}>
@@ -238,86 +383,95 @@
                     @endif
                 </div>
 
-                {{-- DELIVERY --}}
+                {{-- PAYMENT METHOD --}}
                 <div class="bg-white rounded-2xl p-6 shadow">
-                    <h3 class="text-lg font-bold mb-4">Delivery to</h3>
+                    <h3 class="text-lg font-bold mb-4">Payment Method</h3>
+                    <div class="space-y-3">
+                        @forelse ($paymentMethods as $pm)
+                            <label
+                                class="relative rounded-xl bg-gray-50 p-3 flex gap-2 items-center cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-blue-500">
+                                <input type="radio" name="payment_method" value="{{ $pm['code'] }}"
+                                    data-acc="{{ $pm['acc_number'] }}" data-name="{{ $pm['acc_name'] }}"
+                                    data-pm-name="{{ $pm['name'] }}"
+                                    class="absolute opacity-0" @change="onPaymentChange($event)"
+                                    {{ $loop->first ? 'checked' : '' }}>
+                                <img src="{{ asset('/assets/svgs/ic-receipt-text-filled.svg') }}">
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold pm-name">{{ $pm['name'] }}</p>
+                                    <p class="text-sm text-gray-500">
+                                        No. Rek {{ $pm['acc_number'] }} · a.n {{ $pm['acc_name'] }}
+                                    </p>
+                                </div>
+                            </label>
+                        @empty
+                            <p class="text-sm text-gray-500">Belum ada metode pembayaran. Hubungi admin.</p>
+                        @endforelse
 
-                    <div class="space-y-4">
-                        <div>
-                            <label class="font-semibold">Address</label>
-                            <input type="text" name="address" value="{{ old('address') }}"
-                                class="w-full border rounded-lg px-4 py-2 @error('address') border-red-500 @enderror">
-
-                            @error('address')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
+                        <div x-show="payment" x-cloak x-transition class="bg-gray-100 rounded-lg p-4 border border-gray-300">
+                            <p class="font-semibold text-lg" x-text="payment?.label"></p>
+                            <p class="font-bold text-xl" x-text="'Nomor Rekening: ' + (payment?.number ?? '-')"></p>
+                            <p class="text-gray-600" x-text="'a.n ' + (payment?.name ?? '-')"></p>
                         </div>
+                    </div>
+                </div>
 
-<div>
-                            <label class="font-semibold">City</label>
-                            @if ($agenWebConfigured)
-                                <input type="text" name="city" id="agenweb_city_name" value="{{ old('city') }}"
-                                    readonly placeholder="Dipilih dari cek ongkir"
-                                    class="w-full border rounded-lg px-4 py-2 bg-gray-50 @error('city') border-red-500 @enderror">
-                                <input type="hidden" name="agenweb_city_id" id="agenweb-city-id"
-                                    value="{{ old('agenweb_city_id') }}">
-                            @else
-                                <select name="city" id="citySelect"
-                                    class="w-full border rounded-lg px-4 py-2 @error('city') border-red-500 @enderror">
-                                    @forelse ($shippingZones as $zone)
-                                        <option value="{{ $zone['city'] }}"
-                                            data-costs="{{ json_encode($zone['costs']) }}" {{ old('city', $shippingZones[0]['city'] ?? '') === $zone['city'] ? 'selected' : '' }}>
-                                            {{ $zone['city'] }}
-                                        </option>
-                                    @empty
-                                        <option value="">Belum ada zona pengiriman</option>
-                                    @endforelse
-                                </select>
-                            @endif
+                {{-- KONFIRMASI --}}
+                <div x-data="{ showConfirm: false }" @keydown.escape.window="showConfirm = false"
+                    class="bg-white rounded-2xl p-6 shadow">
+                    <h3 class="text-lg font-bold mb-3">Konfirmasi</h3>
+                    <div>
+                        <label class="font-semibold text-sm">Bukti Transfer <span class="text-gray-400 font-normal">(wajib sebelum pesanan diproses)</span></label>
+                        <input type="file" name="proof" @change="onProofChange($event)" accept="image/png,image/jpeg"
+                            class="w-full border rounded-lg px-4 py-2 mt-1 text-sm @error('proof') border-red-500 @enderror">
+                        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Pesanan bisa dibuat <strong>sebelum</strong> unggah bukti, namun
+                            <strong>tidak akan diproses</strong> sampai bukti transfer diunggah dan diverifikasi.
+                            Bukti bisa diunggah nanti lewat halaman detail pesanan.
+                        </p>
+                    </div>
 
-                            @error('city')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
+                    @if ($agenWebConfigured)
+                        <ul class="text-xs text-gray-500 mt-3 space-y-1">
+                            <li x-show="!addressLocationReady"><i class="fas fa-circle text-[5px] align-middle mr-1"></i>Lengkapi alamat &amp; pilih kecamatan</li>
+                            <li x-show="addressLocationReady && !shippingReady"><i class="fas fa-circle text-[5px] align-middle mr-1"></i>Pilih kurir</li>
+                            <li x-show="!payment"><i class="fas fa-circle text-[5px] align-middle mr-1"></i>Pilih metode pembayaran</li>
+                            <li x-show="!proofBytes"><i class="fas fa-circle text-[5px] align-middle mr-1"></i>Unggah bukti transfer (opsional saat checkout — wajib sebelum pesanan diproses)</li>
+                        </ul>
+                    @endif
+
+                    <button type="button" @click="canConfirm && (showConfirm = true)"
+                        :disabled="!canConfirm"
+                        :class="canConfirm ? 'bg-indigo-700 hover:bg-indigo-900 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'"
+                        class="w-full text-white font-bold py-3 rounded-full mt-3 transition">
+                        Confirm Pesanan
+                    </button>
+
+                    <div x-show="showConfirm" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center">
+                        <div class="absolute inset-0 bg-black bg-opacity-50" @click="showConfirm = false"></div>
+                        <div x-transition class="relative bg-white rounded-2xl shadow-lg p-6 w-80 text-center z-10">
+                            <button type="button" @click="showConfirm = false" aria-label="Tutup"
+                                class="absolute top-3 right-3 p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <div class="text-indigo-600 text-4xl mb-3">
+                                <i class="fas fa-bag-shopping"></i>
+                            </div>
+                            <p class="font-bold text-lg text-gray-800">Buat pesanan ini?</p>
+                            <p class="text-sm text-gray-500 mt-1">Pastikan alamat, kurir, dan pembayaran sudah benar.</p>
+                            <div class="flex justify-center gap-3 mt-5">
+                                <button type="button" @click="showConfirm = false"
+                                    class="px-5 py-2 bg-gray-200 text-gray-700 rounded-full font-semibold hover:bg-gray-300">
+                                    Batal
+                                </button>
+                                <button type="button" @click="$el.closest('form').submit()"
+                                    class="px-5 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700">
+                                    Ya, Konfirmasi
+                                </button>
+                            </div>
                         </div>
-
-                        <div>
-                            <label class="font-semibold">Post Code</label>
-                            <input type="number" name="post_code" value="{{ old('post_code') }}"
-                                class="w-full border rounded-lg px-4 py-2 @error('post_code') border-red-500 @enderror">
-
-                            @error('post_code')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="font-semibold">Phone Number</label>
-                            <input type="number" name="phone_number" value="{{ old('phone_number') }}"
-                                class="w-full border rounded-lg px-4 py-2 @error('phone_number') border-red-500 @enderror">
-
-                            @error('phone_number')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="font-semibold">Add. Notes</label>
-                            <textarea name="notes" class="w-full border rounded-lg px-4 py-2"></textarea>
-                        </div>
-
-                        <div>
-                            <label class="font-semibold">Proof of Payment</label>
-                            <input type="file" name="proof"
-                                class="w-full border rounded-lg px-4 py-2 @error('proof') border-red-500 @enderror">
-
-                            @error('proof')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <button class="w-full bg-red-600 text-white font-bold py-3 rounded-full hover:bg-red-800">
-                            Confirm
-                        </button>
                     </div>
                 </div>
             </form>
@@ -396,8 +550,7 @@
         });
 
         /**
-         * TERAPKAN TARIF PER KOTA.
-         * Baca zona terpilih, sesuaikan data-cost tiap kurir, lalu hitung ulang.
+         * TERAPKAN TARIF PER KOTA (manual zones).
          */
         function setZoneShippingCosts() {
             const zoneSelect = document.getElementById('citySelect');
@@ -426,87 +579,319 @@
             }
         });
 
-        @if ($agenWebConfigured)
-            /**
-             * ONGKIR AgenWebsite: pilih kota tujuan, cek tarif real-time, pasang radio kurir.
-             * Bila API gagal / kosong, tampilkan tarif manual (fallback).
-             */
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('agenwebShipping', () => ({
-                    cityId: '',
-                    loading: false,
-                    error: '',
-                    rates: [],
-                    autoFetch() {
-                        const sel = document.getElementById('agenweb-city');
-                        const savedId = document.getElementById('agenweb-city-id')?.value;
-                        if (!sel) return;
-                        if (savedId && sel.querySelector(`option[value="${savedId}"]`)) {
-                            sel.value = savedId;
-                            this.applySelectedCity(sel);
-                            this.fetchRates();
-                        }
-                    },
-                    onCityChange(evt) {
-                        this.applySelectedCity(evt.target);
-                    },
-                    applySelectedCity(sel) {
-                        const opt = sel.selectedOptions[0];
-                        if (!opt || !opt.value) {
-                            this.cityId = '';
-                            return;
-                        }
-                        this.cityId = opt.value;
-                        const nameInput = document.getElementById('agenweb_city_name');
-                        const idInput = document.getElementById('agenweb-city-id');
-                        const pcInput = document.querySelector('input[name="post_code"]');
-                        if (nameInput) nameInput.value = opt.dataset.cityName || '';
-                        if (idInput) idInput.value = opt.value;
-                        if (pcInput && opt.dataset.postal) pcInput.value = opt.dataset.postal;
-                    },
-                    fetchRates() {
-                        if (!this.cityId) {
-                            this.error = 'Pilih kota tujuan dulu.';
-                            return;
-                        }
-                        this.loading = true;
-                        this.error = '';
-                        this.rates = [];
-                        document.querySelectorAll('input[name="shipping_method"]').forEach(r => r.checked = false);
-                        fetch('{{ route('carts.rates') }}?city_id=' + encodeURIComponent(this.cityId), {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            }
-                        }).then(res => res.json()).then(data => {
-                            this.rates = Array.isArray(data) ? data : [];
-                            const manual = document.getElementById('manual-rates');
-                            if (manual) manual.classList.add('hidden');
-                            if (this.rates.length) this.error = '';
-                            this.$nextTick(() => {
-                                const first = document.querySelector('#agenweb-results input[name="shipping_method"]:not([checked])');
-                                if (this.rates.length && first) {
-                                    first.checked = true;
-                                    calculatePrice();
-                                }
-                            });
-                            if (!this.rates.length) this.fallback();
-                        }).catch(() => {
-                            this.fallback();
-                        }).finally(() => {
-                            this.loading = false;
-                        });
-                    },
-                    fallback() {
-                        this.error = 'Ongkir API tidak tersedia, memakai tarif manual.';
-                        const manual = document.getElementById('manual-rates');
-                        if (manual) manual.classList.remove('hidden');
-                        calculatePrice();
-                    }
-                }));
-            });
-        @endif
+        /**
+         * CHECKOUT FLOW (Alpine):
+         * - Address book (alamat tersimpan) + alamat baru
+         * - Autocomplete kecamatan (wajib dari saran) → kode pos otomatis
+         * - Ongkir real-time dihitung otomatis, kurir terpilih otomatis termurah
+         * - Tombol Konfirmasi baru aktif saat alamat + kurir + pembayaran + bukti lengkap
+         */
+        document.addEventListener('alpine:init', () => {
+            const DRAFT_KEY = 'wigati_checkout_draft';
 
+            Alpine.data('checkoutFlow', (config) => ({
+                agenWeb: config.agenWeb,
+                rateUrl: config.rateUrl,
+                locUrl: config.locUrl,
+                token: config.token,
+                savedAddresses: config.savedAddresses || [],
+
+                savedId: '',
+                addNew: false,
+                recipientName: '',
+                phone: '',
+                fullAddress: '',
+                district: '',
+                city: '',
+                province: '',
+                postal: '',
+                cityId: '',
+
+                districtQuery: '',
+                suggestions: [],
+                locOpen: false,
+                searchingLoc: false,
+
+                loading: false,
+                error: '',
+                rates: [],
+                selectedRateId: '',
+                listOpen: true,
+                manualShown: false,
+
+                payment: null,
+                proofBytes: 0,
+
+                saveAddress: true,
+                addressLabel: '',
+
+                get addressLocationReady() {
+                    return !!(this.province && this.city && this.district && this.postal);
+                },
+
+                get shippingReady() {
+                    return !!document.querySelector('input[name="shipping_method"]:checked');
+                },
+
+                get selectedRate() {
+                    return this.rates.find((r) => r.rate_id === this.selectedRateId) || null;
+                },
+
+                get canConfirm() {
+                    return this.addressLocationReady && this.shippingReady && !!this.payment;
+                },
+
+                init() {
+                    this.restoreDraft();
+                    if (!this.district) {
+                        if (this.savedAddresses.length) {
+                            const def = this.savedAddresses.find(a => a.is_default) || this.savedAddresses[0];
+                            this.fillFromSaved(def);
+                        }
+                    } else if (!this.rates.length && this.addressLocationReady) {
+                        this.fetchRates();
+                    }
+
+                    this.syncDefaultPayment();
+                    this.$nextTick(() => this.syncRestoredRadios());
+
+                    setInterval(() => this.saveDraft(), 1000);
+                },
+
+                syncDefaultPayment() {
+                    if (this.payment) return;
+                    const checked = document.querySelector('input[name="payment_method"]:checked');
+                    if (!checked) return;
+                    this.payment = {
+                        code: checked.value,
+                        label: checked.dataset.pmName || '',
+                        number: checked.dataset.acc || '',
+                        name: checked.dataset.name || ''
+                    };
+                },
+
+                restoreDraft() {
+                    let d = null;
+                    try {
+                        d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+                    } catch (e) {
+                        d = null;
+                    }
+                    if (!d || !d.district) return;
+
+                    this.savedId = d.savedId || '';
+                    this.addNew = d.addNew || false;
+                    this.recipientName = d.recipientName || '';
+                    this.phone = d.phone || '';
+                    this.fullAddress = d.fullAddress || '';
+                    this.district = d.district || '';
+                    this.city = d.city || '';
+                    this.province = d.province || '';
+                    this.postal = d.postal || '';
+                    this.cityId = d.cityId || '';
+                    this.districtQuery = d.districtQuery || '';
+                    this.payment = d.payment || null;
+                    this.saveAddress = d.saveAddress !== false;
+                    this.addressLabel = d.addressLabel || '';
+                    this.rates = Array.isArray(d.rates) ? d.rates : [];
+                    this.selectedRateId = d.selectedRateId || '';
+                },
+
+                saveDraft() {
+                    const hasAddress = this.district || this.recipientName || this.fullAddress;
+                    if (!hasAddress) return;
+
+                    try {
+                        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+                            savedId: this.savedId,
+                            addNew: this.addNew,
+                            recipientName: this.recipientName,
+                            phone: this.phone,
+                            fullAddress: this.fullAddress,
+                            district: this.district,
+                            city: this.city,
+                            province: this.province,
+                            postal: this.postal,
+                            cityId: this.cityId,
+                            districtQuery: this.districtQuery,
+                            payment: this.payment,
+                            saveAddress: this.saveAddress,
+                            addressLabel: this.addressLabel,
+                            rates: this.rates,
+                            selectedRateId: this.selectedRateId,
+                        }));
+                    } catch (e) {
+                        /* localStorage tidak tersedia: abaikan */
+                    }
+                },
+
+                syncRestoredRadios() {
+                    if (this.payment && this.payment.code) {
+                        const radio = document.querySelector('input[name="payment_method"][value="' + this.payment.code + '"]');
+                        if (radio) radio.checked = true;
+                    }
+                    if (this.selectedRateId) {
+                        const rate = document.querySelector('input[name="shipping_method"][value="' + this.selectedRateId + '"]');
+                        if (rate) rate.checked = true;
+                    }
+                    calculatePrice();
+                },
+
+                fillFromSaved(addr) {
+                    this.savedId = String(addr.id);
+                    this.addNew = false;
+                    this.recipientName = addr.recipient_name || '';
+                    this.phone = addr.phone || '';
+                    this.fullAddress = addr.address || '';
+                    this.district = addr.district || '';
+                    this.city = addr.city || '';
+                    this.province = addr.province || '';
+                    this.postal = addr.postal_code || '';
+                    this.districtQuery = this.district ? this.district + ', ' + this.city : '';
+                    this.locOpen = false;
+                    if (this.addressLocationReady) this.fetchRates();
+                },
+
+                startNew() {
+                    this.savedId = '';
+                    this.addNew = true;
+                    this.recipientName = '';
+                    this.phone = '';
+                    this.fullAddress = '';
+                    this.district = '';
+                    this.city = '';
+                    this.province = '';
+                    this.postal = '';
+                    this.cityId = '';
+                    this.districtQuery = '';
+                    this.suggestions = [];
+                    this.rates = [];
+                    this.selectedRateId = '';
+                    this.listOpen = false;
+                    this.manualShown = false;
+                    this.$nextTick(() => {
+                        const first = document.querySelector('input[name="recipient_name"]');
+                        if (first) first.focus();
+                    });
+                },
+
+                cancelNew() {
+                    this.addNew = false;
+                    if (this.savedAddresses.length) {
+                        this.fillFromSaved(this.savedAddresses[0]);
+                    } else {
+                        this.addNew = true;
+                    }
+                },
+
+                searchLocations() {
+                    this.locOpen = true;
+                    const q = (this.districtQuery || '').trim();
+                    if (q.length < 2) {
+                        this.suggestions = [];
+                        this.locOpen = false;
+                        return;
+                    }
+                    this.searchingLoc = true;
+                    fetch(this.locUrl + '?q=' + encodeURIComponent(q), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            this.suggestions = Array.isArray(data) ? data : [];
+                            if (this.suggestions.length) this.locOpen = true;
+                        })
+                        .catch(() => { this.suggestions = []; })
+                        .finally(() => { this.searchingLoc = false; });
+                },
+
+                pickSuggestion(s) {
+                    this.district = s.district;
+                    this.city = s.city;
+                    this.province = s.province;
+                    this.postal = s.postal_code;
+                    this.cityId = s.city_id || '';
+                    this.districtQuery = s.district + ', ' + s.city;
+                    this.locOpen = false;
+                    this.refreshShipping();
+                },
+
+                refreshShipping() {
+                    if (!this.addressLocationReady) {
+                        this.rates = [];
+                        this.selectedRateId = '';
+                        this.listOpen = false;
+                        this.manualShown = false;
+                        calculatePrice();
+                        return;
+                    }
+                    this.fetchRates();
+                },
+
+                fetchRates() {
+                    this.loading = true;
+                    this.error = '';
+                    this.rates = [];
+                    this.selectedRateId = '';
+                    const params = new URLSearchParams();
+                    if (this.cityId) params.set('city_id', this.cityId);
+                    if (this.postal) params.set('post_code', this.postal);
+                    const query = params.toString();
+                    fetch(this.rateUrl + (query ? '?' + query : ''), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            this.rates = Array.isArray(data) ? data : [];
+                            this.manualShown = false;
+                            if (this.rates.length) {
+                                this.error = '';
+                                this.selectedRateId = this.rates[0].rate_id;
+                                this.listOpen = false;
+                                this.$nextTick(() => calculatePrice());
+                            } else {
+                                this.fallback();
+                            }
+                        })
+                        .catch(() => this.fallback())
+                        .finally(() => { this.loading = false; });
+                },
+
+                fallback() {
+                    this.error = '';
+                    this.selectedRateId = '';
+                    this.manualShown = true;
+                    this.listOpen = false;
+                    const firstManual = document.querySelector('#manual-rates input[name="shipping_method"]');
+                    if (firstManual) {
+                        const checked = document.querySelector('#manual-rates input[name="shipping_method"]:checked');
+                        if (!checked) firstManual.checked = true;
+                    }
+                    calculatePrice();
+                },
+
+                selectRate(rate) {
+                    this.selectedRateId = rate.rate_id;
+                    this.listOpen = false;
+                    calculatePrice();
+                },
+
+                onPaymentChange(evt) {
+                    const t = evt.target;
+                    this.payment = {
+                        code: t.value,
+                        label: t.dataset.pmName || '',
+                        number: t.dataset.acc || '',
+                        name: t.dataset.name || ''
+                    };
+                },
+
+                onProofChange(evt) {
+                    const file = evt.target.files && evt.target.files[0];
+                    this.proofBytes = file ? file.size : 0;
+                }
+            }));
+        });
 
         /**
          * Alpine component (cartQty)
@@ -601,12 +986,10 @@
 
         /**
          * OPTIONAL: Watch for DOM changes (add/remove cart rows) and recalc automatically.
-         * Ini berguna kalau kamu menambahkan produk via JS/AJAX.
          */
         const cartContainer = document.querySelector('.lg\\:col-span-2 .space-y-4') || document.querySelector('.space-y-4');
         if (cartContainer) {
             const mo = new MutationObserver((mutations) => {
-                // recalc saat ada perubahan children
                 calculatePrice();
             });
             mo.observe(cartContainer, {
@@ -616,6 +999,14 @@
         }
     </script>
 
-
+    <style>
+        input::placeholder,
+        textarea::placeholder,
+        select::placeholder {
+            color: #b6bfcd;
+            font-style: italic;
+            opacity: 1;
+        }
+    </style>
 
 </x-layout-front>

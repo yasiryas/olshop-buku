@@ -12,6 +12,8 @@
     <link rel="apple-touch-icon" href="/assets/pwa/apple-touch-icon.png">
 
     <title>{{ config('app.name', 'Wigati Buku') }}</title>
+    <x-seo :title="$seo_title ?? null" :description="$seo_description ?? null" :keywords="$seo_keywords ?? null"
+        :canonical="$seo_canonical ?? null" :robots="'noindex, nofollow'" />
 
     <!-- Fonts -->
     <link rel="stylesheet" href="{{ asset('assets/fonts/figtree.css') }}">
@@ -39,30 +41,10 @@
             {{ $slot }}
         </main>
 
-        <!-- Session Messages -->
-        @if (session('success'))
-            <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg"
-                id="success-message">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg"
-                id="error-message">
-                {{ session('error') }}
-            </div>
-        @endif
+        <x-toast />
     </div>
 
     <script>
-        // Auto-hide messages after 3 seconds
-        setTimeout(function() {
-            const successMsg = document.getElementById('success-message');
-            const errorMsg = document.getElementById('error-message');
-            if (successMsg) successMsg.style.display = 'none';
-            if (errorMsg) errorMsg.style.display = 'none';
-        }, 3000);
 
         // Handle Approve Order form submission
         const approveForm = document.getElementById('approveForm');

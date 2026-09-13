@@ -15,6 +15,21 @@ class XlsxWriter
 
     public static function create(string $sheetName, array $columns, array $rows): string
     {
+        return self::createMulti([
+            ['name' => $sheetName, 'columns' => $columns, 'rows' => $rows],
+        ]);
+    }
+
+    /**
+     * @param array<int, array{name: string, title?: string, columns: array, rows: array}> $sheets
+     */
+    public static function createMulti(array $sheets): string
+    {
+        $sheets = array_values($sheets);
+        if (empty($sheets)) {
+            throw new \RuntimeException('Tidak ada sheet untuk diekspor.');
+        }
+
         $zip = new ZipArchive();
         $path = tempnam(sys_get_temp_dir(), 'xlsx');
 
@@ -22,12 +37,19 @@ class XlsxWriter
             throw new \RuntimeException('Gagal membuat file Excel.');
         }
 
-        $zip->addFromString('[Content_Types].xml', self::contentTypes());
+        $count = count($sheets);
+        $zip->addFromString('[Content_Types].xml', self::contentTypes($count));
         $zip->addFromString('_rels/.rels', self::rootRels());
-        $zip->addFromString('xl/workbook.xml', self::workbook($sheetName));
-        $zip->addFromString('xl/_rels/workbook.xml.rels', self::workbookRels());
+        $zip->addFromString('xl/workbook.xml', self::workbook(array_column($sheets, 'name')));
+        $zip->addFromString('xl/_rels/workbook.xml.rels', self::workbookRels($count));
         $zip->addFromString('xl/styles.xml', self::styles());
-        $zip->addFromString('xl/worksheets/sheet1.xml', self::worksheet($columns, $rows));
+
+        foreach ($sheets as $index => $sheet) {
+            $zip->addFromString(
+                'xl/worksheets/sheet' . ($index + 1) . '.xml',
+                self::worksheet($sheet['columns'], $sheet['rows'], $sheet['title'] ?? null)
+            );
+        }
 
         $zip->close();
 
@@ -37,15 +59,19 @@ class XlsxWriter
         return $content;
     }
 
-    private static function contentTypes(): string
+    private static function contentTypes(int $sheetCount): string
     {
+        $overrides = '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>';
+        for ($i = 1; $i <= $sheetCount; $i++) {
+            $overrides .= '<Override PartName="/xl/worksheets/sheet' . $i . '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+        }
+        $overrides .= '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>';
+
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
             . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
             . '<Default Extension="xml" ContentType="application/xml"/>'
-            . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-            . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-            . '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+            . $overrides
             . '</Types>';
     }
 
@@ -57,20 +83,30 @@ class XlsxWriter
             . '</Relationships>';
     }
 
-    private static function workbook(string $sheetName): string
+    private static function workbook(array $sheetNames): string
     {
+        $sheets = '';
+        foreach (array_values($sheetNames) as $index => $name) {
+            $sheets .= '<sheet name="' . htmlspecialchars($name) . '" sheetId="' . ($index + 1) . '" r:id="rId' . ($index + 1) . '"/>';
+        }
+
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
             . 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-            . '<sheets><sheet name="' . htmlspecialchars($sheetName) . '" sheetId="1" r:id="rId1"/></sheets></workbook>';
+            . '<sheets>' . $sheets . '</sheets></workbook>';
     }
 
-    private static function workbookRels(): string
+    private static function workbookRels(int $sheetCount): string
     {
+        $rels = '';
+        for ($i = 1; $i <= $sheetCount; $i++) {
+            $rels .= '<Relationship Id="rId' . $i . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' . $i . '.xml"/>';
+        }
+        $rels .= '<Relationship Id="rId' . ($sheetCount + 1) . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
+
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            . $rels
             . '</Relationships>';
     }
 
@@ -96,30 +132,44 @@ class XlsxWriter
             . '</styleSheet>';
     }
 
-    private static function worksheet(array $columns, array $rows): string
+    private static function worksheet(array $columns, array $rows, ?string $title = null): string
     {
         $xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
             . '<sheetData>';
 
-        $rows = array_merge([$columns], array_values($rows));
-        foreach ($rows as $rowIndex => $row) {
-            $xml .= '<row r="' . ($rowIndex + 1) . '">';
-            foreach (array_values($row) as $colIndex => $value) {
-                $ref = self::columnRef($colIndex) . ($rowIndex + 1);
-                $style = $rowIndex === 0 ? ' s="0"' : ' s="1"';
+        $rowIndex = 0;
 
-                if (is_int($value) || is_float($value)) {
-                    $xml .= '<c r="' . $ref . '"' . $style . '><v>' . $value . '</v></c>';
-                } else {
-                    $text = htmlspecialchars((string) $value);
-                    $xml .= '<c r="' . $ref . '"' . $style . ' t="inlineStr"><is><t>' . $text . '</t></is></c>';
-                }
-            }
-            $xml .= '</row>';
+        if ($title !== null) {
+            $rowIndex = 1;
+            $xml .= self::cellRow($rowIndex, [$title], '0');
+            $rowIndex = 2;
+        }
+
+        $xml .= self::cellRow($rowIndex, $columns, '0');
+        $rowIndex++;
+
+        foreach (array_values($rows) as $r => $row) {
+            $xml .= self::cellRow($rowIndex + $r, $row, '1');
         }
 
         return $xml . '</sheetData></worksheet>';
+    }
+
+    private static function cellRow(int $rowIndex, array $cells, string $style): string
+    {
+        $xml = '<row r="' . $rowIndex . '">';
+        foreach (array_values($cells) as $colIndex => $value) {
+            $ref = self::columnRef($colIndex) . $rowIndex;
+
+            if (is_int($value) || is_float($value)) {
+                $xml .= '<c r="' . $ref . '" s="' . $style . '"><v>' . $value . '</v></c>';
+            } else {
+                $text = htmlspecialchars((string) $value);
+                $xml .= '<c r="' . $ref . '" s="' . $style . '" t="inlineStr"><is><t>' . $text . '</t></is></c>';
+            }
+        }
+        return $xml . '</row>';
     }
 
     private static function columnRef(int $index): string

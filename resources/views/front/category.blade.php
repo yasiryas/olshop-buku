@@ -1,4 +1,4 @@
-<x-layout-front title="Product - Wigati Buku">
+<x-layout-front :title="$category->name . ' – Wigati Buku'" :description="'Buku kategori ' . $category->name . ' tersedia di Wigati Buku.'" :canonical="route('front.product.category', $category)">
     {{-- Section Header --}}
     <section class="py-20 px-10 space-x-6 container mx-auto flex items-center justify-between ">
         <div class="container mx-auto w-3/6 text-center">

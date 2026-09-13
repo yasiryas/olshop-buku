@@ -36,13 +36,13 @@ class ProductTransaction extends Model
     ];
 
     public const STATUS_BADGE_COLORS = [
-        self::STATUS_PENDING => 'bg-orange-500',
-        self::STATUS_PROCESSING => 'bg-blue-500',
-        self::STATUS_SHIPPED => 'bg-indigo-500',
-        self::STATUS_COMPLETED => 'bg-green-500',
-        self::STATUS_REJECTED => 'bg-red-500',
-        self::STATUS_CANCELLED => 'bg-gray-500',
-        self::STATUS_RETURNED => 'bg-purple-600',
+        self::STATUS_PENDING => 'bg-orange-100 text-orange-800',
+        self::STATUS_PROCESSING => 'bg-blue-100 text-blue-800',
+        self::STATUS_SHIPPED => 'bg-indigo-100 text-indigo-800',
+        self::STATUS_COMPLETED => 'bg-green-100 text-green-800',
+        self::STATUS_REJECTED => 'bg-red-100 text-red-800',
+        self::STATUS_CANCELLED => 'bg-gray-100 text-gray-800',
+        self::STATUS_RETURNED => 'bg-purple-100 text-purple-800',
     ];
 
     protected $fillable = [
@@ -59,6 +59,9 @@ class ProductTransaction extends Model
         'city',
         'post_code',
         'phone_number',
+        'recipient_name',
+        'province',
+        'district',
         'notes',
         'proof',
     ];
@@ -86,6 +89,20 @@ class ProductTransaction extends Model
     public function statusBadgeColor(): string
     {
         return self::STATUS_BADGE_COLORS[$this->status] ?? 'bg-gray-500';
+    }
+
+    public function statusRowColor(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PENDING => 'bg-orange-50',
+            self::STATUS_PROCESSING => 'bg-blue-50',
+            self::STATUS_SHIPPED => 'bg-indigo-50',
+            self::STATUS_COMPLETED => 'bg-green-50',
+            self::STATUS_REJECTED => 'bg-red-50',
+            self::STATUS_CANCELLED => 'bg-gray-50',
+            self::STATUS_RETURNED => 'bg-purple-50',
+            default => 'bg-white',
+        };
     }
 
     public function isPaid(): bool

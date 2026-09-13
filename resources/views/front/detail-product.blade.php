@@ -1,4 +1,33 @@
-<x-layout-front title="Product - Wigati Buku">
+@php
+    $metaKeywords = ($product->category->name ?? 'buku') . ', buku, toko buku online, Wigati Buku';
+@endphp
+
+<x-layout-front
+    :title="$product->name . ' - Wigati Buku'"
+    :description="strip_tags(Str::limit($product->about, 160))"
+    :keywords="$metaKeywords"
+    :image="$product->photo"
+    :canonical="route('front.product.details', $product->slug)">
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $product->name,
+            'image' => Storage::url($product->photo),
+            'description' => Str::limit(strip_tags($product->about), 160),
+            'brand' => ['@type' => 'Brand', 'name' => config('app.name')],
+            'offers' => [
+                '@type' => 'Offer',
+                'url' => route('front.product.details', $product->slug),
+                'priceCurrency' => 'IDR',
+                'price' => $product->price,
+                'availability' => $product->stock > 0
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+                'itemCondition' => 'https://schema.org/NewCondition',
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
     {{-- detail product section --}}
 
     <section class="container mx-auto px-4 md:px-10 mb-12 md:mb-20 pt-6 md:pt-10 relative">

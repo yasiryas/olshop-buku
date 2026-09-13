@@ -40,7 +40,7 @@
         </div>
 
         <!-- Desktop Auth Buttons -->
-        <div class="hidden md:block relative" x-data="{ open: false }">
+        <div class="hidden md:block">
             @guest
                 <a href="{{ route('login') }}"
                     class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full">
@@ -49,30 +49,36 @@
             @endguest
 
             @auth
-                <button @click="open = !open"
-                    class="bg-red-600 text-white px-4 py-2 rounded-full flex items-center font-semibold">
-                    <i class="fas fa-user mr-2"></i> {{ Auth::user()->name }}
-                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
+                <div class="flex items-center gap-3">
+                    <x-notification-bell />
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open"
+                            class="bg-red-600 text-white px-4 py-2 rounded-full flex items-center font-semibold">
+                            <i class="fas fa-user mr-2"></i> {{ Auth::user()->name }}
+                            <svg class="w-4 h-4 ml-2 transition-transform duration-200"
+                                :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                <div x-show="open" @click.outside="open = false" x-transition
-                    class="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg z-50">
-                    @role('admin|penulis|owner')
-                        <a href="{{ route('dashboard') }}"
-                            class="block px-4 py-2 hover:bg-gray-100 font-semibold">Dashboard</a>
-                    @endrole
+                        <div x-show="open" @click.outside="open = false" x-transition
+                            class="absolute right-0 top-full mt-2 w-48 rounded-lg bg-white shadow-lg ring-1 ring-gray-200 overflow-hidden z-50">
+                            @role('admin|penulis|owner')
+                                <a href="{{ route('dashboard') }}"
+                                    class="block px-4 py-2 hover:bg-gray-100 font-semibold">Dashboard</a>
+                            @endrole
 
-                    @role('buyer')
-                        <a href="{{ route('carts.index') }}" class="block px-4 py-2 hover:bg-gray-100 font-semibold">Cart</a>
-                        <a href="{{ route('product_transactions.index') }}"
-                            class="block px-4 py-2 hover:bg-gray-100 font-semibold">Status Pembelian</a>
-                    @endrole
+                            @role('buyer')
+                                <a href="{{ route('carts.index') }}" class="block px-4 py-2 hover:bg-gray-100 font-semibold">Cart</a>
+                                <a href="{{ route('product_transactions.index') }}"
+                                    class="block px-4 py-2 hover:bg-gray-100 font-semibold">Status Pembelian</a>
+                            @endrole
 
-                    <x-logout-confirm class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold">
-                        Logout
-                    </x-logout-confirm>
+                            <x-logout-confirm class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold">
+                                Logout
+                            </x-logout-confirm>
+                        </div>
+                    </div>
                 </div>
             @endauth
         </div>

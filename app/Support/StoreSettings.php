@@ -59,6 +59,11 @@ class StoreSettings
         return (string) self::get('agenweb_origin_city_id', '');
     }
 
+    public static function agenWebOriginPostalCode(): string
+    {
+        return (string) self::get('agenweb_origin_postal_code', '');
+    }
+
     public static function agenWebCityList(): array
     {
         $list = self::get('agenweb_city_list', []);

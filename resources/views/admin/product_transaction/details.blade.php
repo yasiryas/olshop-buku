@@ -13,25 +13,6 @@
 
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    {{ session('error') }}
-                </div>
-            @endif
-            @if (session('wa_link'))
-                <div class="bg-green-50 border border-green-300 px-4 py-3 rounded-lg mb-6 flex items-center justify-between gap-4">
-                    <p class="text-green-800 text-sm">Notifikasi WhatsApp siap dikirim ke pembeli.</p>
-                    <a href="{{ session('wa_link') }}" target="_blank"
-                        class="shrink-0 font-semibold text-sm bg-green-500 text-white py-1.5 px-3 rounded-full hover:bg-green-700">
-                        <i class="fab fa-whatsapp mr-1"></i> Kirim via WhatsApp
-                    </a>
-                </div>
-            @endif
 
             <div class="bg-white flex flex-col gap-y-5 p-10 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="item-card flex gap-y-3 flex-col md:flex-row justify-between md:items-center">
@@ -43,9 +24,9 @@
                     </div>
                     <div>
                         <p class="text-base text-slate-500">Tanggal</p>
-                        <h3 class="text-xl font-bold text-indigo-900">{{ $product_transaction->created_at->format('d F Y') }}</h3>
+                        <h3 class="text-xl font-bold text-indigo-900">{{ $product_transaction->created_at->idLong() }}</h3>
                     </div>
-                    <span class="font-bold py-1 px-5 rounded-full w-fit text-white {{ $product_transaction->statusBadgeColor() }}">
+                    <span class="font-bold py-1 px-5 rounded-full w-fit {{ $product_transaction->statusBadgeColor() }}">
                         {{ $product_transaction->statusLabel() }}
                     </span>
                 </div>
@@ -135,26 +116,18 @@
                         </div>
                         <div class="item-card flex flex-row justify-between items-center">
                             <div>
-                                <p class="text-base text-slate-500">Address</p>
+                                <p class="text-base text-slate-500">Penerima</p>
+                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->recipient_name ?? $product_transaction->user?->name }}</h3>
+                                <p class="text-base text-slate-500">{{ $product_transaction->phone_number }}</p>
+                            </div>
+                        </div>
+                        <div class="item-card flex flex-row justify-between items-center">
+                            <div>
+                                <p class="text-base text-slate-500">Alamat</p>
                                 <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->address }}</h3>
-                            </div>
-                        </div>
-                        <div class="item-card flex flex-row justify-between items-center">
-                            <div>
-                                <p class="text-base text-slate-500">City</p>
-                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->city }}</h3>
-                            </div>
-                        </div>
-                        <div class="item-card flex flex-row justify-between items-center">
-                            <div>
-                                <p class="text-base text-slate-500">Post Code</p>
-                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->post_code }}</h3>
-                            </div>
-                        </div>
-                        <div class="item-card flex flex-row justify-between items-center">
-                            <div>
-                                <p class="text-base text-slate-500">Phone Number</p>
-                                <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->phone_number }}</h3>
+                                <p class="text-base text-slate-500">
+                                    {{ trim(implode(', ', array_filter([$product_transaction->district, $product_transaction->city, $product_transaction->province, $product_transaction->post_code]))) }}
+                                </p>
                             </div>
                         </div>
                         <div class="item-card flex flex-row justify-between items-center">
@@ -166,8 +139,15 @@
                     </div>
                     <div class="flex flex-col gap-y-5 col-span-2 items-center">
                         <h3 class="text-xl font-bold text-indigo-900">Proof of Payment</h3>
-                        <img src="{{ Storage::url($product_transaction->proof) }}" alt=""
-                            class="w-[300px] bg-white-500 h-[400px] object-contain">
+                        @if ($product_transaction->proof)
+                            <img src="{{ Storage::url($product_transaction->proof) }}" alt=""
+                                class="w-[300px] bg-white-500 h-[400px] object-contain">
+                        @else
+                            <div class="w-[300px] h-[200px] text-center text-gray-400 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2">
+                                <i class="fas fa-camera text-3xl"></i>
+                                <p class="text-sm">Belum ada bukti pembayaran.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -225,8 +205,9 @@
             <p class="mt-1 text-sm text-gray-600">Alasan penolakan akan dikirim ke pembeli.</p>
             <div class="mt-6">
                 <x-input-label for="rejection_note" value="Alasan" />
-                <textarea name="rejection_note" id="rejection_note" rows="3" required
-                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full"></textarea>
+                <textarea name="rejection_note" id="rejection_note" rows="5" required
+                    class="border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-md shadow-sm w-full resize-y"
+                    placeholder="Tuliskan alasan penolakan secara lengkap agar pembeli mengerti..."></textarea>
             </div>
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">Batal</x-secondary-button>

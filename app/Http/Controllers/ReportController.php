@@ -2,71 +2,130 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\ProductTransaction;
+use App\Models\StockMutation;
 use App\Models\TransactionDetail;
-use App\Support\StoreSettings;
 use App\Support\XlsxWriter;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
 
 class ReportController extends Controller
 {
-    private const EXPORT_TYPES = ['sales', 'daily', 'stock'];
-
     public function index(Request $request)
     {
         [$from, $to] = $this->resolveRange($request);
 
         $data = $this->reportData($from, $to);
 
-        return view('admin.reports.index', [
+        $viewData = [
             'from' => $from,
             'to' => $to,
-            'lowStockThreshold' => StoreSettings::lowStockThreshold(),
             ...$data,
-        ]);
+        ];
+
+        if ($request->ajax()) {
+            return view('admin.partials.report_results', $viewData);
+        }
+
+        return view('admin.reports.index', $viewData);
     }
 
     public function export(Request $request)
     {
         [$from, $to] = $this->resolveRange($request);
 
-        $type = $request->query('type', 'sales');
-        if (!in_array($type, self::EXPORT_TYPES, true)) {
-            abort(404);
-        }
-
         $data = $this->reportData($from, $to);
-        $lowStockThreshold = StoreSettings::lowStockThreshold();
-        $rows = match ($type) {
-            'sales' => $data['productSales']->map(fn ($row) => [
+        $period = Carbon::parse($from)->format('d M Y') . ' s/d ' . Carbon::parse($to)->format('d M Y');
+        $average = $data['paidOrderCount'] > 0 ? round($data['revenue'] / $data['paidOrderCount']) : 0;
+
+        $productRows = $data['productSales']
+            ->map(fn ($row) => [
                 $row->product->name ?? 'Produk',
                 $row->product->category->name ?? '-',
+                (int) $row->product->price,
                 (int) $row->total_qty,
                 (int) $row->total_revenue,
-            ]),
-            'daily' => $data['dailySales']->map(fn ($row) => [
-                \Carbon\Carbon::parse($row->date)->format('Y-m-d'),
+            ])
+            ->push([
+                'TOTAL',
+                '',
+                '',
+                (int) $data['productSales']->sum('total_qty'),
+                (int) $data['productSales']->sum('total_revenue'),
+            ])
+            ->toArray();
+
+        $dailyRows = $data['dailySales']
+            ->map(fn ($row) => [
+                \Carbon\Carbon::parse($row->date)->format('d M Y'),
                 (int) $row->total_orders,
+                (int) $row->paid_orders,
                 (int) $row->revenue,
-            ]),
-            'stock' => $data['stockReport']->map(fn ($row) => [
+            ])
+            ->push([
+                'TOTAL',
+                (int) $data['dailySales']->sum('total_orders'),
+                (int) $data['dailySales']->sum('paid_orders'),
+                (int) $data['dailySales']->sum('revenue'),
+            ])
+            ->toArray();
+
+        $mutationRows = $data['mutationReport']
+            ->map(fn ($row) => [
                 $row['name'],
                 $row['category'] ?? '-',
-                (int) $row['stock'],
-                $row['stock'] <= $lowStockThreshold ? 'Menipis' : 'Aman',
-            ]),
-        };
+                (int) $row['in'],
+                (int) $row['out'],
+                (int) $row['net'],
+            ])
+            ->push([
+                'TOTAL',
+                '',
+                (int) $data['mutationReport']->sum('in'),
+                (int) $data['mutationReport']->sum('out'),
+                (int) $data['mutationReport']->sum('net'),
+            ])
+            ->toArray();
 
-        $columns = match ($type) {
-            'sales' => ['Produk', 'Kategori', 'Qty Terjual', 'Revenue'],
-            'daily' => ['Tanggal', 'Order', 'Revenue'],
-            'stock' => ['Produk', 'Kategori', 'Stok', 'Status'],
-        };
+        $summaryRows = [
+            ['Periode', $period],
+            ['Pendapatan', 'Rp ' . number_format($data['revenue'])],
+            ['Total Pesanan', (string) $data['orderCount']],
+            ['Pesanan Terbayar', (string) $data['paidOrderCount']],
+            ['Rata-rata / Pesanan', 'Rp ' . number_format($average)],
+            ['Produk Terjual', number_format((int) $data['productSales']->sum('total_qty')) . ' Pcs'],
+            ['Hari Transaksi', (string) $data['dailySales']->count() . ' hari'],
+        ];
 
-        return $this->downloadXlsx("laporan-{$type}-{$from}-{$to}.xlsx", $columns, $rows);
+        $sheets = [
+            [
+                'name' => 'Ringkasan',
+                'title' => 'Ringkasan Laporan Wigati Buku',
+                'columns' => ['Keterangan', 'Nilai'],
+                'rows' => $summaryRows,
+            ],
+            [
+                'name' => 'Penjualan per Produk',
+                'title' => "Laporan Wigati Buku - Penjualan per Produk ($period)",
+                'columns' => ['Produk', 'Kategori', 'Harga Satuan', 'Qty Terjual', 'Revenue'],
+                'rows' => $productRows,
+            ],
+            [
+                'name' => 'Penjualan Harian',
+                'title' => "Laporan Wigati Buku - Penjualan Harian ($period)",
+                'columns' => ['Tanggal', 'Order', 'Order Dibayar', 'Revenue'],
+                'rows' => $dailyRows,
+            ],
+            [
+                'name' => 'Riwayat Mutasi Stok',
+                'title' => "Laporan Wigati Buku - Riwayat Mutasi Stok ($period)",
+                'columns' => ['Produk', 'Kategori', 'Masuk', 'Keluar', 'Bersih'],
+                'rows' => $mutationRows,
+            ],
+        ];
+
+        return $this->downloadXlsx("Laporan-Wigati-Buku_{$from}_sd_{$to}.xlsx", $sheets);
     }
 
     private function resolveRange(Request $request): array
@@ -95,7 +154,10 @@ class ReportController extends Controller
         $paidOrderCount = (clone $transactions)->whereIn('status', ProductTransaction::PAID_STATUSES)->count();
 
         $dailySales = (clone $transactions)
-            ->selectRaw('DATE(created_at) as date, COUNT(*) as total_orders, SUM(CASE WHEN status IN (?, ?, ?, ?) THEN total_amount ELSE 0 END) as revenue', ProductTransaction::PAID_STATUSES)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as total_orders, '
+                . 'SUM(CASE WHEN status IN (?, ?, ?, ?) THEN 1 ELSE 0 END) as paid_orders, '
+                . 'SUM(CASE WHEN status IN (?, ?, ?, ?) THEN total_amount ELSE 0 END) as revenue',
+                [...ProductTransaction::PAID_STATUSES, ...ProductTransaction::PAID_STATUSES])
             ->groupBy('date')
             ->orderBy('date')
             ->get();
@@ -107,24 +169,31 @@ class ReportController extends Controller
             ->orderByDesc('total_qty')
             ->get();
 
-        $stockReport = Product::with('category')
-            ->select(['id', 'name', 'category_id'])
-            ->withStock()
-            ->orderByRaw('stock_in - stock_out')
+        $mutationReport = StockMutation::with('product.category')
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->get()
-            ->map(fn ($product) => [
-                'name' => $product->name,
-                'category' => $product->category?->name,
-                'stock' => $product->stock,
-            ])
+            ->groupBy('product_id')
+            ->map(function ($rows) {
+                $product = $rows->first()->product;
+                $stockIn = (int) $rows->where('type', 'in')->sum('quantity');
+                $stockOut = (int) $rows->where('type', 'out')->sum('quantity');
+
+                return [
+                    'name' => $product->name ?? 'Produk',
+                    'category' => $product->category?->name,
+                    'in' => $stockIn,
+                    'out' => $stockOut,
+                    'net' => $stockIn - $stockOut,
+                ];
+            })
             ->values();
 
-        return compact('revenue', 'orderCount', 'paidOrderCount', 'dailySales', 'productSales', 'stockReport');
+        return compact('revenue', 'orderCount', 'paidOrderCount', 'dailySales', 'productSales', 'mutationReport');
     }
 
-    private function downloadXlsx(string $filename, array $columns, Collection $rows)
+    private function downloadXlsx(string $filename, array $sheets)
     {
-        $content = XlsxWriter::create('Laporan', $columns, $rows->toArray());
+        $content = XlsxWriter::createMulti($sheets);
 
         return Response::make($content, 200, [
             'Content-Type' => XlsxWriter::mime(),

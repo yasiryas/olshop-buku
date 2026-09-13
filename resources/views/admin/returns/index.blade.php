@@ -1,41 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-row w-full justify-between items-center">
+        <div class="flex flex-col md:flex-row w-full justify-between items-start md:items-center gap-3">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Retur / Pengembalian') }}
             </h2>
-            <form method="GET" action="{{ route('admin.returns.index') }}" class="flex gap-x-3"
+            <form method="GET" action="{{ route('admin.returns.index') }}"
                 x-data="searchableList('{{ route('admin.returns.index') }}', 'results-returns')"
                 @submit.prevent="search()">
                 <input type="text" name="search" placeholder="Cari retur, order, pembeli..." value="{{ request('search') }}"
                     x-model="keyword" @input.debounce.500ms="search()"
-                    class="border-2 text-slate-400 rounded-full px-4 py-2">
+                    class="border-2 border-gray-300 text-gray-700 rounded-full px-4 py-2 text-sm">
             </form>
         </div>
     </x-slot>
 
     <div class="py-12" x-data="{ approveReturn: null, rejectReturn: null }">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    {{ session('error') }}
-                </div>
-            @endif
-            @if ($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    <ul class="list-disc list-inside text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <div id="results-returns">
                 @include('admin.partials.returns_list')
             </div>

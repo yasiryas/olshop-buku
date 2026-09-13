@@ -1,19 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-row w-full justify-between items-center">
+        <div class="flex flex-col md:flex-row w-full justify-between items-start md:items-center gap-3">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Manage product') }}
             </h2>
-            <form method="GET" action="{{ route('admin.products.index') }}" class="flex gap-x-3"
-                x-data="searchableList('{{ route('admin.products.index') }}', 'results-products')"
-                @submit.prevent="search()">
-                <input type="text" name="search" placeholder="Search products..." value="{{ request('search') }}"
-                    x-model="keyword" @input.debounce.500ms="search()"
-                    class="border-2 text-slate-400 rounded-full px-4 py-2">
-            </form>
-            <button type="button" x-data="" @click="$dispatch('open-modal', 'add-product')"
-                class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Add
-                product</button>
+            <div class="flex flex-wrap items-center gap-2">
+                <form method="GET" action="{{ route('admin.products.index') }}" class="flex"
+                    x-data="searchableList('{{ route('admin.products.index') }}', 'results-products')"
+                    @submit.prevent="search()">
+                    <input type="text" name="search" placeholder="Search products..." value="{{ request('search') }}"
+                        x-model="keyword" @input.debounce.500ms="search()"
+                        class="border-2 border-gray-300 text-gray-700 rounded-full px-4 py-2 text-sm">
+                </form>
+                <button type="button" x-data="" @click="$dispatch('open-modal', 'add-product')"
+                    class="font-semibold py-2 px-4 rounded-full text-white bg-indigo-700">Add
+                    product</button>
+            </div>
         </div>
     </x-slot>
 
@@ -119,7 +121,8 @@
                     <div class="mt-4">
                         <x-input-label for="category" :value="__('Category')" />
                         <select name="category_id" id="category_id"
-                            class="py-2 rounded-lg w-full border-slate-300">
+                            class="py-2 rounded-lg w-full border-slate-300"
+                            @if (($categories ?? collect())->count() > 4) x-select2 @endif>
                             <option value="">Select Category</option>
                             @forelse ($categories ?? [] as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
@@ -185,14 +188,15 @@
                         </div>
                         <div class="mt-4">
                             <x-input-label for="category" :value="__('Category')" />
-                            <select name="category_id" id="category_id" x-model="item.category_id"
-                                class="py-2 rounded-lg w-full border-slate-300">
-                                <option value="">Select Category</option>
-                                @forelse ($categories ?? [] as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @empty
-                                @endforelse
-                            </select>
+<select name="category_id" id="category_id" x-model="item.category_id"
+                            class="py-2 rounded-lg w-full border-slate-300"
+                            @if (($categories ?? collect())->count() > 4) x-select2 @endif>
+                            <option value="">Select Category</option>
+                            @forelse ($categories ?? [] as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @empty
+                            @endforelse
+                        </select>
                         </div>
                         <div class="mt-4">
                             <x-input-label for="about" :value="__('About')" />

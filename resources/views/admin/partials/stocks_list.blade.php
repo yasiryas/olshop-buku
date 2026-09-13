@@ -1,46 +1,35 @@
-<div class="bg-white flex flex-col gap-y-5 p-10 shadow-sm sm:rounded-lg">
-    @forelse($products as $product)
-        <div class="item-card flex flex-row justify-between items-center border-b pb-4">
-            <div class="flex flex-row items-center gap-x-3 w-64">
-                <img src="{{ Storage::url($product->photo) }}"
-                    class="w-[60px] h-[60px] rounded object-cover">
-                <div>
-                    <h3 class="text-lg font-bold text-indigo-900">{{ $product->name }}</h3>
-                    <p class="text-sm text-slate-500">
-                        Rp {{ number_format($product->price) }}
-                    </p>
+<x-ui.table :headers="['Produk', 'Kategori', 'Harga', 'Stok', 'Aksi']"
+    :footer="$products->hasPages() ? $products->appends(['search' => $search])->links() : null">
+    @forelse ($products as $product)
+        <tr>
+            <td class="cell">
+                <div class="flex items-center gap-3">
+                    <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}"
+                        class="w-10 h-10 object-cover rounded">
+                    <span class="font-medium text-gray-900">{{ $product->name }}</span>
                 </div>
-            </div>
-            <p class="w-40 text-base text-slate-500">
-                {{ $product->category->name }}
-            </p>
-            <div class="w-32 text-center">
-                <p class="text-xs text-slate-500">Stok Saat Ini</p>
-                <p class="text-xl font-bold text-indigo-600">
-                    {{ $product->stock }}
-                </p>
-            </div>
-
-            <div class="flex gap-x-3">
-                <button @click="openModal('{{ $product->id }}','in')"
-                    class="font-semibold py-1.5 px-3 rounded-full text-white bg-blue-600 hover:bg-blue-700">
-                    Stock In
-                </button>
-
-                <button @click="openModal('{{ $product->id }}','out')"
-                    class="font-bold py-2 px-4 rounded-full text-white bg-yellow-400 hover:bg-yellow-500">
-                    Stock Out
-                </button>
-            </div>
-
-        </div>
-
+            </td>
+            <td class="cell cell-soft">{{ $product->category?->name ?? '-' }}</td>
+            <td class="cell">Rp {{ number_format($product->price) }}</td>
+            <td class="cell">
+                <span class="font-bold text-indigo-700">{{ $product->stock }}</span>
+            </td>
+            <td class="cell">
+                <div class="flex items-center gap-2">
+                    <x-ui.pill as="button" type="button" color="btn-pill-primary"
+                        @click="openModal('{{ $product->id }}','in')">
+                        <i class="fas fa-arrow-down text-xs"></i> Stock In
+                    </x-ui.pill>
+                    <x-ui.pill as="button" type="button" color="btn-pill-danger"
+                        @click="openModal('{{ $product->id }}','out')">
+                        <i class="fas fa-arrow-up text-xs"></i> Stock Out
+                    </x-ui.pill>
+                </div>
+            </td>
+        </tr>
     @empty
-        <p class="text-center text-slate-600">
-            Ups, belum ada produk. <b>Coba tambahkan produk terlebih dahulu!</b>
-        </p>
+        <tr>
+            <td colspan="5" class="cell text-center text-gray-500">Belum ada produk.</td>
+        </tr>
     @endforelse
-</div>
-<div class="mt-5">
-    {{ $products->appends(['search' => $search])->links() }}
-</div>
+</x-ui.table>

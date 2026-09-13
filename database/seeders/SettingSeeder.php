@@ -28,6 +28,7 @@ class SettingSeeder extends Seeder
             'wa_contact' => '6285713878266',
             'agenweb_api_key' => '',
             'agenweb_origin_city_id' => '',
+            'agenweb_origin_postal_code' => '',
             'agenweb_city_list' => [],
             'low_stock_threshold' => 5,
         ];

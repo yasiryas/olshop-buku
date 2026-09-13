@@ -7,21 +7,6 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if ($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    <ul class="list-disc list-inside text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <div x-data="storeSettings">
                 <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-6">
                     @csrf
@@ -66,6 +51,12 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Kode Pos Toko (Asal)</label>
+                                    <input type="text" x-model="agenwebOriginPostalCode" name="agenweb_origin_postal_code"
+                                        placeholder="Kode pos kecamatan toko, contoh: 55651 (Wates, Kulon Progo)"
+                                        class="w-full border rounded-lg px-4 py-2 text-sm">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -86,7 +77,7 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-semibold text-gray-800">Metode Pengiriman / Ongkir</h3>
                                 <button type="button" @click="addShipping()"
-                                    class="text-sm font-bold text-indigo-700 hover:text-indigo-900">+ Tambah Kurir</button>
+                                    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150">+ Tambah Kurir</button>
                             </div>
                             <div class="space-y-4">
                                 <template x-for="(row, i) in shipping" :key="i">
@@ -109,7 +100,7 @@
                                         </div>
                                         <div class="md:col-span-2 flex items-center justify-end">
                                             <button type="button" @click="removeShipping(i)"
-                                                class="text-sm text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+    class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-red-600 hover:bg-red-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150"><i class="fas fa-trash text-xs"></i></button>
                                         </div>
                                     </div>
                                 </template>
@@ -123,7 +114,7 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-semibold text-gray-800">Zona / Tarif per Kota</h3>
                                 <button type="button" @click="addZone()"
-                                    class="text-sm font-bold text-indigo-700 hover:text-indigo-900">+ Tambah Zona</button>
+                                    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150">+ Tambah Zona</button>
                             </div>
                             <p class="text-xs text-gray-500 mb-4">Biaya kurir per kota. Kota tanpa tarif khusus memakai nilai fallback kurir.</p>
                             <div class="space-y-4">
@@ -134,7 +125,7 @@
                                                 :name="`shipping_zones[${i}][city]`" placeholder="Nama kota"
                                                 class="w-full border rounded-lg px-3 py-2 text-sm">
                                             <button type="button" @click="removeZone(i)"
-                                                class="text-sm text-red-600 hover:text-red-800 shrink-0"><i class="fas fa-trash"></i></button>
+    class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-red-600 hover:bg-red-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 shrink-0"><i class="fas fa-trash text-xs"></i></button>
                                         </div>
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3" x-show="shipping.length">
                                             <template x-for="(curr, ci) in shipping" :key="ci">
@@ -159,7 +150,7 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-semibold text-gray-800">Metode Pembayaran</h3>
                                 <button type="button" @click="addPayment()"
-                                    class="text-sm font-bold text-indigo-700 hover:text-indigo-900">+ Tambah Metode</button>
+                                    class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150">+ Tambah Metode</button>
                             </div>
                             <div class="space-y-4">
                                 <template x-for="(row, i) in payment" :key="i">
@@ -188,7 +179,7 @@
                                         </div>
                                         <div class="md:col-span-1 flex items-center justify-end">
                                             <button type="button" @click="removePayment(i)"
-                                                class="text-sm text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+    class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white bg-red-600 hover:bg-red-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150"><i class="fas fa-trash text-xs"></i></button>
                                         </div>
                                     </div>
                                 </template>
@@ -211,6 +202,7 @@
         'payment' => $settings['payment_methods'] ?? [],
         'wa' => $settings['wa_contact'] ?? '',
         'agenweb_api_key' => $settings['agenweb_api_key'] ?? '',
+        'agenweb_origin_postal_code' => $settings['agenweb_origin_postal_code'] ?? '',
         'low_stock_threshold' => $settings['low_stock_threshold'] ?? 5,
     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
@@ -220,6 +212,7 @@
             Alpine.data('storeSettings', () => ({
                 wa: json.wa,
                 agenwebApiKey: json.agenweb_api_key ?? '',
+                agenwebOriginPostalCode: json.agenweb_origin_postal_code ?? '',
                 lowStockThreshold: json.low_stock_threshold,
                 shipping: (json.shipping || []).map(s => ({ ...s })),
                 zones: (json.zones || []).map(z => ({ city: z.city, costs: { ...(z.costs || {}) } })),

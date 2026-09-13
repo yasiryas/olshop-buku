@@ -1,4 +1,5 @@
-<x-layout-front title="Contact - Wigati Buku">
+<x-layout-front title="Kontak Kami - Wigati Buku"
+    description="Hubungi Wigati Buku melalui formulir kontak, telepon, WhatsApp, atau alamat toko. Kami siap membantu Anda.">
     {{-- herosection --}}
     <section class="py-20 px-10 space-x-6 container mx-auto flex items-center justify-between ">
         <div class="container mx-auto w-3/6 text-center">

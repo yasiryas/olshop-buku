@@ -13,6 +13,15 @@ use Illuminate\Support\Collection;
 
 class DashboardController extends Controller
 {
+    private const STATUS_CHART_COLORS = [
+        ProductTransaction::STATUS_PENDING => '#f97316',
+        ProductTransaction::STATUS_PROCESSING => '#3b82f6',
+        ProductTransaction::STATUS_SHIPPED => '#6366f1',
+        ProductTransaction::STATUS_COMPLETED => '#22c55e',
+        ProductTransaction::STATUS_REJECTED => '#ef4444',
+        ProductTransaction::STATUS_CANCELLED => '#9ca3af',
+        ProductTransaction::STATUS_RETURNED => '#a855f7',
+    ];
     public function index()
     {
         $user = auth()->user();
@@ -41,10 +50,14 @@ class DashboardController extends Controller
             ->get();
 
         $data = $stats;
+        $data['statusMetas'] = $this->statusMetas();
         $data['bestSellers'] = $bestSellers;
         $data['lowStockProducts'] = $this->lowStockProducts();
         $data['recentActivities'] = $this->recentActivities();
-        $data['transactions'] = ProductTransaction::with('user')->latest()->take(10)->get();
+        $data['transactions'] = ProductTransaction::with('user')
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 WHEN status = 'processing' THEN 1 ELSE 2 END, created_at DESC")
+            ->take(10)
+            ->get();
 
         return view('dashboard', $data);
     }
@@ -52,6 +65,7 @@ class DashboardController extends Controller
     private function adminDashboard()
     {
         $data = $this->transactionStats();
+        $data['statusMetas'] = $this->statusMetas();
         $data['statusCounts'] = ProductTransaction::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status')
@@ -92,6 +106,23 @@ class DashboardController extends Controller
         ]);
     }
 
+    private function statusMetas(): array
+    {
+        $counts = ProductTransaction::selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        return array_map(
+            fn (string $status) => [
+                ProductTransaction::STATUS_LABELS[$status],
+                $counts[$status] ?? 0,
+                self::STATUS_CHART_COLORS[$status],
+            ],
+            array_keys(ProductTransaction::STATUS_LABELS)
+        );
+    }
+
     private function transactionStats(): array
     {
         $totalRevenue = ProductTransaction::whereIn('status', ProductTransaction::PAID_STATUSES)->sum('total_amount');
@@ -99,11 +130,12 @@ class DashboardController extends Controller
         $pendingOrders = ProductTransaction::where('status', ProductTransaction::STATUS_PENDING)->count();
         $completedOrders = ProductTransaction::where('status', ProductTransaction::STATUS_COMPLETED)->count();
 
-        $monthlyData = ProductTransaction::selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
-            ->whereIn('status', ProductTransaction::PAID_STATUSES)
+        $monthlyData = ProductTransaction::whereIn('status', ProductTransaction::PAID_STATUSES)
             ->whereYear('created_at', date('Y'))
-            ->groupBy('month')
-            ->get();
+            ->get(['created_at', 'total_amount'])
+            ->groupBy(fn ($t) => $t->created_at->format('n'))
+            ->map(fn ($rows, $month) => (object) ['month' => (int) $month, 'total' => $rows->sum('total_amount')])
+            ->values();
 
         return compact('totalRevenue', 'totalOrders', 'pendingOrders', 'completedOrders', 'monthlyData');
     }

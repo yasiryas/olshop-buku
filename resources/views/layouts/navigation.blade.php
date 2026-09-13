@@ -27,15 +27,15 @@
                             :active="request()->routeIs('admin.products.*') || request()->routeIs('admin.categories.*') || request()->routeIs('stocks.*')">
                             <x-dropdown-link :href="route('admin.products.index')"
                                 :class="request()->routeIs('admin.products.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                {{ __('Manage Products') }}
+                                {{ __('Kelola Produk') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('admin.categories.index')"
                                 :class="request()->routeIs('admin.categories.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                {{ __('Manage Categories') }}
+                                {{ __('Kelola Kategori') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('stocks.index')"
                                 :class="request()->routeIs('stocks.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                {{ __('Manage Logistics') }}
+                                {{ __('Kelola Logistik') }}
                             </x-dropdown-link>
                         </x-nav-dropdown>
                     @endrole
@@ -45,7 +45,7 @@
                             :active="request()->routeIs('product_transactions.*') || request()->routeIs('admin.returns.*')">
                             <x-dropdown-link :href="route('product_transactions.index')"
                                 :class="request()->routeIs('product_transactions.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                {{ __('Orders') }}
+                                {{ __('Pesanan') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('admin.returns.index')"
                                 :class="request()->routeIs('admin.returns.*') ? 'text-gray-900 bg-gray-50' : ''">
@@ -59,7 +59,7 @@
                             :active="request()->routeIs('admin.articles.*')">
                             <x-dropdown-link :href="route('admin.articles.index')"
                                 :class="request()->routeIs('admin.articles.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                {{ __('Manage Article') }}
+                                {{ __('Kelola Artikel') }}
                             </x-dropdown-link>
                         </x-nav-dropdown>
                     @endrole
@@ -86,6 +86,9 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <div class="me-4">
+                    <x-notification-bell />
+                </div>
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
@@ -110,12 +113,12 @@
                             </x-dropdown-link>
                         @endrole
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Profil') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
                         <x-logout-confirm :class="'block w-full text-left px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out'">
-                            {{ __('Log Out') }}
+                            {{ __('Keluar') }}
                         </x-logout-confirm>
                     </x-slot>
                 </x-dropdown>
@@ -141,23 +144,23 @@
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('front.index')" :active="request()->routeIs('front.index')">
-                {{ __('Store') }}
+                {{ __('Toko') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
             @role('owner|admin')
                 <x-responsive-nav-link :href="route('admin.products.index')">
-                    {{ __('Manage Products') }}
+                    {{ __('Kelola Produk') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.categories.index')">
-                    {{ __('Manage Categories') }}
+                    {{ __('Kelola Kategori') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('stocks.index')">
-                    {{ __('Manage Logistics') }}
+                    {{ __('Kelola Logistik') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('product_transactions.index')">
-                    {{ __('Orders') }}
+                    {{ __('Pesanan') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.returns.index')">
                     {{ __('Retur') }}
@@ -168,7 +171,7 @@
             @endrole
             @role('owner|penulis')
                 <x-responsive-nav-link :href="route('admin.articles.index')">
-                    {{ __('Manage Article') }}
+                    {{ __('Kelola Artikel') }}
                 </x-responsive-nav-link>
             @endrole
             @role('owner')
@@ -192,12 +195,12 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Profil') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
                 <x-logout-confirm :class="'block w-full text-left px-4 py-2 text-base leading-6 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out'">
-                            {{ __('Log Out') }}
+                            {{ __('Keluar') }}
                         </x-logout-confirm>
             </div>
         </div>

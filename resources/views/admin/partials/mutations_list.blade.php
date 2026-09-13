@@ -1,39 +1,20 @@
-<div class="bg-white flex flex-col gap-y-5 p-10 shadow-sm sm:rounded-lg">
+<x-ui.table :headers="['Produk', 'Tipe', 'Jumlah', 'Tanggal', 'Deskripsi']"
+    :footer="$mutations->hasPages() ? $mutations->appends(['search' => $search])->links() : null">
     @forelse ($mutations as $m)
-        <div class="item-card flex flex-row justify-between items-center border-b pb-4">
-            <div class="flex flex-row items-center gap-x-3 w-64">
-                <div>
-                    <h3 class="text-lg font-bold text-indigo-900">{{ $m->product->name }}</h3>
-                </div>
-            </div>
-            <p class="w-40 text-base text-slate-500">
-                Tanggal: <br>{{ $m->created_at }}
-            </p>
-            <div class="w-32 text-center">
-                <p class="text-xs text-slate-500">Tipe</p>
-                <p class="font-bold {{ $m->type == 'in' ? 'text-indigo-600' : 'text-yellow-400' }}">
+        <tr>
+            <td class="cell"><span class="font-medium text-gray-900">{{ $m->product->name }}</span></td>
+            <td class="cell">
+                <x-ui.badge :class="$m->type === 'in' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'">
                     {{ strtoupper($m->type) }}
-                </p>
-            </div>
-            <div class="w-32 text-center">
-                <p class="text-xs text-slate-500">Jumlah</p>
-                <p class="text-xl font-bold text-indigo-600">
-                    {{ $m->quantity }}
-                </p>
-            </div>
-            <div class="w-64 text-center">
-                <p class="text-xs text-slate-500">Deskripsi</p>
-                <p class="text-base text-indigo-900">
-                    {{ $m->description }}
-                </p>
-            </div>
-        </div>
+                </x-ui.badge>
+            </td>
+            <td class="cell"><span class="font-bold text-indigo-700">{{ $m->quantity }}</span></td>
+            <td class="cell cell-soft">{{ $m->created_at->idDateTime() }}</td>
+            <td class="cell cell-soft whitespace-normal">{{ $m->description ?? '-' }}</td>
+        </tr>
     @empty
-        <p class="text-center text-slate-600">
-            Ups, belum ada history stock.
-        </p>
+        <tr>
+            <td colspan="5" class="cell text-center text-gray-500">Belum ada history stock.</td>
+        </tr>
     @endforelse
-</div>
-<div class="mt-5">
-    {{ $mutations->appends(['search' => $search])->links() }}
-</div>
+</x-ui.table>
