@@ -11,6 +11,7 @@ use App\Support\StoreSettings;
 use App\Support\AgenWebShipping;
 use App\Support\WaNotifier;
 use App\Support\OrderNotifications;
+use App\Support\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -139,7 +140,7 @@ class ProductTransactionController extends Controller
             'address_label' => 'nullable|string|max:30',
             'saved_address_id' => 'nullable|integer',
             'notes' => 'max:65535',
-            'proof' => 'nullable|image|mimes:png,jpg,jpeg',
+            'proof' => 'nullable|image|mimes:png,jpg,jpeg|max:5120',
             'shipping_method' => $agenWebConfigured
                 ? 'required|in:' . implode(',', array_column($shippingRates, 'rate_id'))
                 : 'required|in:' . implode(',', array_column($shippingRates, 'code')),
@@ -215,6 +216,10 @@ class ProductTransactionController extends Controller
             DB::commit();
 
             OrderNotifications::orderCreated($newTransaction);
+            AuditLogger::log('order.created', $newTransaction, [
+                'total' => $grandTotal,
+                'method' => $validated['payment_method'],
+            ]);
 
             return redirect()->route('product_transactions.index');
         } catch (\Exception $e) {
@@ -357,6 +362,7 @@ class ProductTransactionController extends Controller
             DB::commit();
 
             OrderNotifications::orderStatusChanged($transaction);
+            AuditLogger::log('order.approved', $transaction);
 
             $waMessage = "Halo {$transaction->user->name}, pesanan #{$transaction->id} Anda telah kami terima dan sedang diproses. Terima kasih sudah berbelanja di Wigati Buku.";
 
@@ -409,6 +415,7 @@ class ProductTransactionController extends Controller
         $waMessage = "Halo {$transaction->user->name}, pesanan #{$transaction->id} sudah dikirim via {$transaction->shipping_method}. Nomor resi: {$validated['tracking_number']}. Terima kasih!";
 
         OrderNotifications::orderStatusChanged($transaction);
+        AuditLogger::log('order.shipped', $transaction, ['tracking' => $validated['tracking_number']]);
 
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
@@ -450,6 +457,7 @@ class ProductTransactionController extends Controller
         $waMessage = "Halo {$transaction->user->name}, pesanan #{$transaction->id} telah selesai. Terima kasih sudah berbelanja di Wigati Buku.";
 
         OrderNotifications::orderStatusChanged($transaction);
+        AuditLogger::log('order.completed', $transaction);
 
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
@@ -496,6 +504,7 @@ class ProductTransactionController extends Controller
         $waMessage = "Halo {$transaction->user->name}, mohon maaf pesanan #{$transaction->id} terpaksa kami tolak. Alasan: {$validated['rejection_note']}.";
 
         OrderNotifications::orderStatusChanged($transaction);
+        AuditLogger::log('order.rejected', $transaction);
 
         return redirect()
             ->route('product_transactions.show', $productTransaction->id)
@@ -552,6 +561,8 @@ class ProductTransactionController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
 
+        AuditLogger::log('order.cancelled', $transaction, ['from_status' => $statusBeforeCancel]);
+
         if (!$user->hasRole('buyer')) {
             OrderNotifications::orderStatusChanged($transaction);
         }
@@ -578,13 +589,14 @@ class ProductTransactionController extends Controller
         );
 
         $request->validate([
-            'proof' => 'required|image|mimes:png,jpg,jpeg',
+            'proof' => 'required|image|mimes:png,jpg,jpeg|max:5120',
         ]);
 
         $path = $request->file('proof')->store('payment_proofs', 'public');
         $productTransaction->update(['proof' => $path]);
 
         OrderNotifications::proofUploaded($productTransaction);
+        AuditLogger::log('order.proof_uploaded', $productTransaction);
 
         return back()->with('success', 'Bukti pembayaran berhasil diunggah. Pesanan akan diproses setelah diverifikasi.');
     }

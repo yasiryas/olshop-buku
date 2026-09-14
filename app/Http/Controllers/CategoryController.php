@@ -66,7 +66,7 @@ class CategoryController extends Controller
         //
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'icon' => 'required|image|mimes:jpeg,png,jpg,svg',
+            'icon' => 'required|image|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
 
         DB::beginTransaction();
@@ -115,7 +115,7 @@ class CategoryController extends Controller
         //
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'icon' => 'sometimes|image|mimes:jpeg,png,jpg,svg',
+            'icon' => 'sometimes|image|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
 
         DB::beginTransaction();

@@ -19,7 +19,7 @@
                 @else
                     <button type="submit" name="product_id" value="{{ $product->id }}"
                         class="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-full transition mt-4"><i
-                            class="fas fa-shopping-cart mr-2"></i>Add To Cart</button>
+                            class="fas fa-shopping-cart mr-2"></i>Tambah ke Keranjang</button>
                 @endif
             </form>
         </div>

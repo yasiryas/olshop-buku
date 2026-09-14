@@ -51,17 +51,17 @@ class StoreSettings
 
     public static function agenWebApiKey(): string
     {
-        return (string) self::get('agenweb_api_key', '');
+        return (string) (config('agenweb.api_key') ?: self::get('agenweb_api_key', ''));
     }
 
     public static function agenWebOriginCityId(): string
     {
-        return (string) self::get('agenweb_origin_city_id', '');
+        return (string) (config('agenweb.origin_city_id') ?: self::get('agenweb_origin_city_id', ''));
     }
 
     public static function agenWebOriginPostalCode(): string
     {
-        return (string) self::get('agenweb_origin_postal_code', '');
+        return (string) (config('agenweb.origin_postal_code') ?: self::get('agenweb_origin_postal_code', ''));
     }
 
     public static function agenWebCityList(): array

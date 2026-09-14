@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductReturn;
 use App\Models\ProductTransaction;
+use App\Support\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -99,6 +100,8 @@ class ProductReturnController extends Controller
             return redirect()->back()->with('error', 'Gagal memproses retur: ' . $e->getMessage());
         }
 
+        AuditLogger::log('return.approved', $productReturn);
+
         return redirect()->back()->with('success', 'Retur #' . $productReturn->id . ' disetujui, stok dikembalikan.');
     }
 
@@ -115,6 +118,8 @@ class ProductReturnController extends Controller
             'status' => ProductReturn::STATUS_REJECTED,
             'admin_note' => $validated['admin_note'],
         ]);
+
+        AuditLogger::log('return.rejected', $productReturn);
 
         return redirect()->back()->with('success', 'Pengajuan retur #' . $productReturn->id . ' ditolak.');
     }

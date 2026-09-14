@@ -82,7 +82,7 @@ class ProductController extends Controller
             'about' => 'required|string',
             'category_id' => 'required|integer',
             'price' => 'required|integer|min:1',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,svg',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,webp|max:4096',
         ]);
 
         DB::beginTransaction();
@@ -139,7 +139,7 @@ class ProductController extends Controller
             'about' => 'sometimes|string',
             'category_id' => 'sometimes|integer',
             'price' => 'sometimes|integer',
-            'photo' => 'sometimes|image|mimes:jpeg,png,jpg,svg',
+            'photo' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:4096',
         ]);
 
         DB::beginTransaction();

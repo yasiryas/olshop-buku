@@ -22,7 +22,7 @@
                         <h3 class="text-xl font-bold text-indigo-900">Rp {{ number_format($product_transaction->total_amount) }}</h3>
                     </div>
                     <div>
-                        <p class="text-base text-slate-500">Date</p>
+                        <p class="text-base text-slate-500">Tanggal</p>
                         <h3 class="text-xl font-bold text-indigo-900">{{ $product_transaction->created_at->idLong() }}</h3>
                     </div>
                     <span class="font-bold py-1 px-5 rounded-full w-fit {{ $product_transaction->statusBadgeColor() }}">
@@ -140,7 +140,7 @@
                         </div>
                         <div class="item-card flex flex-row justify-between items-center">
                             <div>
-                                <p class="text-base text-slate-500">Note</p>
+                                <p class="text-base text-slate-500">Catatan</p>
                                 <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->notes }}</h3>
                             </div>
                         </div>

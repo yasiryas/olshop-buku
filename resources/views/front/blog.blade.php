@@ -34,7 +34,7 @@
                         <h3 class="text-xl font-semibold mb-2" x-text="article.title"></h3>
                         <p class="text-gray-600 mb-4"
                             x-text="article.content.replace(/<[^>]*>?/gm, '').substring(0, 100) + '...'"></p>
-                        <a :href="`/article/${article.slug}`" class="text-red-600 hover:underline">Read More</a>
+                        <a :href="`/article/${article.slug}`" class="text-red-600 hover:underline">Baca Selengkapnya</a>
                     </div>
                 </template>
 

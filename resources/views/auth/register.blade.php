@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | Wigati Buku</title>
+    <title>Daftar | Wigati Buku</title>
     <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('/assets/css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
@@ -19,7 +19,7 @@
                 <img src="{{ asset('/assets/logo/logo-wigati.webp') }}" alt="" class="w-full">
             </a>
             <a href="{{ route('front.index') }}" class="text-red-600 font-semibold md:hidden">
-                <i class="fas fa-arrow-left mr-1"></i> Back
+                <i class="fas fa-arrow-left mr-1"></i> Kembali
             </a>
         </div>
     </nav>
@@ -31,38 +31,38 @@
             @csrf
             <div class="flex flex-col gap-5">
                 <p class="text-xl md:text-[22px] font-bold text-center md:text-left">
-                    Create New Account
+                    Buat Akun Baru
                 </p>
 
-                <!-- Full Name -->
+                <!-- Nama Lengkap -->
                 <div class="flex flex-col gap-2.5">
-                    <label for="name" class="text-base font-semibold">Name</label>
+                    <label for="name" class="text-base font-semibold">Nama</label>
                     <input type="text" name="name" id="fullname__"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Write your full name" required>
+                        placeholder="Tulis nama lengkap Anda" required>
                     @error('name')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Email Address -->
+                <!-- Email -->
                 <div class="flex flex-col gap-2.5">
-                    <label for="email" class="text-base font-semibold">Email Address</label>
+                    <label for="email" class="text-base font-semibold">Email</label>
                     <input type="email" name="email" id="email__"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Your email address" required>
+                        placeholder="Alamat email Anda" required>
                     @error('email')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Password -->
+                <!-- Kata Sandi -->
                 <div class="flex flex-col gap-2.5">
-                    <label for="password" class="text-base font-semibold">Password</label>
+                    <label for="password" class="text-base font-semibold">Kata Sandi</label>
                     <div class="relative">
                         <input type="password" name="password" id="password__"
                             class="w-full px-4 py-3 pr-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            placeholder="Protect your password" required>
+                            placeholder="Buat kata sandi" required>
                         <button type="button" data-toggle-for="password__"
                             class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <i class="fas fa-eye"></i>
@@ -73,13 +73,13 @@
                     @enderror
                 </div>
 
-                <!-- Confirm Password -->
+                <!-- Konfirmasi Kata Sandi -->
                 <div class="flex flex-col gap-2.5">
-                    <label for="password_confirmation" class="text-base font-semibold">Confirm Password</label>
+                    <label for="password_confirmation" class="text-base font-semibold">Konfirmasi Kata Sandi</label>
                     <div class="relative">
                         <input type="password" name="password_confirmation" id="confirm-password__"
                             class="w-full px-4 py-3 pr-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            placeholder="Confirm your password" required>
+                            placeholder="Ulangi kata sandi" required>
                         <button type="button" data-toggle-for="confirm-password__"
                             class="toggle-password-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <i class="fas fa-eye"></i>
@@ -92,26 +92,26 @@
 
                 <button type="submit"
                     class="inline-flex text-white font-bold text-base bg-red-600 hover:bg-red-700 rounded-full whitespace-nowrap px-[30px] py-3 justify-center items-center transition duration-300">
-                    Create My Account
+                    Buat Akun Saya
                 </button>
             </div>
         </form>
 
         <a href="{{ route('login') }}"
             class="font-semibold text-base mt-[30px] text-gray-600 hover:text-red-600 transition">
-            Already have an account? <span class="text-red-600 underline">Sign In</span>
+            Sudah punya akun? <span class="text-red-600 underline">Masuk</span>
         </a>
 
-        <!-- Back to Home -->
+        <!-- Kembali ke Beranda -->
         <a href="{{ route('front.index') }}"
             class="hidden md:inline-flex items-center font-semibold text-base mt-4 text-gray-600 hover:text-red-600 transition">
-            <i class="fas fa-arrow-left mr-2"></i> Back to Home
+            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Beranda
         </a>
     </div>
 
     <!-- Footer -->
     <footer class="bg-gray-700 text-white py-4 text-center">
-        <p class="text-sm">© {{ date('Y') }} Wigati Buku. All rights reserved.</p>
+        <p class="text-sm">© {{ date('Y') }} Wigati Buku. Semua hak dilindungi.</p>
     </footer>
 
     <script>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\AuditLogger;
 use Illuminate\Http\Request;
 
 class StaffController extends Controller
@@ -53,6 +54,8 @@ class StaffController extends Controller
 
         $user->assignRole($validated['role']);
 
+        AuditLogger::log('staff.created', $user, ['role' => $validated['role']]);
+
         return redirect()->route('admin.staff.index')->with('success', 'Staff baru berhasil ditambahkan.');
     }
 
@@ -64,6 +67,8 @@ class StaffController extends Controller
         $user->update([
             'is_active' => !$user->is_active,
         ]);
+
+        AuditLogger::log('staff.toggle_active', $user, ['active' => $user->is_active]);
 
         return redirect()->back()->with(
             'success',

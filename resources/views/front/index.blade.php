@@ -48,7 +48,7 @@
     {{-- product section --}}
     <section class="py-12 md:py-20 bg-gray-50 px-4 md:px-10" id="products">
         <div class="container mx-auto">
-            <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-10 text-gray-600">Featured Products</h2>
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-10 text-gray-600">Produk Unggulan</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 justify-center">
                 @forelse ($products as $product)
                     <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg text-center hover:scale-105 transition">
@@ -71,7 +71,7 @@
                             @else
                                 <button type="submit"
                                     class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 md:py-3 px-6 md:px-8 rounded-full transition mt-2 md:mt-4 w-full md:w-auto">
-                                    <i class="fas fa-shopping-cart mr-2"></i>Add To Cart
+                                    <i class="fas fa-shopping-cart mr-2"></i>Tambah ke Keranjang
                                 </button>
                             @endif
                         </form>
@@ -146,7 +146,7 @@
                         <h3 class="text-lg md:text-xl font-semibold mb-2">{{ $article->title }}</h3>
                         <p class="text-gray-600 mb-4"> {{ Str::limit(strip_tags($article->content), 100, '...') }}</p>
                         <a href="{{ route('front.article.details', $article->slug) }}"
-                            class="text-red-600 hover:underline block">Read More</a>
+                            class="text-red-600 hover:underline block">Baca Selengkapnya</a>
                     </div>
                 @endforeach
             </div>

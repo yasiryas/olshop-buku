@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'active' => \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
 
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         $middleware->validateCsrfTokens(except: [
             'logout',
         ]);

@@ -20,11 +20,11 @@
             <a href="#" class="w-[180px]"><img src="{{ asset('/assets/logo/logo-wigati.webp') }}"
                     alt=""></a>
             <div class="flex space-x-6 font-semibold">
-                <a href="#" class="hover:text-red-600">Home</a>
-                <a href="#" class="hover:text-red-600">Product</a>
+                <a href="#" class="hover:text-red-600">Beranda</a>
+                <a href="#" class="hover:text-red-600">Produk</a>
                 <a href="#" class="hover:text-red-600">Blog</a>
-                <a href="#" class="hover:text-red-600">About Us</a>
-                <a href="#" class="hover:text-red-600">Contact</a>
+                <a href="#" class="hover:text-red-600">Tentang Kami</a>
+                <a href="#" class="hover:text-red-600">Kontak</a>
             </div>
 
             {{-- button --}}
@@ -33,7 +33,7 @@
                 @guest
                     <a href="{{ route('login') }}"
 class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-full">
-                        <i class="fas fa-sign-in-alt mr-2"></i> Login</a>
+                        <i class="fas fa-sign-in-alt mr-2"></i> Masuk</a>
                 @endguest
                 @auth
                     <button @click="open = !open"
@@ -111,7 +111,7 @@ class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-fu
     {{-- product section --}}
     <section class="py-20 bg-gray-50 px-10" id="products">
         <div class="container mx-auto">
-            <h2 class="text-3xl font-bold text-center mb-10 text-gray-600">Featured Products</h2>
+            <h2 class="text-3xl font-bold text-center mb-10 text-gray-600">Produk Unggulan</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center">
                 @forelse ($products as $product)
                     <a href="{{ route('front.product.details', $product->slug) }}" class="hover:scale-105 transition">

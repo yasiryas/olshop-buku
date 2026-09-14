@@ -34,9 +34,12 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label class="text-sm font-medium text-gray-600">API Key</label>
-                                    <input type="text" x-model="agenwebApiKey" name="agenweb_api_key"
+                                    <input type="password" x-model="agenwebApiKey" name="agenweb_api_key"
+                                        autocomplete="new-password"
                                         placeholder="API key dari agenwebsite.com (awk_live_...)"
                                         class="w-full border rounded-lg px-4 py-2 text-sm">
+                                    <p class="text-xs text-gray-400 mt-1">Prioritas: .env <code>WIGATI_AGENWEB_API_KEY</code>.
+                                        Kosongkan bila sudah diatur di .env.</p>
                                 </div>
                                 <div>
                                     <label class="text-sm font-medium text-gray-600">Kota Asal (Toko)</label>
@@ -201,7 +204,6 @@
         'zones' => $settings['shipping_zones'] ?? [],
         'payment' => $settings['payment_methods'] ?? [],
         'wa' => $settings['wa_contact'] ?? '',
-        'agenweb_api_key' => $settings['agenweb_api_key'] ?? '',
         'agenweb_origin_postal_code' => $settings['agenweb_origin_postal_code'] ?? '',
         'low_stock_threshold' => $settings['low_stock_threshold'] ?? 5,
     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
@@ -211,7 +213,7 @@
             const json = JSON.parse(document.getElementById('settings-data').textContent);
             Alpine.data('storeSettings', () => ({
                 wa: json.wa,
-                agenwebApiKey: json.agenweb_api_key ?? '',
+                agenwebApiKey: '',
                 agenwebOriginPostalCode: json.agenweb_origin_postal_code ?? '',
                 lowStockThreshold: json.low_stock_threshold,
                 shipping: (json.shipping || []).map(s => ({ ...s })),

@@ -41,8 +41,10 @@ Route::get('/blog', [FrontController::class, 'blog'])->name('front.blog');
 Route::get('/article/{article:slug}', [FrontController::class, 'article'])->name('front.article.details');
 Route::get('/about', [FrontController::class, 'about'])->name('front.about');
 Route::get('/contact', [FrontController::class, 'contact'])->name('front.contact');
-Route::get('/search-products', [FrontController::class, 'searchProduct'])->name('front.search.ajax');
-Route::get('/search/articles', [FrontController::class, 'searchArticle'])->name('front.search.article.ajax');
+Route::get('/search-products', [FrontController::class, 'searchProduct'])->name('front.search.ajax')
+    ->middleware('throttle:30,1');
+Route::get('/search/articles', [FrontController::class, 'searchArticle'])->name('front.search.article.ajax')
+    ->middleware('throttle:30,1');
 
 Route::get('/session/keep-alive', fn () => Response::noContent())->name('session.keep-alive');
 

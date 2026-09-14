@@ -2,7 +2,7 @@
 
     {{-- Hero Section --}}
     <section class="py-16 px-10 container mx-auto text-center">
-        <h4 class="text-4xl font-bold mb-4 text-gray-700">Carts</h4>
+        <h4 class="text-4xl font-bold mb-4 text-gray-700">Keranjang</h4>
         <p class="text-lg mb-6 text-gray-600">Checkout sekarang juga!</p>
     </section>
 
@@ -11,7 +11,7 @@
 
         {{-- LEFT: CART ITEMS --}}
         <div class="lg:col-span-2 bg-gray-50 rounded-2xl p-6 shadow">
-            <h2 class="text-xl font-bold mb-4">Items</h2>
+            <h2 class="text-xl font-bold mb-4">Barang</h2>
 
             <div class="space-y-4">
 
@@ -385,7 +385,7 @@
 
                 {{-- PAYMENT METHOD --}}
                 <div class="bg-white rounded-2xl p-6 shadow">
-                    <h3 class="text-lg font-bold mb-4">Payment Method</h3>
+                    <h3 class="text-lg font-bold mb-4">Metode Pembayaran</h3>
                     <div class="space-y-3">
                         @forelse ($paymentMethods as $pm)
                             <label

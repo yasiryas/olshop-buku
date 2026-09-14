@@ -38,7 +38,7 @@
             </div>
             <div class="prose max-w-none">
                 <h1 class="text-2xl md:text-4xl font-bold mb-4 text-gray-700">{{ $product->name }}</h1>
-                <p class="text-base md:text-lg mb-4 text-gray-600">Category: {{ $product->category->name }}
+                <p class="text-base md:text-lg mb-4 text-gray-600">Kategori: {{ $product->category->name }}
                 </p>
                 <h2 class="text-2xl text-red-600 font-bold mb-2"> Rp {{ number_format($product->price) }}
                 </h2>

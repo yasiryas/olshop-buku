@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In | Wigati Buku</title>
+    <title>Masuk | Wigati Buku</title>
     <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('/assets/css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
@@ -21,26 +21,26 @@
             @csrf
             <div class="flex flex-col gap-5">
                 <p class="text-xl md:text-[22px] font-bold text-center md:text-left">
-                    Sign In
+                    Masuk
                 </p>
-                <!-- Email Address -->
+                <!-- Email -->
                 <div class="flex flex-col gap-2.5">
-                    <label for="email" class="text-base font-semibold">Email Address</label>
+                    <label for="email" class="text-base font-semibold">Email</label>
                     <input type="email" name="email" id="email__"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Your email address" :value="old('email')" required autofocus
+                        placeholder="Alamat email Anda" :value="old('email')" required autofocus
                         autocomplete="username">
                     @error('email')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-                <!-- Password -->
+                <!-- Kata Sandi -->
                 <div class="flex flex-col gap-2.5">
-                    <label for="password" class="text-base font-semibold">Password</label>
+                    <label for="password" class="text-base font-semibold">Kata Sandi</label>
                     <div class="relative">
                         <input type="password" name="password" id="password__"
                             class="w-full px-4 py-3 pr-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            placeholder="Protect your password" autocomplete="current-password">
+                            placeholder="Masukkan kata sandi" autocomplete="current-password">
                         <button type="button" id="toggle-password__"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <i class="fas fa-eye"></i>
@@ -55,31 +55,31 @@
                 <div class="flex items-center justify-between text-sm">
                     <label class="flex items-center">
                         <input type="checkbox" name="remember" class="mr-2 rounded text-red-600 focus:ring-red-500">
-                        <span class="text-gray-600">Remember me</span>
+                        <span class="text-gray-600">Ingat saya</span>
                     </label>
                     @if (Route::has('password.request'))
                         <a href="{{ route('password.request') }}" class="text-red-600 hover:underline">
-                            Forgot password?
+                            Lupa kata sandi?
                         </a>
                     @endif
                 </div>
 
                 <button type="submit"
                     class="inline-flex text-white font-bold text-base bg-red-600 hover:bg-red-700 rounded-full whitespace-nowrap px-[30px] py-3 justify-center items-center transition duration-300">
-                    Sign In
+                    Masuk
                 </button>
             </div>
         </form>
 
         <a href="{{ route('register') }}"
             class="font-semibold text-base mt-[30px] text-gray-600 hover:text-red-600 transition">
-            Don't have an account? <span class="text-red-600 underline">Create New Account</span>
+            Belum punya akun? <span class="text-red-600 underline">Buat Akun Baru</span>
         </a>
 
-        <!-- Back to Home -->
+        <!-- Kembali ke Beranda -->
         <a href="{{ route('front.index') }}"
             class="hidden md:inline-flex items-center font-semibold text-base mt-4 text-gray-600 hover:text-red-600 transition">
-            <i class="fas fa-arrow-left mr-2"></i> Back to Home
+            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Beranda
         </a>
     </div>
 

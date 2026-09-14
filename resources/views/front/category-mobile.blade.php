@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Category Product</title>
+    <title>Kategori Produk</title>
     <link rel="shortcut icon" href="{{ asset('/assets/svgs/logo-mark.svg') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('/assets/css/main.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\StoreSettings;
+use App\Support\AuditLogger;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -70,7 +71,12 @@ class SettingController extends Controller
             ->all();
 
         \App\Models\Setting::updateOrCreate(['key' => 'wa_contact'], ['value' => $validated['wa_contact']]);
-        \App\Models\Setting::updateOrCreate(['key' => 'agenweb_api_key'], ['value' => $validated['agenweb_api_key'] ?? '']);
+
+        // API key tidak ikut terhapus bila field dikosongkan (env WIGATI_AGENWEB_API_KEY menang bila terisi).
+        if (!empty(trim((string) ($validated['agenweb_api_key'] ?? '')))) {
+            \App\Models\Setting::updateOrCreate(['key' => 'agenweb_api_key'], ['value' => trim($validated['agenweb_api_key'])]);
+        }
+
         \App\Models\Setting::updateOrCreate(['key' => 'agenweb_origin_city_id'], ['value' => $validated['agenweb_origin_city_id'] ?? '']);
         \App\Models\Setting::updateOrCreate(['key' => 'agenweb_origin_postal_code'], ['value' => $validated['agenweb_origin_postal_code'] ?? '']);
         \App\Models\Setting::updateOrCreate(['key' => 'low_stock_threshold'], ['value' => $validated['low_stock_threshold']]);
@@ -79,6 +85,8 @@ class SettingController extends Controller
         \App\Models\Setting::updateOrCreate(['key' => 'payment_methods'], ['value' => $paymentMethods]);
 
         StoreSettings::invalidateCache();
+
+        AuditLogger::log('settings.updated');
 
         return redirect()->route('admin.settings.edit')->with('success', 'Pengaturan toko berhasil disimpan.');
     }
