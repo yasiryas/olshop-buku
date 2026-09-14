@@ -36,7 +36,7 @@ class ReportController extends Controller
         [$from, $to] = $this->resolveRange($request);
 
         $data = $this->reportData($from, $to);
-        $period = Carbon::parse($from)->format('d M Y') . ' s/d ' . Carbon::parse($to)->format('d M Y');
+        $period = Carbon::parse($from)->format('d M Y').' s/d '.Carbon::parse($to)->format('d M Y');
         $average = $data['paidOrderCount'] > 0 ? round($data['revenue'] / $data['paidOrderCount']) : 0;
 
         $productRows = $data['productSales']
@@ -58,7 +58,7 @@ class ReportController extends Controller
 
         $dailyRows = $data['dailySales']
             ->map(fn ($row) => [
-                \Carbon\Carbon::parse($row->date)->format('d M Y'),
+                Carbon::parse($row->date)->format('d M Y'),
                 (int) $row->total_orders,
                 (int) $row->paid_orders,
                 (int) $row->revenue,
@@ -90,12 +90,12 @@ class ReportController extends Controller
 
         $summaryRows = [
             ['Periode', $period],
-            ['Pendapatan', 'Rp ' . number_format($data['revenue'])],
+            ['Pendapatan', rupiah($data['revenue'])],
             ['Total Pesanan', (string) $data['orderCount']],
             ['Pesanan Terbayar', (string) $data['paidOrderCount']],
-            ['Rata-rata / Pesanan', 'Rp ' . number_format($average)],
-            ['Produk Terjual', number_format((int) $data['productSales']->sum('total_qty')) . ' Pcs'],
-            ['Hari Transaksi', (string) $data['dailySales']->count() . ' hari'],
+            ['Rata-rata / Pesanan', rupiah($average)],
+            ['Produk Terjual', number_format((int) $data['productSales']->sum('total_qty'), 0, ',', '.').' Pcs'],
+            ['Hari Transaksi', (string) $data['dailySales']->count().' hari'],
         ];
 
         $sheets = [
@@ -147,7 +147,7 @@ class ReportController extends Controller
     private function reportData(string $from, string $to): array
     {
         $transactions = ProductTransaction::query()
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59']);
 
         $revenue = (clone $transactions)->whereIn('status', ProductTransaction::PAID_STATUSES)->sum('total_amount');
         $orderCount = (clone $transactions)->count();
@@ -155,22 +155,22 @@ class ReportController extends Controller
 
         $dailySales = (clone $transactions)
             ->selectRaw('DATE(created_at) as date, COUNT(*) as total_orders, '
-                . 'SUM(CASE WHEN status IN (?, ?, ?, ?) THEN 1 ELSE 0 END) as paid_orders, '
-                . 'SUM(CASE WHEN status IN (?, ?, ?, ?) THEN total_amount ELSE 0 END) as revenue',
+                .'SUM(CASE WHEN status IN (?, ?, ?, ?) THEN 1 ELSE 0 END) as paid_orders, '
+                .'SUM(CASE WHEN status IN (?, ?, ?, ?) THEN total_amount ELSE 0 END) as revenue',
                 [...ProductTransaction::PAID_STATUSES, ...ProductTransaction::PAID_STATUSES])
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
         $productSales = TransactionDetail::selectRaw('product_id, SUM(qty) as total_qty, SUM(price * qty) as total_revenue')
-            ->whereHas('productTransaction', fn ($q) => $q->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->whereIn('status', ProductTransaction::PAID_STATUSES))
+            ->whereHas('productTransaction', fn ($q) => $q->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59'])->whereIn('status', ProductTransaction::PAID_STATUSES))
             ->with('product.category')
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
             ->get();
 
         $mutationReport = StockMutation::with('product.category')
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59'])
             ->get()
             ->groupBy('product_id')
             ->map(function ($rows) {
@@ -197,7 +197,7 @@ class ReportController extends Controller
 
         return Response::make($content, 200, [
             'Content-Type' => XlsxWriter::mime(),
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 }

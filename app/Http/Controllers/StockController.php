@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\StockMutation;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class StockController extends Controller
 {
     /**
      * Show a list of all products.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index(Request $request)
     {
@@ -19,7 +21,7 @@ class StockController extends Controller
         $products = Product::with('category')
             ->withStock()
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%');
             })
             ->orderBy('id', 'DESC')
             ->paginate(10)
@@ -52,12 +54,13 @@ class StockController extends Controller
             'description' => $request->description,
         ]);
 
-        return redirect()->route('stocks.index')->with('success', 'Stock updated successfully.');
+        return redirect()->route('stocks.index')->with('success', 'Stok berhasil diperbarui.');
     }
 
     public function history(Product $product)
     {
         $mutations = $product->stockMutations()->orderBy('created_at', 'desc')->get();
+
         return view('admin.stocks.history', compact('product', 'mutations'));
     }
 
@@ -65,10 +68,10 @@ class StockController extends Controller
     {
         $search = $request->input('search');
 
-        $mutations = \App\Models\StockMutation::with('product')
+        $mutations = StockMutation::with('product')
             ->when($search, function ($query, $search) {
                 $query->whereHas('product', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
+                    $q->where('name', 'like', '%'.$search.'%');
                 });
             })
             ->orderBy('created_at', 'desc')

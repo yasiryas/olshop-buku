@@ -19,7 +19,7 @@
                     <div class="flex flex-col md:flex-row md:items-center gap-x-3">
                         <div>
                             <p class="text-base text-slate-500">Total Transaksi</p>
-                            <h3 class="text-xl font-bold text-indigo-900">Rp {{ number_format($product_transaction->total_amount) }}</h3>
+                            <h3 class="text-xl font-bold text-indigo-900">{{ rupiah($product_transaction->total_amount) }}</h3>
                         </div>
                     </div>
                     <div>
@@ -88,7 +88,7 @@
                                         class="w-[50px] h-[50px]">
                                     <div>
                                         <h3 class="text-xl font-bold text-indigo-900">{{ $list_product->product->name }}</h3>
-                                        <p class="text-base text-slate-500">Rp {{ number_format($list_product->product->price) }}</p>
+                                        <p class="text-base text-slate-500">{{ rupiah($list_product->product->price) }}</p>
                                     </div>
                                 </div>
                                 <p class="text-base text-slate-500">{{ $list_product->qty }} Pcs</p>
@@ -109,7 +109,7 @@
                                 <p class="text-base text-slate-500">Pengiriman</p>
                                 <h3 class="text-lg font-bold text-indigo-900">{{ $product_transaction->shipping_method ?? '-' }}
                                     <span class="text-base font-normal">({{
-                                        $product_transaction->shipping_cost ? 'Rp ' . number_format($product_transaction->shipping_cost) : 'Gratis'
+                                        $product_transaction->shipping_cost ? rupiah($product_transaction->shipping_cost) : 'Gratis'
                                     }})</span>
                                 </h3>
                             </div>

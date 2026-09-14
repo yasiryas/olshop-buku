@@ -18,10 +18,17 @@
                         @click="openEdit('{{ $category->id }}')">
                         <i class="fas fa-pen text-xs"></i> Edit
                     </x-ui.pill>
-                    <x-ui.pill as="button" type="button" color="btn-pill-danger"
-                        @click="openDelete('{{ $category->id }}')">
-                        <i class="fas fa-trash text-xs"></i> Hapus
-                    </x-ui.pill>
+                    @if (($category->products_count ?? 0) > 0)
+                        <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full"
+                            title="Kategori berisi {{ $category->products_count }} produk, tidak bisa dihapus">
+                            <i class="fas fa-book text-xs"></i> {{ $category->products_count }} produk
+                        </span>
+                    @else
+                        <x-ui.pill as="button" type="button" color="btn-pill-danger"
+                            @click="openDelete('{{ $category->id }}')">
+                            <i class="fas fa-trash text-xs"></i> Hapus
+                        </x-ui.pill>
+                    @endif
                 </div>
             </td>
         </tr>

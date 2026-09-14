@@ -157,7 +157,7 @@
             <div class="p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-2">Konfirmasi Hapus</h2>
                 <p class="text-sm text-gray-600 mb-4">Apakah Anda yakin ingin menghapus kategori ini? Tindakan ini
-                    tidak dapat dibatalkan.</p>
+                    tidak dapat dibatalkan. Kategori yang masih berisi produk tidak dapat dihapus.</p>
                 <div class="flex justify-end gap-3">
                     <button type="button" @click="$dispatch('close-modal', 'delete-category')"
                         class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-full">

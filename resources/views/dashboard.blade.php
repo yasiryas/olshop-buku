@@ -34,8 +34,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <p class="text-sm font-medium text-gray-500">Pendapatan</p>
-                                    <p class="text-2xl font-bold text-gray-800">Rp
-                                        {{ number_format($totalRevenue ?? 0) }}</p>
+                                    <p class="text-2xl font-bold text-gray-800">{{ rupiah($totalRevenue ?? 0) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -209,7 +208,7 @@
                         <tr>
                             <td class="cell"><span class="font-medium text-gray-900">#{{ $transaction->id }}</span></td>
                             <td class="cell cell-soft">{{ $transaction->user->name ?? 'N/A' }}</td>
-                            <td class="cell">Rp {{ number_format($transaction->total_amount) }}</td>
+                            <td class="cell">{{ rupiah($transaction->total_amount) }}</td>
                             <td class="cell">
                                 <x-ui.badge :class="$transaction->statusBadgeColor()">
                                     {{ $transaction->statusLabel() }}
@@ -331,7 +330,7 @@
                         <tr>
                             <td class="cell"><span class="font-medium text-gray-900">#{{ $transaction->id }}</span></td>
                             <td class="cell cell-soft">{{ $transaction->user->name ?? 'N/A' }}</td>
-                            <td class="cell">Rp {{ number_format($transaction->total_amount) }}</td>
+                            <td class="cell">{{ rupiah($transaction->total_amount) }}</td>
                             <td class="cell cell-soft">{{ $transaction->created_at->idShort() }}</td>
                         </tr>
                     @empty
@@ -508,7 +507,7 @@
                                 beginAtZero: true,
                                 ticks: {
                                     callback: function(value) {
-                                        return 'Rp ' + value.toLocaleString();
+                                        return 'Rp ' + value.toLocaleString('id');
                                     }
                                 }
                             }

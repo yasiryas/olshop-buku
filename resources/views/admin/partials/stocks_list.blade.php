@@ -10,7 +10,7 @@
                 </div>
             </td>
             <td class="cell cell-soft">{{ $product->category?->name ?? '-' }}</td>
-            <td class="cell">Rp {{ number_format($product->price) }}</td>
+            <td class="cell">{{ rupiah($product->price) }}</td>
             <td class="cell">
                 <span class="font-bold text-indigo-700">{{ $product->stock }}</span>
             </td>

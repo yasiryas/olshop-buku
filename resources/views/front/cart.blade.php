@@ -36,7 +36,7 @@
                             {{-- Price --}}
                             <p class="text-sm text-gray-500 product-price" data-price="{{ $cart->product->price }}"
                                 data-qty="{{ $cart->quantity }}">
-                                Rp {{ number_format($cart->product->price) }}
+                                {{ rupiah($cart->product->price) }}
                             </p>
 
                             {{-- QTY ALPINE --}}
@@ -325,7 +325,7 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="font-semibold text-sm truncate">{{ $sr['courier'] }}</p>
                                         <p class="text-xs text-gray-500">
-                                            {{ $sr['cost'] > 0 ? 'Rp ' . number_format($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
+                                            {{ $sr['cost'] > 0 ? rupiah($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
                                         </p>
                                     </div>
                                 </label>
@@ -372,7 +372,7 @@
                                     <div>
                                         <p class="font-semibold">{{ $sr['courier'] }}</p>
                                         <p class="text-sm text-gray-500">
-                                            {{ $sr['cost'] > 0 ? 'Rp ' . number_format($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
+                                            {{ $sr['cost'] > 0 ? rupiah($sr['cost']) : 'Gratis' }} · {{ $sr['eta'] }}
                                         </p>
                                     </div>
                                 </label>

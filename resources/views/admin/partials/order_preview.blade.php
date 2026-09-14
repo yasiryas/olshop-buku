@@ -17,14 +17,14 @@
         </div>
         <div class="bg-gray-50 rounded-lg p-3">
             <p class="text-gray-500">Total</p>
-            <p class="font-bold text-gray-900">Rp {{ number_format($product_transaction->total_amount) }}</p>
+            <p class="font-bold text-gray-900">{{ rupiah($product_transaction->total_amount) }}</p>
             <p class="text-gray-600">{{ $product_transaction->payment_method ?? '-' }}</p>
         </div>
         <div class="bg-gray-50 rounded-lg p-3">
             <p class="text-gray-500">Pengiriman</p>
             <p class="font-bold text-gray-900">{{ $product_transaction->shipping_method ?? '-' }}</p>
             <p class="text-gray-600">
-                {{ $product_transaction->shipping_cost ? 'Rp ' . number_format($product_transaction->shipping_cost) : 'Gratis' }}
+                {{ $product_transaction->shipping_cost ? rupiah($product_transaction->shipping_cost) : 'Gratis' }}
                 @if ($product_transaction->tracking_number)
                     · {{ $product_transaction->tracking_number }}
                 @endif
@@ -65,7 +65,7 @@
                             <p class="font-medium text-gray-900">{{ $detail->product->name ?? '-' }}</p>
                         </td>
                         <td class="py-2 text-right text-gray-500">{{ $detail->qty }} Pcs</td>
-                        <td class="py-2 text-right text-gray-900">Rp {{ number_format($detail->product->price ?? 0) }}</td>
+                        <td class="py-2 text-right text-gray-900">{{ rupiah($detail->product->price ?? 0) }}</td>
                     </tr>
                 @endforeach
             </tbody>

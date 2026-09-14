@@ -40,7 +40,7 @@
                 <h1 class="text-2xl md:text-4xl font-bold mb-4 text-gray-700">{{ $product->name }}</h1>
                 <p class="text-base md:text-lg mb-4 text-gray-600">Kategori: {{ $product->category->name }}
                 </p>
-                <h2 class="text-2xl text-red-600 font-bold mb-2"> Rp {{ number_format($product->price) }}
+                <h2 class="text-2xl text-red-600 font-bold mb-2"> {{ rupiah($product->price) }}
                 </h2>
                 {!! $product->about !!}
                 <p class="text-gray-600 mb-4">Tersedia: {{ $product->stock }}</p>
@@ -73,7 +73,7 @@
                             <img src=" {{ Storage::url($product->photo) }} " alt="{{ $product->name }}"
                                 class="w-full h-48 object-cover mb-4 rounded">
                             <h3 class="text-xl font-semibold mb-2">{{ $product->name }}</h3>
-                            <span class="text-red-600 font-bold mb-2"> Rp {{ number_format($product->price) }}
+                            <span class="text-red-600 font-bold mb-2"> {{ rupiah($product->price) }}
                             </span>
                         </a>
                         <form action="{{ route('carts.add', $product->id) }}" method="POST">

@@ -119,7 +119,7 @@ class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-fu
                             <img src=" {{ Storage::url($product->photo) }} " alt="{{ $product->name }}"
                                 class="w-full h-48 object-cover mb-4 rounded">
                             <h3 class="text-xl font-semibold mb-2">{{ $product->name }}</h3>
-                            <span class="text-red-600 font-bold mb-2"> Rp {{ number_format($product->price) }}
+                            <span class="text-red-600 font-bold mb-2"> {{ rupiah($product->price) }}
                             </span>
                         </div>
                     </a>

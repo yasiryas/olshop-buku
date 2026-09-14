@@ -9,7 +9,7 @@
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
             <p class="text-sm font-medium text-gray-500">Pendapatan</p>
-            <p class="text-2xl font-bold text-gray-800">Rp {{ number_format($revenue) }}</p>
+            <p class="text-2xl font-bold text-gray-800">{{ rupiah($revenue) }}</p>
         </div>
     </div>
     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -28,7 +28,7 @@
         <div class="p-6">
             <p class="text-sm font-medium text-gray-500">Rata-rata / Pesanan</p>
             <p class="text-2xl font-bold text-gray-800">
-                Rp {{ number_format($paidOrderCount > 0 ? round($revenue / $paidOrderCount) : 0) }}</p>
+                {{ rupiah($paidOrderCount > 0 ? round($revenue / $paidOrderCount) : 0) }}</p>
         </div>
     </div>
 </div>
@@ -42,7 +42,7 @@
                 <td class="cell"><span class="font-medium text-gray-900">{{ $row->product->name ?? 'Produk' }}</span></td>
                 <td class="cell cell-soft">{{ $row->product->category?->name ?? '-' }}</td>
                 <td class="cell">{{ $row->total_qty }}</td>
-                <td class="cell">Rp {{ number_format($row->total_revenue) }}</td>
+                <td class="cell">{{ rupiah($row->total_revenue) }}</td>
             </tr>
         @empty
             <tr>
@@ -59,7 +59,7 @@
                 <td class="cell cell-soft">{{ \Carbon\Carbon::parse($row->date)->idShort() }}</td>
                 <td class="cell">{{ $row->total_orders }}</td>
                 <td class="cell">{{ $row->paid_orders }}</td>
-                <td class="cell">Rp {{ number_format($row->revenue) }}</td>
+                <td class="cell">{{ rupiah($row->revenue) }}</td>
             </tr>
         @empty
             <tr>

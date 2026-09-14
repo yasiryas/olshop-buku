@@ -10,7 +10,7 @@
                 </div>
             </td>
             <td class="cell cell-soft">{{ $product->category?->name ?? '-' }}</td>
-            <td class="cell">Rp {{ number_format($product->price) }}</td>
+            <td class="cell">{{ rupiah($product->price) }}</td>
             <td class="cell">
                 <div class="flex items-center gap-2">
                     <x-ui.pill as="button" type="button" color="btn-pill-warning"

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Category;
-use Illuminate\Support\Str;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
@@ -24,7 +24,7 @@ class ProductController extends Controller
 
         $products = Product::with('category')
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%');
             })
             ->orderBy('id', 'DESC')
             ->paginate(10)
@@ -65,6 +65,7 @@ class ProductController extends Controller
     {
         //
         $categories = Category::all();
+
         return view('admin.products.create', [
             'categories' => $categories,
         ]);
@@ -97,11 +98,11 @@ class ProductController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.products.index')->with('success', 'Product created successfully.');
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()],
             ]);
             throw $error;
         }
@@ -122,7 +123,8 @@ class ProductController extends Controller
     {
         //
         $categories = Category::all();
-        return view('admin.products.edit', ['product' => $product,  'categories' => $categories,]);
+
+        return view('admin.products.edit', ['product' => $product,  'categories' => $categories]);
     }
 
     /**
@@ -156,11 +158,12 @@ class ProductController extends Controller
             }
             $product->update($validated);
             DB::commit();
-            return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
+
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()],
             ]);
             throw $error;
         }
@@ -177,11 +180,12 @@ class ProductController extends Controller
                 Storage::disk('public')->delete($product->photo);
             }
             $product->delete();
-            return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
+
+            return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()],
             ]);
             throw $error;
         }

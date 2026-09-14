@@ -22,7 +22,7 @@
                             <img src=" {{ Storage::url($product->photo) }} " alt="{{ $product->name }}"
                                 class="w-full h-48 object-cover mb-4 rounded">
                             <h3 class="text-xl font-semibold mb-2">{{ $product->name }}</h3>
-                            <span class="text-red-600 font-bold mb-4"> Rp {{ number_format($product->price) }}
+                            <span class="text-red-600 font-bold mb-4"> {{ rupiah($product->price) }}
                             </span>
                         </a>
                         <form action="{{ route('carts.add', $product->id) }}" method="POST">

@@ -57,7 +57,7 @@
                             <img src=" {{ Storage::url($product->photo) }} " alt="{{ $product->name }}"
                                 class="w-full h-40 md:h-48 object-cover mb-4 rounded">
                             <h3 class="text-lg md:text-xl font-semibold mb-2">{{ $product->name }}</h3>
-                            <span class="text-red-600 font-bold mb-2 block"> Rp {{ number_format($product->price) }}
+                            <span class="text-red-600 font-bold mb-2 block"> {{ rupiah($product->price) }}
                             </span>
                             <p class="text-gray-600 mb-4">Tersedia: {{ $product->stock }}</p>
                         </a>

@@ -44,7 +44,7 @@
                                 {{ $product->name }}
                             </a>
                             <p class="text-sm text-grey">
-                                Rp. {{ number_format($product->price) }}
+                                {{ rupiah($product->price) }}
                             </p>
                         </div>
                         <div class="flex">

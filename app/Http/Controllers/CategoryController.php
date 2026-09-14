@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class CategoryController extends Controller
@@ -18,9 +18,10 @@ class CategoryController extends Controller
     {
         $search = $request->input('search');
 
-        $categories = Category::when($search, function ($query, $search) {
-            $query->where('name', 'like', '%' . $search . '%');
-        })
+        $categories = Category::withCount('products')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', '%'.$search.'%');
+            })
             ->orderBy('id', 'DESC')
             ->paginate(10)
             ->withQueryString();
@@ -81,15 +82,16 @@ class CategoryController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
+            return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()],
             ]);
             throw $error;
         }
     }
+
     /**
      * Display the specified resource.
      */
@@ -130,11 +132,11 @@ class CategoryController extends Controller
 
             DB::commit();
 
-            return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
+            return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollback();
             $error = ValidationException::withMessages([
-                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
+                'system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()],
             ]);
             throw $error;
         }
@@ -145,16 +147,16 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
-        try {
-            $category->delete();
-            return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
-        } catch (\Exception $e) {
-            DB::rollback();
-            $error = ValidationException::withMessages([
-                'system_error' => ['Terjadi kesalahan sistem: ' . $e->getMessage()],
-            ]);
-            throw $error;
+        $linkedProducts = (int) $category->products()->count();
+        $linkedArticles = (int) $category->articles()->count();
+
+        if ($linkedProducts > 0 || $linkedArticles > 0) {
+            return redirect()->route('admin.categories.index')
+                ->with('error', "Kategori tidak dapat dihapus karena masih berisi $linkedProducts produk dan $linkedArticles artikel. Pindahkan atau hapus dulu isinya.");
         }
+
+        $category->delete();
+
+        return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil dihapus.');
     }
 }

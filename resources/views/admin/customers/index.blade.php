@@ -14,7 +14,7 @@
                         <td class="cell"><span class="font-medium text-gray-900">{{ $customer->name }}</span></td>
                         <td class="cell cell-soft">{{ $customer->email }}</td>
                         <td class="cell cell-soft">{{ $customer->total_orders }}</td>
-                        <td class="cell">Rp {{ number_format($customer->total_spent) }}</td>
+                        <td class="cell">{{ rupiah($customer->total_spent) }}</td>
                         <td class="cell cell-soft">{{ $customer->created_at->idShort() }}</td>
                         <td class="cell">
                             <x-ui.pill as="a" href="{{ route('admin.customers.show', $customer) }}" color="btn-pill-primary">

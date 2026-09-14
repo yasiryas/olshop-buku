@@ -21,7 +21,7 @@
     },
     "dependencies": {
         "jquery": "^3.7.1",
-        "quill": "^2.0.3",
+        "quill": "^2.0.2",
         "select2": "^4.1.0",
         "summernote": "^0.9.1"
     },

@@ -25,7 +25,7 @@
                     <tr>
                         <td class="cell"><span class="font-medium text-gray-900">#{{ $transaction->id }}</span></td>
                         <td class="cell cell-soft">{{ $transaction->created_at->idShort() }}</td>
-                        <td class="cell">Rp {{ number_format($transaction->total_amount) }}</td>
+                        <td class="cell">{{ rupiah($transaction->total_amount) }}</td>
                         <td class="cell">
                             <x-ui.badge :class="$transaction->statusBadgeColor()">
                                 {{ $transaction->statusLabel() }}

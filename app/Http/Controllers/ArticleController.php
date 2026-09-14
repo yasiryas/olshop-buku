@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Category;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
-
+use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
@@ -18,7 +16,7 @@ class ArticleController extends Controller
 
         $articles = Article::with(['user', 'category'])
             ->when($search, function ($query, $search) {
-                $query->where('title', 'like', '%' . $search . '%');
+                $query->where('title', 'like', '%'.$search.'%');
             })
             ->orderBy('id', 'DESC')
             ->paginate(10)
@@ -54,19 +52,20 @@ class ArticleController extends Controller
     public function create()
     {
         $categories = Category::all();
+
         return view('admin.articles.create', compact('categories'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'          => 'required|string|max:255',
-            'content'        => 'required|string',
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
             'featured_image' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
-            'category_id'    => 'required|exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . Str::random(5);
+        $validated['slug'] = Str::slug($validated['title']).'-'.Str::random(5);
 
         if ($request->hasFile('featured_image')) {
             $path = $request->file('featured_image')->store('articles', 'public');
@@ -79,27 +78,28 @@ class ArticleController extends Controller
 
         return redirect()
             ->route('admin.articles.index')
-            ->with('success', 'Article created successfully.');
+            ->with('success', 'Artikel berhasil dibuat.');
     }
 
     public function edit(Article $article)
     {
         $categories = Category::all();
+
         return view('admin.articles.edit', compact('article', 'categories'));
     }
 
     public function update(Request $request, Article $article)
     {
         $validated = $request->validate([
-            'title'          => 'required|string|max:255',
-            'content'        => 'required|string',
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
             'featured_image' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
-            'category_id'    => 'required|exists:categories,id',
+            'category_id' => 'required|exists:categories,id',
         ]);
 
         // Update slug hanya jika judul berubah
         if ($article->title != $validated['title']) {
-            $validated['slug'] = Str::slug($validated['title']) . '-' . Str::random(5);
+            $validated['slug'] = Str::slug($validated['title']).'-'.Str::random(5);
         }
 
         // Handle image update
@@ -114,7 +114,7 @@ class ArticleController extends Controller
                 $path = $request->file('featured_image')->store('articles', 'public');
                 $validated['featured_image'] = $path;
             } catch (\Exception $e) {
-                return back()->with('error', 'Gagal mengupdate gambar: ' . $e->getMessage());
+                return back()->with('error', 'Gagal mengupdate gambar: '.$e->getMessage());
             }
         } else {
             // Pertahankan gambar lama jika tidak ada upload baru
@@ -124,7 +124,7 @@ class ArticleController extends Controller
 
         return redirect()
             ->route('admin.articles.index')
-            ->with('success', 'Article updated successfully.');
+            ->with('success', 'Artikel berhasil diperbarui.');
     }
 
     public function destroy(Article $article)
@@ -138,6 +138,6 @@ class ArticleController extends Controller
 
         return redirect()
             ->route('admin.articles.index')
-            ->with('success', 'Article deleted successfully.');
+            ->with('success', 'Artikel berhasil dihapus.');
     }
 }
