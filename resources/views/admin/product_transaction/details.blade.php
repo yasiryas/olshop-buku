@@ -99,8 +99,8 @@
 
                         @php
                             $subTotal = $product_transaction->transactionDetails->sum(fn($d) => $d->price * $d->qty);
-                            $taxPercent = \App\Support\StoreSettings::taxPercent();
-                            $insurancePercent = \App\Support\StoreSettings::insurancePercent();
+                            $taxPercent = $subTotal > 0 ? round(($product_transaction->tax_amount ?? 0) / $subTotal * 100, 1) : 0;
+                            $insurancePercent = $subTotal > 0 ? round(($product_transaction->insurance_amount ?? 0) / $subTotal * 100, 1) : 0;
                         @endphp
                         <div class="bg-gray-50 rounded-lg p-4 space-y-2">
                             <h4 class="text-lg font-bold text-indigo-900">Rincian Biaya</h4>
