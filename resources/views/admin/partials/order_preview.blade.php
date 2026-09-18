@@ -70,6 +70,36 @@
                 @endforeach
             </tbody>
         </table>
+
+        @php
+            $subTotal = $product_transaction->transactionDetails->sum(fn($d) => ($d->product->price ?? 0) * $d->qty);
+            $taxPercent = $subTotal > 0 ? round(($product_transaction->tax_amount ?? 0) / $subTotal * 100, 1) : 0;
+            $insurancePercent = $subTotal > 0 ? round(($product_transaction->insurance_amount ?? 0) / $subTotal * 100, 1) : 0;
+        @endphp
+        <div class="bg-gray-50 rounded-lg p-3 mt-3 space-y-2">
+            <h5 class="font-bold text-gray-900">Rincian Biaya</h5>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Subtotal ({{ $product_transaction->transactionDetails->sum('qty') }} item)</span>
+                <span class="font-semibold text-gray-900">{{ rupiah($subTotal) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Pajak ({{ number_format($taxPercent, 1) }}%)</span>
+                <span class="font-semibold text-gray-900">{{ rupiah($product_transaction->tax_amount ?? 0) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Asuransi ({{ number_format($insurancePercent, 1) }}%)</span>
+                <span class="font-semibold text-gray-900">{{ rupiah($product_transaction->insurance_amount ?? 0) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Pengiriman</span>
+                <span class="font-semibold text-gray-900">{{ $product_transaction->shipping_cost ? rupiah($product_transaction->shipping_cost) : 'Gratis' }}</span>
+            </div>
+            <hr class="my-1">
+            <div class="flex justify-between text-base font-bold text-gray-900">
+                <span>Total Dibayar</span>
+                <span>{{ rupiah($product_transaction->total_amount) }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
