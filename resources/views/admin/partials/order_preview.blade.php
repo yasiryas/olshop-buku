@@ -126,6 +126,31 @@
         @if ($product_transaction->status === 'pending')
             <form method="POST" action="{{ route('admin.orders.approve', $product_transaction) }}">
                 @csrf
+                @php
+                    $subTotal = $product_transaction->transactionDetails->sum(fn($d) => ($d->product->price ?? 0) * $d->qty);
+                @endphp
+                <div class="hidden md:block mb-2 space-y-1 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Subtotal</span>
+                        <span class="font-medium">{{ rupiah($subTotal) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Pajak</span>
+                        <input type="number" name="tax_amount" min="0" step="1" value="{{ $product_transaction->tax_amount ?? 0 }}"
+                            class="w-32 border rounded px-2 py-1 text-right text-sm" placeholder="Auto">
+                        <span class="text-gray-400 ml-1">(otomatis: {{ number_format($subTotal > 0 ? round(($product_transaction->tax_amount ?? 0) / $subTotal * 100, 1) : 0, 1) }}%)</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Asuransi</span>
+                        <input type="number" name="insurance_amount" min="0" step="1" value="{{ $product_transaction->insurance_amount ?? 0 }}"
+                            class="w-32 border rounded px-2 py-1 text-right text-sm" placeholder="Auto">
+                        <span class="text-gray-400 ml-1">(otomatis: {{ number_format($subTotal > 0 ? round(($product_transaction->insurance_amount ?? 0) / $subTotal * 100, 1) : 0, 1) }}%)</span>
+                    </div>
+                    <div class="flex justify-between border-t pt-1">
+                        <span class="text-gray-500">Total</span>
+                        <span class="font-bold">{{ rupiah($product_transaction->total_amount) }}</span>
+                    </div>
+                </div>
                 <button type="submit"
                     class="font-semibold bg-indigo-600 text-white py-2 px-4 rounded-full hover:bg-indigo-700">
                     <i class="fas fa-check mr-1"></i> Approve & Kurangi Stok

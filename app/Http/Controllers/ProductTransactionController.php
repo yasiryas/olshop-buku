@@ -323,7 +323,7 @@ class ProductTransactionController extends Controller
     /**
      * Approve: pending -> processing (verifikasi pembayaran), stok keluar.
      */
-    public function approve(ProductTransaction $productTransaction)
+    public function approve(Request $request, ProductTransaction $productTransaction)
     {
         abort_unless(auth()->user()->hasAnyRole(['owner', 'admin']), 403, 'Hanya Owner atau Admin yang dapat memproses pesanan.');
 
@@ -334,6 +334,11 @@ class ProductTransactionController extends Controller
         if (!$productTransaction->proof) {
             return redirect()->back()->with('error', 'Bukti pembayaran belum diunggah. Pesanan tidak dapat diproses sebelum bukti diverifikasi.');
         }
+
+        $request->validate([
+            'tax_amount' => 'nullable|integer|min:0',
+            'insurance_amount' => 'nullable|integer|min:0',
+        ]);
 
         DB::beginTransaction();
         try {
@@ -359,9 +364,20 @@ class ProductTransactionController extends Controller
                 }
             }
 
+            // Allow manual override of tax and insurance
+            $taxAmount = $request->filled('tax_amount') ? (int) $request->tax_amount : $transaction->tax_amount;
+            $insuranceAmount = $request->filled('insurance_amount') ? (int) $request->insurance_amount : $transaction->insurance_amount;
+
+            // Recalculate total if tax/insurance changed
+            $subTotal = $transaction->transactionDetails->sum(fn($d) => $d->price * $d->qty);
+            $newTotal = $subTotal + $taxAmount + $insuranceAmount + $transaction->shipping_cost;
+
             $transaction->update([
                 'is_paid' => true,
                 'status'  => ProductTransaction::STATUS_PROCESSING,
+                'tax_amount' => $taxAmount,
+                'insurance_amount' => $insuranceAmount,
+                'total_amount' => $newTotal,
             ]);
 
             DB::commit();

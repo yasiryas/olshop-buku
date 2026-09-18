@@ -24,6 +24,8 @@ class SettingController extends Controller
             'agenweb_origin_city_id' => 'nullable|string|max:10',
             'agenweb_origin_postal_code' => 'nullable|string|max:10',
             'low_stock_threshold' => 'required|integer|min:0',
+            'tax_percent' => 'nullable|numeric|min:0|max:100',
+            'insurance_percent' => 'nullable|numeric|min:0|max:100',
             'shipping_methods' => 'required|array|min:1',
             'shipping_methods.*.courier' => 'required|string|max:100',
             'shipping_methods.*.cost' => 'required|numeric|min:0',
@@ -80,6 +82,10 @@ class SettingController extends Controller
         \App\Models\Setting::updateOrCreate(['key' => 'agenweb_origin_city_id'], ['value' => $validated['agenweb_origin_city_id'] ?? '']);
         \App\Models\Setting::updateOrCreate(['key' => 'agenweb_origin_postal_code'], ['value' => $validated['agenweb_origin_postal_code'] ?? '']);
         \App\Models\Setting::updateOrCreate(['key' => 'low_stock_threshold'], ['value' => $validated['low_stock_threshold']]);
+
+        \App\Models\Setting::updateOrCreate(['key' => 'tax_percent'], ['value' => (float) ($validated['tax_percent'] ?? 11)]);
+        \App\Models\Setting::updateOrCreate(['key' => 'insurance_percent'], ['value' => (float) ($validated['insurance_percent'] ?? 2.3)]);
+
         \App\Models\Setting::updateOrCreate(['key' => 'shipping_methods'], ['value' => $shippingMethods]);
         \App\Models\Setting::updateOrCreate(['key' => 'shipping_zones'], ['value' => $shippingZones]);
         \App\Models\Setting::updateOrCreate(['key' => 'payment_methods'], ['value' => $paymentMethods]);

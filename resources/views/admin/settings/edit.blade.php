@@ -74,6 +74,26 @@
                         </div>
                     </div>
 
+                    {{-- Tax & Insurance --}}
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Pajak & Asuransi</h3>
+                            <p class="text-xs text-gray-500 mb-4">Persentase default untuk perhitungan otomatis saat checkout. Bisa diubah manual saat approve pesanan.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Pajak (%)</label>
+                                    <input type="number" x-model="taxPercent" name="tax_percent" min="0" step="0.1" max="100"
+                                        class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="11">
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Asuransi (%)</label>
+                                    <input type="number" x-model="insurancePercent" name="insurance_percent" min="0" step="0.1" max="100"
+                                        class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="2.3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Shipping --}}
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
@@ -206,6 +226,8 @@
         'wa' => $settings['wa_contact'] ?? '',
         'agenweb_origin_postal_code' => $settings['agenweb_origin_postal_code'] ?? '',
         'low_stock_threshold' => $settings['low_stock_threshold'] ?? 5,
+        'tax_percent' => $settings['tax_percent'] ?? 11,
+        'insurance_percent' => $settings['insurance_percent'] ?? 2.3,
     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
     <script>
@@ -216,6 +238,8 @@
                 agenwebApiKey: '',
                 agenwebOriginPostalCode: json.agenweb_origin_postal_code ?? '',
                 lowStockThreshold: json.low_stock_threshold,
+                taxPercent: json.tax_percent ?? 11,
+                insurancePercent: json.insurance_percent ?? 2.3,
                 shipping: (json.shipping || []).map(s => ({ ...s })),
                 zones: (json.zones || []).map(z => ({ city: z.city, costs: { ...(z.costs || {}) } })),
                 payment: (json.payment || []).map(p => ({ ...p })),
