@@ -16,7 +16,7 @@
         :canonical="$seo_canonical ?? null" :robots="'noindex, nofollow'" />
 
     <!-- Fonts -->
-    <link rel="stylesheet" href="{{ asset('assets/fonts/figtree.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/fonts/plus-jakarta-sans.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -24,7 +24,7 @@
 </head>
 
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-gray-100 flex flex-col">
         @include('layouts.navigation')
 
         <!-- Page Heading -->
@@ -37,9 +37,24 @@
         @endisset
 
         <!-- Page Content -->
-        <main>
+        <main class="flex-1">
             {{ $slot }}
         </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-sm text-gray-500 text-center md:text-left">
+                        &copy; {{ date('Y') }} {{ config('app.name', 'Wigati Buku') }}. Hak cipta dilindungi.
+                    </p>
+                    <div class="flex items-center gap-6 text-sm text-gray-500">
+                        <span>Versi 1.0.0</span>
+                        <a href="{{ route('dashboard') }}" class="hover:text-gray-700 transition">Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
 
         <x-toast />
     </div>

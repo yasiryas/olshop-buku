@@ -7,8 +7,8 @@
     <title>Landing Page | Parma</title>
     <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('/assets/css/main.css') }}">
-    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
-    <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+    <link rel="stylesheet" href="{{ asset('/assets/css/flickity.min.css') }}">
+    <script src="{{ asset('/assets/js/tailwind-play.js') }}"></script>
 </head>
 
 <body>
@@ -257,9 +257,8 @@
         </div>
     </section>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+    <script src="{{ asset('/assets/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('/assets/js/flickity.min.js') }}"></script>
 
     <script src="{{ asset('/assets/scripts/sliderConfig.js') }}" type="module"></script>
     {{-- <script src="{{ asset('/assets/scripts/searchProductListener.js') }}" type="module"></script> --}}

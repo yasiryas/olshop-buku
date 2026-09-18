@@ -13,74 +13,78 @@
         <div class="lg:col-span-2 bg-gray-50 rounded-2xl p-6 shadow">
             <h2 class="text-xl font-bold mb-4">Barang</h2>
 
-            <div class="space-y-4">
+            <div class="space-y-3">
 
                 @forelse ($carts as $cart)
-                    <div class="flex gap-4 bg-white rounded-xl p-4 shadow-sm" data-cart-item>
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100" data-cart-item>
+                        {{-- Mobile: Vertical Stack | Desktop: Horizontal Row --}}
+                        <div class="flex flex-col md:flex-row gap-4 md:items-center">
 
-                        {{-- LEFT: IMAGE --}}
-                        <div>
-                            <img src="{{ Storage::url($cart->product->photo) }}"
-                                class="w-[90px] h-[90px] object-contain rounded-lg border">
-                        </div>
+                            {{-- Product: Image + Info --}}
+                            <div class="flex items-start md:items-center gap-3 md:gap-4 flex-1 min-w-0">
+                                <a href="{{ route('front.product.details', $cart->product->slug) }}" class="flex-shrink-0">
+                                    <img src="{{ Storage::url($cart->product->photo) }}"
+                                        class="w-20 h-20 md:w-24 md:h-24 object-contain rounded-lg border border-gray-200 bg-gray-50">
+                                </a>
+                                <div class="flex-1 min-w-0">
+                                    <a href="{{ route('front.product.details', $cart->product->slug) }}"
+                                        class="font-semibold text-gray-800 hover:text-red-600 truncate block mb-1">
+                                        {{ $cart->product->name }}
+                                    </a>
+                                    <p class="text-sm text-gray-500 mb-2 product-price" data-price="{{ $cart->product->price }}"
+                                        data-qty="{{ $cart->quantity }}">
+                                        {{ rupiah($cart->product->price) }}
+                                    </p>
 
-                        {{-- CENTER: PRODUCT INFO + QTY --}}
-                        <div class="flex-1 flex flex-col justify-between">
-
-                            {{-- Product Name --}}
-                            <a href="{{ route('front.product.details', $cart->product->slug) }}"
-                                class="text-base font-semibold block truncate hover:text-blue-500 w-[200px]">
-                                {{ $cart->product->name }}
-                            </a>
-
-                            {{-- Price --}}
-                            <p class="text-sm text-gray-500 product-price" data-price="{{ $cart->product->price }}"
-                                data-qty="{{ $cart->quantity }}">
-                                {{ rupiah($cart->product->price) }}
-                            </p>
-
-                            {{-- QTY ALPINE --}}
-                            <div x-data="cartQty({
-                                id: '{{ $cart->id }}',
-                                quantity: {{ $cart->quantity ?? 1 }},
-                                max: {{ $cart->product->stock ?? 0 }},
-                                updateUrl: '{{ route('carts.update', $cart) }}',
-                                token: '{{ csrf_token() }}'
-                            })" class="flex items-center gap-2 mt-2">
-
-                                {{-- MINUS --}}
-                                <button type="button" @click="decrease"
-                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300">
-                                    −
-                                </button>
-
-                                {{-- GANTI INPUT DENGAN DISPLAY --}}
-                                <div class="w-16 text-center border rounded-lg py-1 bg-gray-50">
-                                    <span x-text="quantity"></span>
+                                    {{-- Qty Selector - Mobile full width, Desktop inline --}}
+                                    <div x-data="cartQty({
+                                        id: '{{ $cart->id }}',
+                                        quantity: {{ $cart->quantity ?? 1 }},
+                                        max: {{ $cart->product->stock ?? 0 }},
+                                        updateUrl: '{{ route('carts.update', $cart) }}',
+                                        token: '{{ csrf_token() }}'
+                                    })" class="flex items-center gap-2 w-full md:w-auto">
+                                        <span class="text-xs text-gray-500 hidden md:block">Qty:</span>
+                                        <button type="button" @click="decrease"
+                                            class="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 text-gray-700 font-medium transition">
+                                            −
+                                        </button>
+                                        <div class="w-12 text-center border border-gray-200 rounded-lg bg-gray-50 py-1">
+                                            <span x-text="quantity" class="font-medium text-gray-800"></span>
+                                        </div>
+                                        <button type="button" @click="increase"
+                                            class="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 text-gray-700 font-medium transition">
+                                            +
+                                        </button>
+                                        <span class="text-xs text-gray-400 hidden md:block" x-text="'Max: ' + max"></span>
+                                    </div>
                                 </div>
-
-                                {{-- PLUS --}}
-                                <button type="button" @click="increase"
-                                    class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300">
-                                    +
-                                </button>
-
                             </div>
 
+                            {{-- Right Side: Price + Delete (Desktop) --}}
+                            <div class="flex items-center justify-between gap-4 w-full md:w-auto md:flex-col md:items-end mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100">
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-800 text-lg" id="subtotal-{{ $cart->id }}">
+                                        {{ rupiah($cart->product->price * $cart->quantity) }}
+                                    </p>
+                                    <p class="text-xs text-gray-400">Subtotal</p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <x-confirm-modal action="{{ route('carts.destroy', $cart) }}" method="DELETE"
+                                        title="Hapus produk ini?" message="Produk akan dikeluarkan dari keranjang Anda."
+                                        confirmText="Hapus" icon="fa-trash-can" class="hover:bg-red-50 p-2 rounded-lg text-red-600 hover:text-red-700 transition">
+                                        <i class="fas fa-trash-can text-lg"></i>
+                                    </x-confirm-modal>
+                                </div>
+                            </div>
                         </div>
-
-                        {{-- RIGHT: DELETE --}}
-                        <div class="flex items-start">
-                            <x-confirm-modal action="{{ route('carts.destroy', $cart) }}" method="DELETE"
-                                title="Hapus produk ini?" message="Produk akan dikeluarkan dari keranjang Anda."
-                                confirmText="Hapus" icon="fa-trash-can" class="hover:bg-red-100 p-2 rounded-full">
-                                <img src="{{ asset('/assets/svgs/ic-trash-can-filled.svg') }}" class="w-6 h-6">
-                            </x-confirm-modal>
-                        </div>
-
                     </div>
                 @empty
-                    <p class="text-gray-500 text-center">Ups, belum ada produk yang ditambahkan!</p>
+                    <div class="bg-white rounded-xl p-12 text-center border border-gray-100">
+                        <i class="fas fa-shopping-cart text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">Ups, belum ada produk yang ditambahkan!</p>
+                        <a href="{{ route('front.product') }}" class="inline-block mt-4 text-red-600 font-semibold hover:underline">Mulai Belanja</a>
+                    </div>
                 @endforelse
 
             </div>
@@ -516,6 +520,13 @@
                 const price = asFloat(item.dataset.price ?? item.getAttribute('data-price'));
                 const qty = asInt(item.dataset.qty ?? item.getAttribute('data-qty'));
                 subTotal += price * qty;
+
+                // Update per-item subtotal
+                const wrapper = item.closest('[data-cart-item]');
+                const subtotalEl = wrapper ? wrapper.querySelector('[id^="subtotal-"]') : null;
+                if (subtotalEl) {
+                    subtotalEl.textContent = 'Rp ' + (price * qty).toLocaleString('id');
+                }
             });
 
             // update DOM (pakai 0 kalau tidak ada)

@@ -118,6 +118,16 @@ class StoreSettings
             ->all();
     }
 
+    public static function taxPercent(): float
+    {
+        return (float) self::get('tax_percent', 11);
+    }
+
+    public static function insurancePercent(): float
+    {
+        return (float) self::get('insurance_percent', 2.3);
+    }
+
     public static function invalidateCache(): void
     {
         \Illuminate\Support\Facades\Cache::forget(self::CACHE_KEY);

@@ -48,6 +48,8 @@ class ProductTransaction extends Model
     protected $fillable = [
         'user_id',
         'total_amount',
+        'tax_amount',
+        'insurance_amount',
         'is_paid',
         'status',
         'shipping_method',

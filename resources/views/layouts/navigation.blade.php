@@ -55,31 +55,21 @@
                     @endrole
 
                     @role('owner|penulis')
-                        <x-nav-dropdown label="Konten"
-                            :active="request()->routeIs('admin.articles.*')">
-                            <x-dropdown-link :href="route('admin.articles.index')"
-                                :class="request()->routeIs('admin.articles.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                {{ __('Kelola Artikel') }}
-                            </x-dropdown-link>
-                        </x-nav-dropdown>
+                        <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')">
+                            {{ __('Kelola Artikel') }}
+                        </x-nav-link>
                     @endrole
 
-                    @role('owner|admin')
-                        <x-nav-dropdown label="Manajemen"
-                            :active="request()->routeIs('admin.staff.*') || request()->routeIs('admin.customers.*')">
-                            @role('owner')
-                                <x-dropdown-link :href="route('admin.staff.index')"
-                                    :class="request()->routeIs('admin.staff.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                    {{ __('Kelola Staff') }}
-                                </x-dropdown-link>
-                            @endrole
-                            @role('admin')
-                                <x-dropdown-link :href="route('admin.customers.index')"
-                                    :class="request()->routeIs('admin.customers.*') ? 'text-gray-900 bg-gray-50' : ''">
-                                    {{ __('Pelanggan') }}
-                                </x-dropdown-link>
-                            @endrole
-                        </x-nav-dropdown>
+                    @role('owner')
+                        <x-nav-link :href="route('admin.staff.index')" :active="request()->routeIs('admin.staff.*')">
+                            {{ __('Kelola Staff') }}
+                        </x-nav-link>
+                    @endrole
+
+                    @role('admin')
+                        <x-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
+                            {{ __('Pelanggan') }}
+                        </x-nav-link>
                     @endrole
                 </div>
             </div>

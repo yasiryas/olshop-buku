@@ -105,6 +105,36 @@
                             <p>Ups, transaksi terbaru belum tersedia!</p>
                         @endforelse
 
+                        @php
+                            $subTotal = $product_transaction->transactionDetails->sum(fn($d) => $d->price * $d->qty);
+                            $taxPercent = \App\Support\StoreSettings::taxPercent();
+                            $insurancePercent = \App\Support\StoreSettings::insurancePercent();
+                        @endphp
+                        <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                            <h4 class="text-lg font-bold text-indigo-900">Rincian Biaya</h4>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-500">Subtotal ({{ $product_transaction->transactionDetails->sum('qty') }} item)</span>
+                                <span class="font-semibold text-indigo-900">{{ rupiah($subTotal) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-500">Pajak ({{ number_format($taxPercent, 1) }}%)</span>
+                                <span class="font-semibold text-indigo-900">{{ rupiah($product_transaction->tax_amount ?? 0) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-500">Asuransi ({{ number_format($insurancePercent, 1) }}%)</span>
+                                <span class="font-semibold text-indigo-900">{{ rupiah($product_transaction->insurance_amount ?? 0) }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-slate-500">Pengiriman</span>
+                                <span class="font-semibold text-indigo-900">{{ $product_transaction->shipping_cost ? rupiah($product_transaction->shipping_cost) : 'Gratis' }}</span>
+                            </div>
+                            <hr class="my-1">
+                            <div class="flex justify-between text-base font-bold text-indigo-900">
+                                <span>Total Dibayar</span>
+                                <span>{{ rupiah($product_transaction->total_amount) }}</span>
+                            </div>
+                        </div>
+
                         <h3 class="text-xl font-bold text-indigo-900">Detail Pembayaran</h3>
                         <div class="item-card flex flex-row justify-between items-center">
                             <div>

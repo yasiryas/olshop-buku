@@ -36,35 +36,104 @@
                 this.deleteId = id;
                 this.$dispatch('open-modal', 'delete-category');
             },
+            addErrors: {},
+            adding: false,
+            submitAdd(form, resultsId, listUrl) {
+                if (this.adding) return;
+                this.addErrors = {};
+                const formData = new FormData(form);
+                this.adding = true;
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                }).then(res => {
+                    if (res.status === 422) {
+                        return res.json().then(data => {
+                            this.addErrors = data.errors || {};
+                            this.adding = false;
+                        });
+                    }
+                    if (!res.ok && !res.redirected) throw new Error('Gagal menyimpan');
+                    return res.json().then(data => {
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: { message: data.message || 'Kategori berhasil dibuat.', type: 'success' }
+                        }));
+                        this.$dispatch('close-modal', 'add-category');
+                        form.reset();
+                        this.addErrors = {};
+                        return this.refreshList(resultsId, listUrl);
+                    });
+                }).catch(() => {
+                    this.adding = false;
+                });
+            },
+            editErrors: {},
             updating: false,
             submitEdit(form, resultsId, listUrl) {
                 if (this.updating) return;
+                this.editErrors = {};
                 const formData = new FormData(form);
                 this.updating = true;
                 fetch(form.action, {
                     method: 'POST',
                     body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
                 }).then(res => {
+                    if (res.status === 422) {
+                        return res.json().then(data => {
+                            this.editErrors = data.errors || {};
+                            this.updating = false;
+                        });
+                    }
                     if (!res.ok && !res.redirected) throw new Error('Gagal menyimpan');
-                    this.$dispatch('close-modal', 'edit-category');
-                    return this.refreshList(resultsId, listUrl);
+                    return res.json().then(data => {
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: { message: data.message || 'Kategori berhasil diperbarui.', type: 'success' }
+                        }));
+                        this.$dispatch('close-modal', 'edit-category');
+                        this.editErrors = {};
+                        return this.refreshList(resultsId, listUrl);
+                    });
                 }).catch(() => {
                     this.updating = false;
                 });
             },
+            deleteErrors: {},
             deleting: false,
             submitDelete(form, resultsId, listUrl) {
                 if (this.deleting) return;
+                this.deleteErrors = {};
                 this.deleting = true;
                 fetch(form.action, {
                     method: 'POST',
                     body: new FormData(form),
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
                 }).then(res => {
+                    if (res.status === 422) {
+                        return res.json().then(data => {
+                            this.deleteErrors = data.errors || { system_error: [data.message] };
+                            this.deleting = false;
+                        });
+                    }
                     if (!res.ok && !res.redirected) throw new Error('Gagal menghapus');
-                    this.$dispatch('close-modal', 'delete-category');
-                    return this.refreshList(resultsId, listUrl);
+                    return res.json().then(data => {
+                        window.dispatchEvent(new CustomEvent('show-toast', {
+                            detail: { message: data.message || 'Kategori berhasil dihapus.', type: 'success' }
+                        }));
+                        this.$dispatch('close-modal', 'delete-category');
+                        this.deleteErrors = {};
+                        return this.refreshList(resultsId, listUrl);
+                    });
                 }).catch(() => {
                     this.deleting = false;
                 });
@@ -79,11 +148,17 @@
                         const el = document.getElementById(resultsId);
                         el.innerHTML = html;
                         Alpine.initTree(el);
+                        this.adding = false;
                         this.deleting = false;
                         this.updating = false;
                     });
             },
             init() {
+                this.$on('open-modal', (e) => {
+                    if (e.detail === 'add-category') this.addErrors = {};
+                    if (e.detail === 'edit-category') this.editErrors = {};
+                    if (e.detail === 'delete-category') this.deleteErrors = {};
+                });
                 this.pollTimer = setInterval(() => {
                     if (document.hidden) return;
                     this.refreshList('results-categories', '{{ route('admin.categories.index') }}');
@@ -102,23 +177,31 @@
         <x-modal name="add-category" maxWidth="md" focusable>
             <div class="p-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">{{ __('Add New Category') }}</h2>
-                <form method="POST" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data"
+                    @submit.prevent="submitAdd($el, 'results-categories', '{{ route('admin.categories.index') }}')">
                     @csrf
+                    <template x-if="addErrors.name || addErrors.icon || addErrors.system_error">
+                        <div class="mb-4 p-3 bg-red-50 border border-red-300 rounded text-sm text-red-700">
+                            <template x-if="addErrors.name"><p x-text="addErrors.name[0]"></p></template>
+                            <template x-if="addErrors.icon"><p x-text="addErrors.icon[0]"></p></template>
+                            <template x-if="addErrors.system_error"><p x-text="addErrors.system_error[0]"></p></template>
+                        </div>
+                    </template>
                     <div>
-                        <x-input-label for="name" :value="__('Name')" />
-                        <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
-                            :value="old('name')" required autocomplete="name" />
+                        <x-input-label for="add-name" :value="__('Name')" />
+                        <x-text-input id="add-name" class="block mt-1 w-full" type="text" name="name"
+                            required autocomplete="name" />
                         <x-input-error :messages="$errors->get('name')" class="mt-2" />
                     </div>
 
                     <div class="mt-4">
-                        <x-input-label for="icon" :value="__('Icon')" />
-                        <x-text-input id="icon" class="block mt-1 w-full" type="file" name="icon" required />
+                        <x-input-label for="add-icon" :value="__('Icon')" />
+                        <input id="add-icon" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" type="file" name="icon" accept="image/jpeg,image/png,image/jpg,image/svg+xml" required />
                         <x-input-error :messages="$errors->get('icon')" class="mt-2" />
                     </div>
 
                     <div class="flex items-center justify-end mt-4">
-                        <x-primary-button class="ms-4">
+                        <x-primary-button class="ms-4" x-bind:disabled="adding">
                             {{ __('Add New Category') }}
                         </x-primary-button>
                     </div>
@@ -133,6 +216,13 @@
                         @submit.prevent="submitEdit($el, 'results-categories', '{{ route('admin.categories.index') }}')">
                         @csrf
                         @method('PUT')
+                        <template x-if="editErrors.name || editErrors.icon || editErrors.system_error">
+                            <div class="mb-4 p-3 bg-red-50 border border-red-300 rounded text-sm text-red-700">
+                                <template x-if="editErrors.name"><p x-text="editErrors.name[0]"></p></template>
+                                <template x-if="editErrors.icon"><p x-text="editErrors.icon[0]"></p></template>
+                                <template x-if="editErrors.system_error"><p x-text="editErrors.system_error[0]"></p></template>
+                            </div>
+                        </template>
                         <div>
                             <x-input-label for="name" :value="__('Name')" />
                             <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
@@ -167,6 +257,11 @@
                         @submit.prevent="submitDelete($el, 'results-categories', '{{ route('admin.categories.index') }}')">
                         @csrf
                         @method('DELETE')
+                        <template x-if="deleteErrors.system_error">
+                            <div class="mb-3 p-3 bg-red-50 border border-red-300 rounded text-sm text-red-700">
+                                <p x-text="deleteErrors.system_error[0]"></p>
+                            </div>
+                        </template>
                         <button type="submit" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full">
                             Hapus
                         </button>

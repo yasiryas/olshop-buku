@@ -155,6 +155,7 @@ class ProductTransactionController extends Controller
 
             $products = Product::withStock()
                 ->whereKey($cartItems->pluck('product_id'))
+                ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
 
@@ -167,8 +168,10 @@ class ProductTransactionController extends Controller
                 $subTotal += $product->price * $item->quantity;
             }
 
-            $tax = (11 / 100) * $subTotal;
-            $insurance = (23 / 100) * $subTotal;
+            $taxPercent = StoreSettings::taxPercent();
+            $insurancePercent = StoreSettings::insurancePercent();
+            $tax = ($taxPercent / 100) * $subTotal;
+            $insurance = ($insurancePercent / 100) * $subTotal;
 
             $selectedShipping = $agenWebConfigured
                 ? collect($shippingRates)->firstWhere('rate_id', $request->shipping_method)
@@ -181,6 +184,8 @@ class ProductTransactionController extends Controller
 
             $validated['user_id'] = $user->id;
             $validated['total_amount'] = $grandTotal;
+            $validated['tax_amount'] = (int) $tax;
+            $validated['insurance_amount'] = (int) $insurance;
             $validated['is_paid'] = false;
             $validated['status'] = ProductTransaction::STATUS_PENDING;
             $validated['shipping_method'] = $agenWebConfigured
@@ -197,11 +202,19 @@ class ProductTransactionController extends Controller
             $newTransaction = ProductTransaction::create($validated);
 
             foreach ($cartItems as $item) {
+                $product = $products[$item->product_id];
+
                 TransactionDetail::create([
                     'product_transaction_id' => $newTransaction->id,
                     'product_id' => $item->product_id,
-                    'price' => $products[$item->product_id]->price,
+                    'price' => $product->price,
                     'qty' => $item->quantity,
+                ]);
+
+                $product->stockMutations()->create([
+                    'type' => 'out',
+                    'quantity' => $item->quantity,
+                    'description' => 'Stok direservasi untuk order #' . $newTransaction->id,
                 ]);
             }
 
@@ -346,14 +359,6 @@ class ProductTransactionController extends Controller
                 }
             }
 
-            foreach ($transaction->transactionDetails as $detail) {
-                $products[$detail->product_id]->stockMutations()->create([
-                    'type'        => 'out',
-                    'quantity'    => $detail->qty,
-                    'description' => 'Stock keluar untuk order #' . $transaction->id,
-                ]);
-            }
-
             $transaction->update([
                 'is_paid' => true,
                 'status'  => ProductTransaction::STATUS_PROCESSING,
@@ -482,7 +487,7 @@ class ProductTransactionController extends Controller
 
         try {
             $transaction = DB::transaction(function () use ($productTransaction, $validated) {
-                $transaction = ProductTransaction::with('user')
+                $transaction = ProductTransaction::with(['user', 'transactionDetails.product'])
                     ->lockForUpdate()
                     ->findOrFail($productTransaction->id);
 
@@ -494,6 +499,14 @@ class ProductTransactionController extends Controller
                     'status' => ProductTransaction::STATUS_REJECTED,
                     'rejection_note' => $validated['rejection_note'],
                 ]);
+
+                foreach ($transaction->transactionDetails as $detail) {
+                    $detail->product->stockMutations()->create([
+                        'type' => 'in',
+                        'quantity' => $detail->qty,
+                        'description' => 'Stok dilepas karena order #' . $transaction->id . ' ditolak.',
+                    ]);
+                }
 
                 return $transaction;
             });
@@ -527,6 +540,7 @@ class ProductTransactionController extends Controller
         }
 
         $stockHasBeenDeducted = [
+            ProductTransaction::STATUS_PENDING,
             ProductTransaction::STATUS_PROCESSING,
             ProductTransaction::STATUS_SHIPPED,
             ProductTransaction::STATUS_COMPLETED,

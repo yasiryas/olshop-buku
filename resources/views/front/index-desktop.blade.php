@@ -7,10 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Wigati Buku</title>
     <link rel="shortcut icon" href="{{ asset('/assets/logo/icon-book.webp') }}" type="image/x-icon">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
-    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="{{ asset('/assets/js/tailwind-browser@4.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('/assets/fontawesome/css/all.min.css') }}">
+    <script src="{{ asset('/assets/js/alpine.min.js') }}" defer></script>
 </head>
 
 <body>

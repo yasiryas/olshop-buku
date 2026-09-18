@@ -66,7 +66,7 @@ class CategoryController extends Controller
     {
         //
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:categories,name',
             'icon' => 'required|image|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
 
@@ -82,9 +82,20 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            if ($request->ajax()) {
+                return response()->json(['message' => 'Kategori berhasil dibuat.']);
+            }
+
             return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollback();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'errors' => ['system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()]],
+                ], 422);
+            }
+
             $error = ValidationException::withMessages([
                 'system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()],
             ]);
@@ -116,7 +127,7 @@ class CategoryController extends Controller
     {
         //
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
+            'name' => 'sometimes|string|max:255|unique:categories,name,' . $category->id,
             'icon' => 'sometimes|image|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
 
@@ -132,9 +143,20 @@ class CategoryController extends Controller
 
             DB::commit();
 
+            if ($request->ajax()) {
+                return response()->json(['message' => 'Kategori berhasil diperbarui.']);
+            }
+
             return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollback();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'errors' => ['system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()]],
+                ], 422);
+            }
+
             $error = ValidationException::withMessages([
                 'system_error' => ['Terjadi kesalahan sistem: '.$e->getMessage()],
             ]);
@@ -145,17 +167,27 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category)
+    public function destroy(Request $request, Category $category)
     {
         $linkedProducts = (int) $category->products()->count();
         $linkedArticles = (int) $category->articles()->count();
 
         if ($linkedProducts > 0 || $linkedArticles > 0) {
+            $message = "Kategori tidak dapat dihapus karena masih berisi $linkedProducts produk dan $linkedArticles artikel. Pindahkan atau hapus dulu isinya.";
+
+            if ($request->ajax()) {
+                return response()->json(['message' => $message], 422);
+            }
+
             return redirect()->route('admin.categories.index')
-                ->with('error', "Kategori tidak dapat dihapus karena masih berisi $linkedProducts produk dan $linkedArticles artikel. Pindahkan atau hapus dulu isinya.");
+                ->with('error', $message);
         }
 
         $category->delete();
+
+        if ($request->ajax()) {
+            return response()->json(['message' => 'Kategori berhasil dihapus.']);
+        }
 
         return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil dihapus.');
     }

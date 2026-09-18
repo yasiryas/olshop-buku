@@ -1,4 +1,4 @@
-@import url('../fonts/poppins.css');
+@import url('../fonts/plus-jakarta-sans.css');
 
 /*
 ! tailwindcss v3.4.3 | MIT License | https://tailwindcss.com
@@ -455,7 +455,7 @@ video {
 body{
   --tw-bg-opacity: 1;
   background-color: rgb(247 241 240 / var(--tw-bg-opacity));
-  font-family: Poppins, sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   --tw-text-opacity: 1;
   color: rgb(18 18 18 / var(--tw-text-opacity));
 }

@@ -106,7 +106,8 @@ class TransactionSeeder extends Seeder
                     $shippingCost = $shipping['cost'];
                     $totalAmount = $this->calculateTotal($items, $shippingCost);
 
-                    $day = 1 + (($orderCounter * 7 + $monthBack * 5) % min($daysInMonth, 28));
+                    $maxDay = $monthBack === 0 ? min((int) now()->format('d'), $daysInMonth) : min($daysInMonth, 28);
+                    $day = 1 + (($orderCounter * 7 + $monthBack * 5) % $maxDay);
                     $hour = 8 + (($orderCounter * 3) % 11);
                     $createdAt = $monthStart->copy()->setDay($day)->setTime($hour, ($orderCounter * 17) % 60, 0);
 
@@ -217,6 +218,10 @@ class TransactionSeeder extends Seeder
                 $totalAmount = $this->calculateTotal($items, $shippingCost);
 
                 $day = 1 + (($orderIndex * 13 + $monthOffset * 5) % $daysInMonth);
+                if ($monthOffset === 0) {
+                    $maxDay = min($day, (int) now()->format('d'));
+                    $day = min($day, $maxDay);
+                }
                 $hour = 8 + (($orderIndex * 3) % 11);
                 $createdAt = $monthStart->copy()->setDay($day)->setTime($hour, ($orderIndex * 17) % 60, 0);
                 $updatedAt = $createdAt->copy()->addDays($this->statusAdvanceDays($status));

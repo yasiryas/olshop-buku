@@ -14,9 +14,9 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['Plus Jakarta Sans', ...defaultTheme.fontFamily.sans],
                 body: [
-                    'Inter',
+                    'Plus Jakarta Sans',
                     'ui-sans-serif',
                     'system-ui',
                     '-apple-system',
