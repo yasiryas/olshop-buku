@@ -1,7 +1,9 @@
 <div x-data="notifBell({
     indexUrl: @js(route('notifications.index')),
+    readUrl: @js(route('notifications.read', ['notification' => ':id'])),
     readAllUrl: @js(route('notifications.readAll')),
     previewUrl: @js(route('product_transactions.preview', ['productTransaction' => ':id'])),
+    ordersUrl: @js(route('product_transactions.index')),
     isAdmin: @js(auth()->user()?->hasAnyRole(['owner', 'admin']) ?? false),
 })" class="relative">
     <button type="button" @click="toggle"
@@ -43,7 +45,7 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('notifBell', ({ indexUrl, readAllUrl, previewUrl, isAdmin }) => ({
+        Alpine.data('notifBell', ({ indexUrl, readAllUrl, previewUrl, ordersUrl, isAdmin }) => ({
             open: false,
             unread: 0,
             items: [],
@@ -51,13 +53,13 @@
             init() {
                 this.load();
                 setInterval(() => this.load(), 60000);
+                window.addEventListener('notification-marked-read', (e) => this.removeItem(e.detail));
             },
 
             async toggle() {
                 this.open = !this.open;
                 if (this.open) {
                     await this.load();
-                    if (this.unread > 0) this.markAllRead();
                 }
             },
 
@@ -85,27 +87,63 @@
                             'X-CSRF-TOKEN': token
                         }
                     });
+                    this.items = [];
                     this.unread = 0;
-                    this.items.forEach((n) => { n.read = true; });
                 } catch (e) {
                     console.error('Gagal menandai notifikasi dibaca:', e);
                 }
             },
 
+            async markRead(n) {
+                if (n.read) return;
+                try {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                    await fetch(readUrl.replace(':id', n.id), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token
+                        }
+                    });
+                    this.removeItem(n.id);
+                    await this.load();
+                } catch (e) {
+                    console.error('Gagal menandai notifikasi dibaca:', e);
+                }
+            },
+
+            removeItem(id) {
+                this.items = this.items.filter((item) => item.id !== id);
+            },
+
+            extractOrderId(n) {
+                if (n.order_id) return n.order_id;
+                const match = (n.url || '').match(/\/product_transactions\/(\d+)/);
+                return match ? match[1] : null;
+            },
+
             getNotificationUrl(n) {
                 // For admin users with order notifications, use preview URL
-                if (isAdmin && n.order_id && (n.type === 'order_created' || n.type === 'proof_uploaded' || n.type === 'order_status_changed')) {
-                    return previewUrl.replace(':id', n.order_id);
+                const orderId = this.extractOrderId(n);
+                if (isAdmin && orderId) {
+                    return previewUrl.replace(':id', orderId);
                 }
                 return n.url;
             },
 
             async handleNotificationClick(n) {
-                // For admin users with order notifications, open preview modal
-                if (isAdmin && n.order_id && (n.type === 'order_created' || n.type === 'proof_uploaded' || n.type === 'order_status_changed')) {
-                    const url = previewUrl.replace(':id', n.order_id);
-                    // Dedicated event so the URL payload isn't lost (Alpine $dispatch only passes 2 args)
-                    window.dispatchEvent(new CustomEvent('open-order-preview', { detail: { url } }));
+                await this.markRead(n);
+                const orderId = this.extractOrderId(n);
+                if (isAdmin && orderId) {
+                    const url = previewUrl.replace(':id', orderId);
+                    if (document.getElementById('order-detail-content')) {
+                        // Dedicated event so the URL payload isn't lost (Alpine $dispatch only passes 2 args)
+                        document.dispatchEvent(new CustomEvent('open-order-preview', { detail: { url } }));
+                        return;
+                    }
+                    // Toko (halaman front) tanpa modal preview: arahkan ke daftar pesanan
+                    window.location.href = ordersUrl;
                     return;
                 }
                 // Default: navigate normally (handled by <a href>)

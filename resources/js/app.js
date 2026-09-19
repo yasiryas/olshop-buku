@@ -263,6 +263,13 @@ Alpine.data('orderDetail', () => ({
             const response = await fetch(url, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }
             });
+            if (!response.ok) {
+                this.loading = false;
+                content.style.minHeight = '';
+                content.innerHTML =
+                    '<p class="text-red-600 text-center py-8">Pesanan tidak ditemukan atau sudah dihapus.</p>';
+                return;
+            }
             const html = await response.text();
             content.innerHTML = html;
             content.style.minHeight = '';

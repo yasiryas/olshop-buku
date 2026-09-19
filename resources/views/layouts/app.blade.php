@@ -107,6 +107,10 @@
                 const res = await fetch(url, {
                     headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' }
                 });
+                if (!res.ok) {
+                    content.innerHTML = '<div class="text-center py-8 text-red-600">Pesanan tidak ditemukan atau sudah dihapus.</div>';
+                    return;
+                }
                 const html = await res.text();
                 content.innerHTML = html;
                 // Reinitialize Alpine components in the modal content

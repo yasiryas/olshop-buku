@@ -50,11 +50,5 @@
             <div id="results-orders">
                 @include('admin.partials.orders_list')
             </div>
-
-            <x-modal name="order-detail" maxWidth="2xl">
-                <div class="p-6">
-                    <div id="order-detail-content" class="py-2"></div>
-                </div>
-            </x-modal>
         </div>
 </x-app-layout>

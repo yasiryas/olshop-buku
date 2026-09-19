@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\User;
+use App\Notifications\ArticleCreatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -75,6 +77,10 @@ class ArticleController extends Controller
         $validated['user_id'] = auth()->id();
 
         Article::create($validated);
+
+        foreach (User::role('penulis')->get() as $penulis) {
+            $penulis->notify(new ArticleCreatedNotification($article));
+        }
 
         return redirect()
             ->route('admin.articles.index')

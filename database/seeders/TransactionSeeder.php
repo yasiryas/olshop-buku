@@ -36,7 +36,7 @@ class TransactionSeeder extends Seeder
     protected const AVG_ORDER_TOTAL = 680000;
 
     /** Jumlah bulan data demo (termasuk bulan berjalan). */
-    protected const MONTHS = 12;
+    protected const MONTHS = 1;
 
     /** Target stok akhir per produk urut berdasarkan id (sebagian sengaja menipis). */
     protected const TARGET_STOCKS = [3, 4, 45, 30, 60, 2, 40, 55];
@@ -77,7 +77,7 @@ class TransactionSeeder extends Seeder
         $productCursor = 0;
         $orderCounter = 0;
 
-        for ($monthBack = 8; $monthBack >= 0; $monthBack--) {
+        for ($monthBack = 0; $monthBack >= 0; $monthBack--) {
             $monthStart = now()->startOfMonth()->subMonthsNoOverflow($monthBack);
             $daysInMonth = $monthStart->daysInMonth;
 
@@ -145,7 +145,7 @@ class TransactionSeeder extends Seeder
                         continue;
                     }
 
-                    $updatedAt = $createdAt->copy()->addDays($this->statusAdvanceDays($status));
+$updatedAt = $createdAt->copy()->addDays($this->statusAdvanceDays($status))->min(now());
 
                     $transaction->forceFill([
                         'created_at' => $createdAt,
@@ -182,6 +182,7 @@ class TransactionSeeder extends Seeder
         }
 
         $this->resetTransactionData();
+        $this->ensureSeedProof();
 
         $productKeyed = $products->keyBy('id');
         $productIds = $productKeyed->keys()->all();
@@ -230,7 +231,7 @@ class TransactionSeeder extends Seeder
                 }
                 $hour = 8 + (($orderIndex * 3) % 11);
                 $createdAt = $monthStart->copy()->setDay($day)->setTime($hour, ($orderIndex * 17) % 60, 0);
-                $updatedAt = $createdAt->copy()->addDays($this->statusAdvanceDays($status));
+                $updatedAt = $createdAt->copy()->addDays($this->statusAdvanceDays($status))->min(now());
 
                 $isPaid = in_array($status, ProductTransaction::PAID_STATUSES, true);
 
@@ -272,11 +273,7 @@ class TransactionSeeder extends Seeder
 
     protected function ordersPerBuyer(int $monthBack, int $buyerIndex): int
     {
-        if (($buyerIndex + $monthBack) % 3 !== 0) {
-            return 0;
-        }
-
-        return 1 + (($buyerIndex * 2 + $monthBack) % 2);
+        return 1 + (($buyerIndex + $monthBack) % 3);
     }
 
     protected function pickStatus(int $monthBack, int $orderCounter): string
@@ -387,6 +384,30 @@ class TransactionSeeder extends Seeder
         DB::table('product_transactions')->truncate();
         DB::table('carts')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
+    }
+
+    /**
+     * Salin fixture bukti pembayaran ke storage publik agar link "Lihat Bukti" tidak 404/403.
+     */
+    protected function ensureSeedProof(): void
+    {
+        $target = storage_path('app/public/payment_proofs/seed/bukti.png');
+
+        if (is_file($target)) {
+            return;
+        }
+
+        $source = database_path('seeders/assets/bukti.png');
+
+        if (! is_file($source)) {
+            return;
+        }
+
+        if (! is_dir(dirname($target))) {
+            mkdir(dirname($target), 0755, true);
+        }
+
+        copy($source, $target);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\ArticleCreatedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -9,7 +10,14 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $notifications = $request->user()->notifications()
+        $user = $request->user();
+        $query = $user->notifications();
+
+        if ($user->hasRole('penulis')) {
+            $query->where('type', ArticleCreatedNotification::class);
+        }
+
+        $notifications = $query
             ->latest()
             ->limit(20)
             ->get()
@@ -24,9 +32,19 @@ class NotificationController extends Controller
             ]);
 
         return response()->json([
-            'unread' => $request->user()->unreadNotifications()->count(),
+            'unread' => $user->unreadNotifications()
+                ->when($user->hasRole('penulis'), fn ($q) => $q->where('type', ArticleCreatedNotification::class))
+                ->count(),
             'data' => $notifications,
         ]);
+    }
+
+    public function read(Request $request, string $notification): JsonResponse
+    {
+        $notification = $request->user()->notifications()->whereKey($notification)->firstOrFail();
+        $notification->markAsRead();
+
+        return response()->json(['success' => true]);
     }
 
     public function readAll(Request $request): JsonResponse

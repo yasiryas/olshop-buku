@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             ArticleSeeder::class,
             TransactionSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

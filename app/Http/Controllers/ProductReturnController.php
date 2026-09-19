@@ -25,7 +25,7 @@ class ProductReturnController extends Controller
                             ->orWhereHas('user', fn ($qu) => $qu->where('name', 'like', "%{$search}%"));
                     });
             }))
-            ->orderByRaw("FIELD(status, 'requested', 'approved', 'rejected')")
+            ->orderByRaw("CASE WHEN status = 'requested' THEN 0 WHEN status = 'approved' THEN 1 WHEN status = 'rejected' THEN 2 ELSE 3 END")
             ->latest()
             ->paginate(15)
             ->withQueryString();
