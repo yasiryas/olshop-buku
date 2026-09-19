@@ -33,7 +33,7 @@ class OrderCreatedNotification extends Notification
     {
         $url = route('product_transactions.show', $this->transaction->id);
         if ($notifiable->hasAnyRole(['owner', 'admin'])) {
-            $url = route('product_transactions.show', $this->transaction->id);
+            $url = route('product_transactions.preview', ['productTransaction' => $this->transaction->id]);
         }
         return [
             'message' => 'Pesanan baru #'.$this->transaction->id.' dari '.$this->transaction->recipient_name,

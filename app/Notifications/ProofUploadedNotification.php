@@ -27,14 +27,14 @@ class ProofUploadedNotification extends Notification
             ->greeting('Halo ' . $notifiable->name . ',')
             ->line('Pembeli telah mengunggah bukti transfer untuk pesanan #' . $this->transaction->id . '.')
             ->line('Silakan verifikasi agar pesanan segera diproses.')
-            ->action('Lihat Pesanan', route('product_transactions.show', $this->transaction->id));
+            ->action('Lihat Pesanan', route('product_transactions.preview', ['productTransaction' => $this->transaction->id]));
     }
 
     public function toArray(object $notifiable): array
     {
         return [
             'message' => 'Bukti pembayaran pesanan #' . $this->transaction->id . ' telah diunggah pembeli.',
-            'url' => route('product_transactions.show', $this->transaction->id),
+            'url' => route('product_transactions.preview', ['productTransaction' => $this->transaction->id]),
             'order_id' => $this->transaction->id,
             'type' => 'proof_uploaded',
         ];
