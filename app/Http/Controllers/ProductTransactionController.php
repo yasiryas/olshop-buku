@@ -290,23 +290,21 @@ class ProductTransactionController extends Controller
     {
         $user = auth()->user();
 
+        // Reload with relations
+        $productTransaction = ProductTransaction::with([
+            'returns',
+            'transactionDetails.product' => fn ($q) => $q->withStock(),
+        ])->findOrFail($productTransaction->id);
+
         if ($user->hasAnyRole(['buyer'])) {
             if ($productTransaction->user_id !== $user->id) {
                 abort(403, 'Anda tidak dapat melihat pesanan milik pengguna lain.');
             }
+            return view('front.product_transaction.details', ['product_transaction' => $productTransaction]);
         }
-
-        $productTransaction = ProductTransaction::with([
-            'returns',
-            'transactionDetails.product' => fn ($q) => $q->withStock(),
-        ])->find($productTransaction->id);
 
         if ($user->hasAnyRole(['owner', 'admin'])) {
             return view('admin.product_transaction.details', ['product_transaction' => $productTransaction]);
-        }
-
-        if ($user->hasRole('buyer')) {
-            return view('front.product_transaction.details', ['product_transaction' => $productTransaction]);
         }
 
         abort(403, 'Anda tidak memiliki izin melihat detail pesanan.');

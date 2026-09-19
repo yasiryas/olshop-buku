@@ -57,10 +57,15 @@
         </footer>
 
         <x-toast />
+
+        {{-- Global Order Detail Modal for Notification --}}
+        <x-modal name="order-detail" :show="false" maxWidth="2xl">
+            <div class="p-6" id="order-detail-content"></div>
+        </x-modal>
+
     </div>
 
     <script>
-
         // Handle Approve Order form submission
         const approveForm = document.getElementById('approveForm');
         if (approveForm) {
@@ -73,6 +78,46 @@
                 }
             });
         }
+
+        // Global modal handler for order-detail from notifications
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('modals', {
+                open(name, payload = {}) {
+                    this.$dispatch('open-modal', name, payload);
+                }
+            });
+        });
+
+        // Handle order-detail modal from notification bell
+        document.addEventListener('open-modal', async (e) => {
+            if (e.detail !== 'order-detail') return;
+            const payload = e.detail || {};
+            const url = payload.url || payload.detail?.url;
+            if (!url) return;
+
+            const modal = document.querySelector('[x-modal="order-detail"]');
+            if (!modal) return;
+
+            const content = modal.querySelector('#order-detail-content');
+            content.innerHTML = '<div class="flex items-center justify-center py-12"><i class="fas fa-spinner fa-spin text-2xl text-indigo-600"></i></div>';
+
+            modal._x_modal.show();
+
+            try {
+                const res = await fetch(url, {
+                    headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const html = await res.text();
+                content.innerHTML = html;
+                // Reinitialize Alpine components in the modal content
+                if (window.Alpine) {
+                    Alpine.initTree(content);
+                }
+            } catch (err) {
+                content.innerHTML = '<div class="text-center py-8 text-red-600">Gagal memuat detail pesanan</div>';
+                console.error('Gagal memuat order detail:', err);
+            }
+        });
     </script>
 
     <!-- PWA Install Prompt -->

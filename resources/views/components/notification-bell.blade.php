@@ -1,6 +1,8 @@
 <div x-data="notifBell({
     indexUrl: @js(route('notifications.index')),
     readAllUrl: @js(route('notifications.readAll')),
+    previewUrl: @js(route('product_transactions.preview', ':id')),
+    isAdmin: @js(auth()->user()?->hasAnyRole(['owner', 'admin']) ?? false),
 })" class="relative">
     <button type="button" @click="toggle"
         class="relative inline-flex items-center justify-center w-10 h-10 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none transition"
@@ -24,8 +26,9 @@
         </template>
 
         <template x-for="n in items" :key="n.id">
-            <a :href="n.url"
-                class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0">
+            <a :href="getNotificationUrl(n)"
+                class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0"
+                @click.prevent="handleNotificationClick(n)">
                 <div class="flex items-start gap-2">
                     <span x-show="!n.read" class="w-2 h-2 mt-1.5 rounded-full bg-red-500 shrink-0"></span>
                     <div class="min-w-0">
@@ -37,3 +40,76 @@
         </template>
     </div>
 </div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('notifBell', ({ indexUrl, readAllUrl, previewUrl, isAdmin }) => ({
+            open: false,
+            unread: 0,
+            items: [],
+
+            init() {
+                this.load();
+                setInterval(() => this.load(), 60000);
+            },
+
+            async toggle() {
+                this.open = !this.open;
+                if (this.open) {
+                    await this.load();
+                    if (this.unread > 0) this.markAllRead();
+                }
+            },
+
+            async load() {
+                try {
+                    const res = await fetch(indexUrl, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+                    this.items = Array.isArray(data.data) ? data.data : [];
+                    this.unread = Number(data.unread || 0);
+                } catch (e) {
+                    console.error('Gagal memuat notifikasi:', e);
+                }
+            },
+
+            async markAllRead() {
+                try {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                    await fetch(readAllUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token
+                        }
+                    });
+                    this.unread = 0;
+                    this.items.forEach((n) => { n.read = true; });
+                } catch (e) {
+                    console.error('Gagal menandai notifikasi dibaca:', e);
+                }
+            },
+
+            getNotificationUrl(n) {
+                // For admin users with order notifications, use preview URL
+                if (isAdmin && n.order_id && (n.type === 'order_created' || n.type === 'proof_uploaded' || n.type === 'order_status_changed')) {
+                    return previewUrl.replace(':id', n.order_id);
+                }
+                return n.url;
+            },
+
+            async handleNotificationClick(n) {
+                // For admin users with order notifications, open preview modal
+                if (isAdmin && n.order_id && (n.type === 'order_created' || n.type === 'proof_uploaded' || n.type === 'order_status_changed')) {
+                    const url = previewUrl.replace(':id', n.order_id);
+                    // Dispatch event to open modal (handled by admin layout)
+                    this.$dispatch('open-modal', 'order-detail', { url });
+                    return;
+                }
+                // Default: navigate normally (handled by <a href>)
+            }
+        }));
+    });
+</script>

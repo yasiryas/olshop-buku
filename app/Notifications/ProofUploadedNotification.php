@@ -35,6 +35,8 @@ class ProofUploadedNotification extends Notification
         return [
             'message' => 'Bukti pembayaran pesanan #' . $this->transaction->id . ' telah diunggah pembeli.',
             'url' => route('product_transactions.show', $this->transaction->id),
+            'order_id' => $this->transaction->id,
+            'type' => 'proof_uploaded',
         ];
     }
 }

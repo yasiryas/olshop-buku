@@ -31,9 +31,15 @@ class OrderCreatedNotification extends Notification
 
     public function toArray(object $notifiable): array
     {
+        $url = route('product_transactions.show', $this->transaction->id);
+        if ($notifiable->hasAnyRole(['owner', 'admin'])) {
+            $url = route('product_transactions.show', $this->transaction->id);
+        }
         return [
             'message' => 'Pesanan baru #'.$this->transaction->id.' dari '.$this->transaction->recipient_name,
-            'url' => route('product_transactions.show', $this->transaction->id),
+            'url' => $url,
+            'order_id' => $this->transaction->id,
+            'type' => 'order_created',
         ];
     }
 }

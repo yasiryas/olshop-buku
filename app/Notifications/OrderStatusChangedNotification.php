@@ -40,6 +40,8 @@ class OrderStatusChangedNotification extends Notification
         return [
             'message' => 'Pesanan #' . $this->transaction->id . ' kini berstatus: ' . $this->transaction->statusLabel(),
             'url' => route('product_transactions.show', $this->transaction->id),
+            'order_id' => $this->transaction->id,
+            'type' => 'order_status_changed',
         ];
     }
 }
