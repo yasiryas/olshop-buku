@@ -104,11 +104,12 @@
                 // For admin users with order notifications, open preview modal
                 if (isAdmin && n.order_id && (n.type === 'order_created' || n.type === 'proof_uploaded' || n.type === 'order_status_changed')) {
                     const url = previewUrl.replace(':id', n.order_id);
-                    // Dispatch event to open modal (handled by admin layout)
-                    this.$dispatch('open-modal', 'order-detail', { url });
+                    // Dedicated event so the URL payload isn't lost (Alpine $dispatch only passes 2 args)
+                    window.dispatchEvent(new CustomEvent('open-order-preview', { detail: { url } }));
                     return;
                 }
                 // Default: navigate normally (handled by <a href>)
+                if (n.url) window.location.href = n.url;
             }
         }));
     });

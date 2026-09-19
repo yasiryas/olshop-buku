@@ -17,6 +17,8 @@ class NotificationController extends Controller
                 'id' => $n->id,
                 'message' => data_get($n->data, 'message'),
                 'url' => data_get($n->data, 'url'),
+                'order_id' => data_get($n->data, 'order_id'),
+                'type' => data_get($n->data, 'type'),
                 'read' => !is_null($n->read_at),
                 'time' => $n->created_at->diffForHumans(),
             ]);

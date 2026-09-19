@@ -88,20 +88,20 @@
             });
         });
 
-        // Handle order-detail modal from notification bell
-        document.addEventListener('open-modal', async (e) => {
-            if (e.detail !== 'order-detail') return;
-            const payload = e.detail || {};
-            const url = payload.url || payload.detail?.url;
+        // Handle order-detail modal from notification bell (admin preview)
+        document.addEventListener('open-order-preview', async (e) => {
+            const url = e.detail?.url;
             if (!url) return;
 
-            const modal = document.querySelector('[x-modal="order-detail"]');
-            if (!modal) return;
+            const content = document.getElementById('order-detail-content');
+            if (!content) return;
 
-            const content = modal.querySelector('#order-detail-content');
             content.innerHTML = '<div class="flex items-center justify-center py-12"><i class="fas fa-spinner fa-spin text-2xl text-indigo-600"></i></div>';
 
-            modal._x_modal.show();
+            // Open the custom modal via window event (name = 'order-detail')
+            window.dispatchEvent(new CustomEvent('open-modal', {
+                detail: 'order-detail'
+            }));
 
             try {
                 const res = await fetch(url, {
