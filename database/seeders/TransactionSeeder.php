@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 class TransactionSeeder extends Seeder
 {
     protected const TAX_RATE = 0.11;
-    protected const INSURANCE_RATE = 0.23;
+    protected const INSURANCE_RATE = 0.023;
 
     protected const SHIPPING_METHODS = [
         ['courier' => 'JNE Reguler', 'cost' => 12000],
@@ -104,6 +104,8 @@ class TransactionSeeder extends Seeder
                     $productCursor = ($productCursor + $itemCount) % $productCount;
 
                     $shippingCost = $shipping['cost'];
+                    $taxAmount = $this->calculateTax($items);
+                    $insuranceAmount = $this->calculateInsurance($items);
                     $totalAmount = $this->calculateTotal($items, $shippingCost);
 
                     $maxDay = $monthBack === 0 ? min((int) now()->format('d'), $daysInMonth) : min($daysInMonth, 28);
@@ -134,6 +136,8 @@ class TransactionSeeder extends Seeder
                             'post_code' => $zone['post_code'],
                             'phone_number' => $this->phoneNumber($buyerIndex, $orderCounter),
                             'notes' => $order % 3 === 0 ? 'Tolong dibungkus rapi.' : null,
+                            'tax_amount' => $taxAmount,
+                            'insurance_amount' => $insuranceAmount,
                         ]
                     );
 
@@ -215,6 +219,8 @@ class TransactionSeeder extends Seeder
                 }
 
                 $shippingCost = $shipping['cost'];
+                $taxAmount = $this->calculateTax($items);
+                $insuranceAmount = $this->calculateInsurance($items);
                 $totalAmount = $this->calculateTotal($items, $shippingCost);
 
                 $day = 1 + (($orderIndex * 13 + $monthOffset * 5) % $daysInMonth);
@@ -231,6 +237,8 @@ class TransactionSeeder extends Seeder
                 $transaction = new ProductTransaction([
                     'user_id' => $buyerId,
                     'total_amount' => $totalAmount,
+                    'tax_amount' => $taxAmount,
+                    'insurance_amount' => $insuranceAmount,
                     'is_paid' => $isPaid,
                     'status' => $status,
                     'shipping_method' => $shipping['courier'],
@@ -354,6 +362,18 @@ class TransactionSeeder extends Seeder
         $subTotal = $this->calculateSubtotal($items);
 
         return (int) round($subTotal * (1 + self::TAX_RATE + self::INSURANCE_RATE)) + $shippingCost;
+    }
+
+    protected function calculateTax(array $items): int
+    {
+        $subTotal = $this->calculateSubtotal($items);
+        return (int) round($subTotal * self::TAX_RATE);
+    }
+
+    protected function calculateInsurance(array $items): int
+    {
+        $subTotal = $this->calculateSubtotal($items);
+        return (int) round($subTotal * self::INSURANCE_RATE);
     }
 
     /**
