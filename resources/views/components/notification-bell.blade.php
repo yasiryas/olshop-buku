@@ -1,7 +1,7 @@
 <div x-data="notifBell({
     indexUrl: @js(route('notifications.index')),
     readAllUrl: @js(route('notifications.readAll')),
-    previewUrl: @js(route('product_transactions.preview', ':id')),
+    previewUrl: @js(route('product_transactions.preview', ['productTransaction' => ':id'])),
     isAdmin: @js(auth()->user()?->hasAnyRole(['owner', 'admin']) ?? false),
 })" class="relative">
     <button type="button" @click="toggle"
