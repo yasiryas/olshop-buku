@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: olshop-buku-app
+    container_name: wigati-app
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www
+    networks:
+      - apps-network
+
+  nginx:
+    image: nginx:latest
+    container_name: wigati-nginx
+    restart: unless-stopped
+    ports:
+      - "6002:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./:/var/www
+    networks:
+      - apps-network
+    depends_on:
+      - app
+
+networks:
+  apps-network:
+    external: true

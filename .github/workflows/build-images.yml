@@ -1,0 +1,58 @@
+name: Build and Publish Wigati Images
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Normalize image owner
+        id: image
+        shell: bash
+        run: |
+          echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Laravel image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.prod
+          push: true
+          tags: |
+            ghcr.io/${{ steps.image.outputs.owner }}/olshop-buku-app:${{ github.sha }}
+            ghcr.io/${{ steps.image.outputs.owner }}/olshop-buku-app:latest
+
+      - name: Build and push Nginx image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.nginx
+          push: true
+          tags: |
+            ghcr.io/${{ steps.image.outputs.owner }}/olshop-buku-nginx:${{ github.sha }}
+            ghcr.io/${{ steps.image.outputs.owner }}/olshop-buku-nginx:latest
