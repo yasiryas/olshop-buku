@@ -3,7 +3,7 @@ name: Build and Publish Wigati Images
 on:
   push:
     branches:
-      - main
+      - cicd-setup
   workflow_dispatch:
 
 permissions:
