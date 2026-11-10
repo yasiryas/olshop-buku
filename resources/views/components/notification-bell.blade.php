@@ -45,7 +45,7 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('notifBell', ({ indexUrl, readAllUrl, previewUrl, ordersUrl, isAdmin }) => ({
+        Alpine.data('notifBell', ({ indexUrl, readUrl, readAllUrl, previewUrl, ordersUrl, isAdmin }) => ({
             open: false,
             unread: 0,
             items: [],
@@ -53,7 +53,6 @@
             init() {
                 this.load();
                 setInterval(() => this.load(), 60000);
-                window.addEventListener('notification-marked-read', (e) => this.removeItem(e.detail));
             },
 
             async toggle() {
@@ -68,6 +67,7 @@
                     const res = await fetch(indexUrl, {
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                     });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const data = await res.json();
                     this.items = Array.isArray(data.data) ? data.data : [];
                     this.unread = Number(data.unread || 0);
@@ -79,7 +79,7 @@
             async markAllRead() {
                 try {
                     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-                    await fetch(readAllUrl, {
+                    const res = await fetch(readAllUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -87,7 +87,8 @@
                             'X-CSRF-TOKEN': token
                         }
                     });
-                    this.items = [];
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    this.items = this.items.map((item) => ({ ...item, read: true }));
                     this.unread = 0;
                 } catch (e) {
                     console.error('Gagal menandai notifikasi dibaca:', e);
@@ -98,7 +99,7 @@
                 if (n.read) return;
                 try {
                     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-                    await fetch(readUrl.replace(':id', n.id), {
+                    const res = await fetch(readUrl.replace(':id', n.id), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -106,15 +107,14 @@
                             'X-CSRF-TOKEN': token
                         }
                     });
-                    this.removeItem(n.id);
-                    await this.load();
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    this.items = this.items.map((item) => item.id === n.id
+                        ? { ...item, read: true }
+                        : item);
+                    this.unread = Math.max(0, this.unread - 1);
                 } catch (e) {
                     console.error('Gagal menandai notifikasi dibaca:', e);
                 }
-            },
-
-            removeItem(id) {
-                this.items = this.items.filter((item) => item.id !== id);
             },
 
             extractOrderId(n) {

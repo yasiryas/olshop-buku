@@ -319,9 +319,26 @@ class CheckoutFlowTest extends TestCase
         $this->assertCount(1, $response->json('data'));
         $this->assertFalse($response->json('data.0.read'));
 
+        $notificationId = $response->json('data.0.id');
+        $this->actingAs($buyer)
+            ->postJson(route('notifications.read', $notificationId))
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $reloaded = $this->actingAs($buyer)->getJson(route('notifications.index'));
+        $this->assertSame(0, $reloaded->json('unread'));
+        $this->assertTrue($reloaded->json('data.0.read'));
+
+        $buyer->notifications()->create([
+            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'type' => OrderStatusChangedNotification::class,
+            'data' => ['message' => 'Notifikasi baru'],
+        ]);
+
         $this->actingAs($buyer)->postJson(route('notifications.readAll'))->assertOk();
 
         $reloaded = $this->actingAs($buyer)->getJson(route('notifications.index'));
         $this->assertSame(0, $reloaded->json('unread'));
+        $this->assertTrue(collect($reloaded->json('data'))->every(fn ($notification) => $notification['read']));
     }
 }
