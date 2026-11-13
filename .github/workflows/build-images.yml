@@ -1,17 +1,19 @@
-name: Build and Publish Wigati Images
+
+name: Build and Deploy Wigati
 
 on:
   push:
     branches:
-      - cicd-setup
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
-env:
-  REGISTRY: ghcr.io
+concurrency:
+  group: wigati-production-deploy
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -56,3 +58,50 @@ jobs:
           tags: |
             ghcr.io/${{ steps.image.outputs.owner }}/olshop-buku-nginx:${{ github.sha }}
             ghcr.io/${{ steps.image.outputs.owner }}/olshop-buku-nginx:latest
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.WIGATI_DEPLOY }}
+          ping: 100.100.68.107
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/wigati_deploy
+          chmod 600 ~/.ssh/wigati_deploy
+          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy to production
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          ssh -i ~/.ssh/wigati_deploy \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "$SERVER_USER@$SERVER_HOST" \
+            "IMAGE_TAG='$IMAGE_TAG' bash -s" <<'REMOTE'
+          set -e
+          cd /srv/apps/olshop-buku
+
+          IMAGE_TAG="$IMAGE_TAG" docker compose \
+            -f docker-compose.prod.yml pull
+
+          IMAGE_TAG="$IMAGE_TAG" docker compose \
+            -f docker-compose.prod.yml up -d --no-build
+
+          docker compose -f docker-compose.prod.yml ps
+          docker exec wigati-nginx nginx -t
+          docker exec wigati-app php artisan --version
+          REMOTE
